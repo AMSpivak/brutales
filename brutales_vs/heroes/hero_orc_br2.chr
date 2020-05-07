@@ -1,0 +1,23 @@
+mass_inv 1.0
+radius 0.5
+breed 2
+model material/barb01/barb_orc_br2.mdl
+model material/sword/sword.mdl
+sequence start_strike 358 376 0 0 1 0 1 strike "" "" ""
+sequence strike 377 380 0 0 1 0 1 strike_pre_end "" "strike 0.1" "sound material/audio/swing.wav" "strike_block strike_block"
+sequence strike_pre_end 381 394 0 0 1 0 1 strike_end "" "" "" "damage damage"
+sequence strike_end 395 396 0 0 1 0 1 stance "" "" "" "guard guard" "step_back step_back"
+sequence use 10 11 0 0 0 0 1 stance "" "" ""
+sequence guard 114 116 0 0 0 0 1 guard_main "" "" "" "damage damage"
+sequence guard_main 117 117 1 1 0 1 0 "" "" "" "use guard_use" "guard guard_main" "stance stance" "strike start_strike" "damage damage" "step_back step_back" "step_left step_left" "step_right step_right"
+sequence guard_use 117 117 1 1 0 0 1 guard_main "sound material/audio/sword_clash.wav" "" ""
+sequence damage 106 112 0 0 0 0 1 damage_main "" "" "sound material/audio/pain1.wav"
+sequence damage_main 113 113 0 0 0 0 1 stance "" "" "" "damage damage_main" "guard guard" "stance stance"
+sequence strike_block 133 148 0 0 0 0 1 stance "sound material/audio/sword_clash.wav" "" "" "damage damage"
+sequence walk 66 79 0 0 0 1 0 "" "" "" "strike start_strike" "guard guard" "stance stance" "step_back step_back" "move walk" "move_fast run" "damage damage"
+sequence run 82 94 0 0 0 1 0 "" "" "" "strike start_strike" "guard guard" "stance stance" "move walk" "move_fast run" "damage damage"
+sequence step_back 96 102 0 0 0 0 1 stance "" "" "" "stance stance" "move walk" "damage damage"
+sequence step_right 119 127 1 0 0 0 1 stance "" "" "" "stance stance" "move walk" "damage damage"
+sequence step_left 133 141 1 0 0 0 1 stance "" "" "" "stance stance" "move walk" "damage damage"
+sequence stance 22 23 1 0 0 1 0 "" "" "" "strike start_strike" "stance stance" "guard guard" "step_back step_back" "step_right step_right" "step_left step_left" "move walk" "move_fast run" "damage damage"
+weapon 1 1 0.0 0.0 0.7 0.0 0.0 1.77

@@ -1,0 +1,9 @@
+/.vs
+*.exe
+/brutales_vs/Release
+/brutales_vs/Debug
+/brutales_vs/x64/
+/brutales_vs/x64/
+/brutales_vs/x86/Release
+/brutales_vs/x86/Debug
+/brutales_vs/Material

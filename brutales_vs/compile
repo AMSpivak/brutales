@@ -1,0 +1,3 @@
+g++  main.cpp glresourses.cpp glscene.cpp -o mainbin -lGLEW -lSOIL -lGL -std=c++11 `pkg-config --cflags glfw3` `pkg-config --static --libs glfw3`
+
+

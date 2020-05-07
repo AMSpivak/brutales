@@ -1,0 +1,41 @@
+<sky>
+skybox skybox/violent.cub
+light_pos 10.0 8.0 -15.0
+light_color 4.0 4.0 4.0
+camera_lens 50.0 1.0 105.0
+<!sky>
+<heightmap>
+map desert_map.png
+height_scale 30.0
+map_scale 0.001
+map_size 300.0 100.0 300.0
+walk_min -200.0 0.0 -200.0
+walk_max 250.0 100.0 250.0
+<!heightmap>
+<starts> 
+base 0.0 0.0 0.0      
+start_top 9.0 0.0 16.0      
+start_bottom 9.0 0.0 2.5      
+start_left 2.5 0.0 9.0      
+start_right 16.0 0.0 9.0      
+<!starts>
+<script> 
+cave_fall
+show_intro fall_intro.png
+pause_interface 2.0
+show_message Use Space to skip and left Alt to interact objects
+teleport levels/test3.lvl start_bottom
+<!script>
+<script> 
+loose_script
+show_intro barbar_bg01a.png
+show_message You are dead. <Space to skip>
+pause_interface 2.0
+set_state main_menu
+teleport levels/test.lvl base
+<!script>
+<script> 
+start_script
+show_intro b_bars.png
+pause_interface 2.0
+<!script>

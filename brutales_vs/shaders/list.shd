@@ -1,0 +1,20 @@
+sobel_aa shaders/dbg.vs shaders/sobel_aa.fs
+sobel_blur shaders/dbg.vs shaders/sobel_blur_test.fs
+shadowmap shaders/vertex1.vs shaders/frag1.fs
+sprite shaders/sprite.vs shaders/sprite.fs
+fullscreen shaders/dbg.vs shaders/sprite.fs
+sprite2d shaders/sprite2d.vs shaders/sprite2d.fs
+simple shaders/simple_vert.vs shaders/simple_frag.fs
+sprite2dsimple shaders/sprite2dsimple.vs shaders/sprite2dsimple.fs
+skybox shaders/skybox.vs shaders/skybox.fs
+deffered shaders/dbg.vs shaders/deffered.fs
+deffered_global shaders/dbg.vs shaders/deffered_global.fs
+deffered_simple shaders/dbg.vs shaders/deff_simple.fs
+deffered_cheap shaders/dbg.vs shaders/deffered_cheap.fs
+deffered_simple_cheap shaders/dbg.vs shaders/deff_simple_cheap.fs
+deff_1st_pass shaders/vert_norm.vs shaders/frag_norm.fs
+deff_1st_pass_terrain shaders/vert_norm.vs shaders/frag_norm_terrain.fs
+deff_1st_pass_heght shaders/vert_norm_height.vs shaders/frag_norm_height.fs
+deff_heght shaders/norm_height.vs shaders/normals.fs shaders/norm_height.gs
+luminocity shaders/dbg.vs shaders/luminocity.fs
+simple_heightmap shaders/vert_height_simple.vs shaders/frag_height_simple.fs
