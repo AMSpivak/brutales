@@ -101,7 +101,20 @@ void FillShaders(std::map<const std::string,GLuint> &shader_map, const std::stri
         }
         shaders_file.close();
     }
-   }
+}
+
+void GlInfo(std::ostream & ostream)
+{
+	ostream << "=============================\n";
+	ostream << "OpenGl Info:\n";
+	ostream << "=============================\n";
+	ostream << glGetString(GL_VENDOR) << "\n";
+	ostream << glGetString(GL_RENDERER) << "\n";
+	ostream << glGetString(GL_VERSION) << "\n";
+	ostream << glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n";
+	ostream << "=============================\n";
+
+}
 
 std::map<std::string,std::shared_ptr<glRenderTargetSimple>> m_render_target_map;
 
@@ -201,6 +214,8 @@ int main(int argc, char const *argv[])
 		std::cout << "Failed to initialize GLEW" << std::endl;
 		return -1;
 	}
+
+	GlInfo(std::cout);
 
 	int width, height;
 	glfwGetFramebufferSize(window, &width, &height);
