@@ -186,7 +186,7 @@ GlGameStateDungeon::GlGameStateDungeon(std::map<const std::string,GLuint> &shade
         {
             std::string state;
             sstream >> state;
-            std::cout << "set _state " << state <<"\n";
+            std::cout << "set_state " << state <<"\n";
             return_state = m_states_map[state];
         });
 
@@ -1426,6 +1426,8 @@ std::weak_ptr<IGlGameState>  GlGameStateDungeon::Process(std::map <int, bool> &i
 
 std::pair<AnimationCommand,const glm::mat4>  GlGameStateDungeon::ProcessInputs(std::map <int, bool> &inputs)
 {
+    
+
     if(inputs[GLFW_KEY_F9])
     {
         m_daytime_in_hours -= 0.1;
@@ -1440,7 +1442,13 @@ std::pair<AnimationCommand,const glm::mat4>  GlGameStateDungeon::ProcessInputs(s
     float move_square = move_inputs.first * move_inputs.first + move_inputs.second * move_inputs.second;
     bool moving = move_square > 0.03f;
 
-    glm::mat4 rm(hero->model_matrix);      
+    glm::mat4 rm(hero->model_matrix);  
+
+    if(inputs[GLFW_KEY_ESCAPE])
+    {
+        return_state = m_states_map["main_menu"];
+        return std::make_pair(AnimationCommand::kNone, rm);
+    }
     
     float disorientation = 0;
 

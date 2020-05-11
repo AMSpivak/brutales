@@ -19,6 +19,9 @@
     <Filter Include="Header Files\engine">
       <UniqueIdentifier>{b2f5f493-a972-4111-9f0a-2cbcc8c32af1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{c4ad17c8-c8cb-4eee-9752-df7f90167395}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="animation_sequence.h">
@@ -274,5 +277,154 @@
     <ResourceCompile Include="game.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\dbg.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\dbg.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\deff_easy.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\deff_simple.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\deff_simple_cheap.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\deffered.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\deffered_cheap.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\deffered_global.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\deffered_global_v1.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\deffered_global_v2.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\deffered_old.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\frag_height_simple.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\frag_norm.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\frag_norm_height.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\frag_norm_terrain.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\frag1.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\frag1_sh.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\frag2.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\list.shd">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\luminocity.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\norm_height.gs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\norm_height.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\normals.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\simple_frag.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\simple_vert.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sky.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sky.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\skybox.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\skybox.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sobel.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sobel_aa.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sobel_aa_.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sobel_blur.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sobel_blur_test.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sobel_cross.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sprite.1.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sprite.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sprite.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sprite_blur.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sprite_blur_h.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sprite_blur_w.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sprite2d.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sprite2d.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sprite2dsimple.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sprite2dsimple.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\vert_height_simple.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\vert_norm.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\vert_norm_height.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\vertex1.vs">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -243,6 +243,57 @@
   <ItemGroup>
     <ResourceCompile Include="game.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\dbg.fs" />
+    <None Include="shaders\dbg.vs" />
+    <None Include="shaders\deffered.fs" />
+    <None Include="shaders\deffered_cheap.fs" />
+    <None Include="shaders\deffered_global.fs" />
+    <None Include="shaders\deffered_global_v1.fs" />
+    <None Include="shaders\deffered_global_v2.fs" />
+    <None Include="shaders\deffered_old.fs" />
+    <None Include="shaders\deff_easy.fs" />
+    <None Include="shaders\deff_simple.fs" />
+    <None Include="shaders\deff_simple_cheap.fs" />
+    <None Include="shaders\frag1.fs" />
+    <None Include="shaders\frag1_sh.fs" />
+    <None Include="shaders\frag2.fs" />
+    <None Include="shaders\frag_height_simple.fs" />
+    <None Include="shaders\frag_norm.fs" />
+    <None Include="shaders\frag_norm_height.fs" />
+    <None Include="shaders\frag_norm_terrain.fs" />
+    <None Include="shaders\list.shd" />
+    <None Include="shaders\luminocity.fs" />
+    <None Include="shaders\normals.fs" />
+    <None Include="shaders\norm_height.gs" />
+    <None Include="shaders\norm_height.vs" />
+    <None Include="shaders\simple_frag.fs" />
+    <None Include="shaders\simple_vert.vs" />
+    <None Include="shaders\sky.fs" />
+    <None Include="shaders\sky.vs" />
+    <None Include="shaders\skybox.fs" />
+    <None Include="shaders\skybox.vs" />
+    <None Include="shaders\sobel.fs" />
+    <None Include="shaders\sobel_aa.fs" />
+    <None Include="shaders\sobel_aa_.fs" />
+    <None Include="shaders\sobel_blur.fs" />
+    <None Include="shaders\sobel_blur_test.fs" />
+    <None Include="shaders\sobel_cross.fs" />
+    <None Include="shaders\sprite.1.fs" />
+    <None Include="shaders\sprite.fs" />
+    <None Include="shaders\sprite.vs" />
+    <None Include="shaders\sprite2d.fs" />
+    <None Include="shaders\sprite2d.vs" />
+    <None Include="shaders\sprite2dsimple.fs" />
+    <None Include="shaders\sprite2dsimple.vs" />
+    <None Include="shaders\sprite_blur.fs" />
+    <None Include="shaders\sprite_blur_h.fs" />
+    <None Include="shaders\sprite_blur_w.fs" />
+    <None Include="shaders\vertex1.vs" />
+    <None Include="shaders\vert_height_simple.vs" />
+    <None Include="shaders\vert_norm.vs" />
+    <None Include="shaders\vert_norm_height.vs" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
