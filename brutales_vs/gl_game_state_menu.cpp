@@ -10,6 +10,7 @@
 #include <utility>
 #include <algorithm>
 #include <math.h>
+#include <map>
 
 #include "glm/glm.hpp"
 
@@ -123,10 +124,23 @@ GlGameStateMenu::GlGameStateMenu(std::map<const std::string,GLuint> &shader_map,
         m_interface.Add("wall",object_ptr);
 
         
-            auto button_ptr1 = std::make_shared<Gl2D::GlButton>(-0.6f,-0.65f,1.2f,0.3f,a_ratio,
+            /*auto button_ptr1 = std::make_shared<Gl2D::GlButton>(-0.6f,-0.65f,1.2f,0.3f,a_ratio,
                                     GetResourceManager()->m_texture_atlas.Assign("button.png"),GetResourceManager()->m_texture_atlas.Assign("button_p.png"),
                                     m_gl_text,"EXIT",
-                                    m_shader_map["sprite2dsimple"],[this]{glfwSetWindowShouldClose(m_window, GL_TRUE);});
+                                    GetResourceManager()->GetShader("sprite2dsimple"),
+                                    [this]{glfwSetWindowShouldClose(m_window, GL_TRUE);});*/
+            std::vector<std::string> lines;
+            lines.push_back("geometry -0.6 -0.65 1.2 0.3");
+            lines.push_back("image button.png");
+            lines.push_back("image_active button_p.png");
+            lines.push_back("shader sprite2dsimple");
+            lines.push_back("text EXIT");
+
+            auto button_ptr1 = std::make_shared<Gl2D::GlButton>(a_ratio);
+            button_ptr1->Load(lines);
+            button_ptr1->SetAction([this] {glfwSetWindowShouldClose(m_window, GL_TRUE);});
+            button_ptr1->SetFont(m_gl_text);
+
             auto button_ptr2 = std::make_shared<Gl2D::GlButton>(-0.6f,-0.35f,1.2f,0.3f,a_ratio,
                                     GetResourceManager()->m_texture_atlas.Assign("button.png"),GetResourceManager()->m_texture_atlas.Assign("button_p.png"),
                                     m_gl_text,"SETTINGS",
@@ -158,10 +172,6 @@ GlGameStateMenu::GlGameStateMenu(std::map<const std::string,GLuint> &shader_map,
     }
 
 
-
-   
-   
-
     m_message_processor.Add("run_script",[this](std::stringstream &sstream)
                                     {
                                         std::string name;
@@ -170,24 +180,27 @@ GlGameStateMenu::GlGameStateMenu(std::map<const std::string,GLuint> &shader_map,
                                         for(auto message:script)
                                         {
                                             PostMessage(message);
-                                            //std::cout<<message<<"\n";
                                         }
                                     });
-    
-                  
-
-
 
     m_message_processor.Add("sound",[this](std::stringstream &sstream)
     {  
-
         std::string sound;
         sstream >>  sound;   
         m_sound_engine->play2D(sound.c_str(),false);
-        
     });
 
+    m_message_processor.Add("close", [this](std::stringstream& sstream)
+        {
+            glfwSetWindowShouldClose(m_window, GL_TRUE);
+        });
 
+    m_message_processor.Add("change_state", [this](std::stringstream& sstream)
+        {
+            std::string state;
+            sstream >> state;
+            m_return_state = m_states_map["main_game"];
+        });
 
     time = glfwGetTime();
     m_interface_time = time;

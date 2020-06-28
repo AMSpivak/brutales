@@ -29,6 +29,7 @@ namespace Gl2D
                                                         {}
         ~GlProgressbar(){}
         void Draw();
+        void Load(const std::vector<std::string>& lines);
     };
 
 }

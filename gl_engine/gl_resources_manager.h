@@ -17,7 +17,8 @@ GLAtlas<IGlJalStruct> m_mesh_atlas;
 GLAtlas<Animation> m_animation_atlas;
 GLAtlas<IGlJubStruct> m_bones_atlas;
 
-std::map<const std::string,GLuint> m_shader_map;
+std::map<const std::string, GLuint> m_shader_map;
+std::map<const std::string,GLuint> m_font_map;
 
 GLResourcesManager(const std::string & textures_folder,
                     const std::string & meshes_folder,

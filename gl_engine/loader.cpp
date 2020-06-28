@@ -58,7 +58,7 @@ namespace LoaderUtility
         }
     }
 
-    void LinesProcessor::Process(std::vector<std::string> &lines) const
+    void LinesProcessor::Process(const std::vector<std::string> &lines) const
     {
         for(auto s : lines)
         {

@@ -74,7 +74,7 @@
     <IncludePath>C:\work\repositories\brutales_vs\Includes;C:\work\repositories\brutales_vs\brutales_vs\includes;C:\work\repositories\brutales_vs\gl_engine;C:\work\repositories\brutales_vs\gl_engine\glm;$(IncludePath)</IncludePath>
     <LibraryPath>C:\work\repositories\brutales_vs\Libs\x86;$(LibraryPath)</LibraryPath>
     <TargetName>brutales_86</TargetName>
-    <OutDir>..\..\demo _vs</OutDir>
+    <OutDir>.\x86</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>

@@ -20,6 +20,7 @@ namespace Gl2D
         float m_active_mul;
         Action m_action;
         public:
+        GlButton(float aspect_ratio): Gl2dItem(aspect_ratio) {}
         GlButton(float x,float y,float width, float height, float aspect_ratio,
                  sp_texture texture,sp_texture texture_active,
                   std::shared_ptr<IGlText> font, const std::string &text,
@@ -32,9 +33,12 @@ namespace Gl2D
 
                                                          {}
         ~GlButton(){}
-        void SetImage(sp_texture image);
-        void SetActiveSizer(float value);
+        void SetFont(std::shared_ptr<IGlText> font) {m_font = font;}
+        void SetAction(Action action) {m_action = action;}
+        void SetImage(sp_texture image) { m_texture = image; }
+        void SetActiveSizer(float value) { m_active_mul = value; }
         void Draw();
+        void Load(const std::vector<std::string>& lines);
         
         std::weak_ptr<Gl2dItem> ProcessInput(Inputs::InputCommands input) override;
     };

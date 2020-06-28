@@ -2,10 +2,56 @@
 #include <algorithm>
 #include "glresourses.h"
 #include "glm/glm.hpp"
-
+#include "../gl_engine/loader.h"
+#include "gl_resources_manager.h"
 
 namespace Gl2D
 {
+    void GlButton::Load(const std::vector<std::string>& lines)
+    {
+        LoaderUtility::LinesProcessor processor;
+        processor.Add("geometry", [this](std::stringstream& sstream)
+            {
+                sstream >> m_x >> m_y >> m_width >> m_height;
+
+            });
+
+        processor.Add("image", [this](std::stringstream& sstream)
+            {
+                std::string tmp_str;
+                sstream >> tmp_str;
+                m_texture = GetResourceManager()->m_texture_atlas.Assign(tmp_str);
+            });
+
+        processor.Add("image_active", [this](std::stringstream& sstream)
+            {
+                std::string tmp_str;
+                sstream >> tmp_str;
+                m_texture_active = GetResourceManager()->m_texture_atlas.Assign(tmp_str);
+            });
+
+        processor.Add("shader", [this](std::stringstream& sstream)
+            {
+                std::string tmp_str;
+                sstream >> tmp_str;
+                m_shader = GetResourceManager()->GetShader(tmp_str);
+            });
+
+        processor.Add("text", [this](std::stringstream& sstream)
+            {
+                std::string tmp_str;
+                sstream >> tmp_str;
+                m_text = tmp_str;
+            });
+        /*m_texture(texture), m_texture_active(texture_active)
+            , m_font(font), m_text(text)
+            , m_shader(shader), m_active_mul(1.0f)
+            , m_action(action)*/
+
+        processor.Process(lines);
+
+    }
+
     void GlButton::Draw()
     {
         RecalculateGeometry();
@@ -42,16 +88,6 @@ namespace Gl2D
         m_font->DrawString(m_text,x + (w  - m_font->GetStringLength(m_text)) * 0.5f,y + (h  - text_size_y) * 0.5f/* * 1.2f*/, m_shader);
     }
     
-
-    void GlButton::SetImage(sp_texture image)
-    {
-        m_texture = image;
-    }
-
-    void GlButton::SetActiveSizer(float value)
-    {
-        m_active_mul = value;
-    }
 
     std::weak_ptr<Gl2dItem> GlButton::ProcessInput(Inputs::InputCommands input)
     {

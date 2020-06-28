@@ -22,6 +22,7 @@ namespace Gl2D
         void SetImage(sp_texture image);
 
         void Draw();
+        void Load(const std::vector<std::string>& lines);
     };
 
 }

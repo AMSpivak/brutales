@@ -29,4 +29,9 @@ namespace Gl2D
  
     }
 
+    void GlImage::Load(const std::vector<std::string>& lines)
+    {
+
+    }
+
 }
