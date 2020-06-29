@@ -20,7 +20,7 @@ namespace LoaderUtility
     T GetFromStream(std::istream & is)
     {
         T value;
-        is>>value;
+        is >> value;
         return value;
     }
 

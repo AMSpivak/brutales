@@ -78,18 +78,20 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(ProjectDir)\..\Includes;$(ProjectDir)\..\brutales_vs\includes;$(ProjectDir)\..\gl_engine;$(ProjectDir)\..\gl_engine\glm;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\..\Libs\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\work\repositories\brutales_vs\Includes;C:\work\repositories\brutales_vs\brutales_vs\includes;C:\work\repositories\brutales_vs\gl_engine;C:\work\repositories\brutales_vs\gl_engine\glm;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\work\repositories\brutales_vs\Libs\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\..\Includes;$(ProjectDir)\..\brutales_vs\includes;$(ProjectDir)\..\gl_engine;$(ProjectDir)\..\gl_engine\glm;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\..\Libs\x86;$(LibraryPath)</LibraryPath>
     <TargetName>brutales_86</TargetName>
     <OutDir>.\x86</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <LibraryPath>C:\work\repositories\brutales_vs\Libs\x64;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\work\repositories\brutales_vs\Includes;C:\work\repositories\brutales_vs\brutales_vs\includes;C:\work\repositories\brutales_vs\gl_engine;C:\work\repositories\brutales_vs\gl_engine\glm;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\..\Libs\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\..\Includes;$(ProjectDir)\..\brutales_vs\includes;$(ProjectDir)\..\gl_engine;$(ProjectDir)\..\gl_engine\glm;$(IncludePath)</IncludePath>
     <OutDir>.\x64</OutDir>
     <TargetName>brutales_64</TargetName>
   </PropertyGroup>

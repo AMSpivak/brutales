@@ -129,6 +129,8 @@ GlGameStateMenu::GlGameStateMenu(std::map<const std::string,GLuint> &shader_map,
                                     m_gl_text,"EXIT",
                                     GetResourceManager()->GetShader("sprite2dsimple"),
                                     [this]{glfwSetWindowShouldClose(m_window, GL_TRUE);});*/
+
+        auto exit_function = [this] {glfwSetWindowShouldClose(m_window, GL_TRUE);};
             std::vector<std::string> lines;
             lines.push_back("geometry -0.6 -0.65 1.2 0.3");
             lines.push_back("image button.png");
@@ -138,7 +140,7 @@ GlGameStateMenu::GlGameStateMenu(std::map<const std::string,GLuint> &shader_map,
 
             auto button_ptr1 = std::make_shared<Gl2D::GlButton>(a_ratio);
             button_ptr1->Load(lines);
-            button_ptr1->SetAction([this] {glfwSetWindowShouldClose(m_window, GL_TRUE);});
+            button_ptr1->SetAction(exit_function);
             button_ptr1->SetFont(m_gl_text);
 
             auto button_ptr2 = std::make_shared<Gl2D::GlButton>(-0.6f,-0.35f,1.2f,0.3f,a_ratio,
