@@ -3,16 +3,24 @@
 #include <memory>
 #include <tuple>
 #include <map>
+#include <vector>
+#include <string>
+#include <functional>
 #include "input_abstracts.h"
 
 namespace Gl2D
 {
+    class Interface2D;
+
     enum class ItemAligment {None,Fill,Center,Left,Right,Top,Bottom};
     enum class AspectRatioKeeper {None,Width,Height,Maximal,Minimal};
+
+    using Action = std::function<void()>;
 
     class Gl2dItem
     {
         protected:
+
         float real_width;
         float real_height;
         float real_x;
@@ -31,7 +39,7 @@ namespace Gl2D
         void UseAspectRatioKeeper();
         void RecalculateGeometry();
         public:
-        // Gl2dItem(){}
+        Gl2dItem(float aspect_ratio):m_aspect_ratio(aspect_ratio), m_active(false) {}
         Gl2dItem(float x,float y,float width, float height, float aspect_ratio):
                                                                                      m_x(x)
                                                                                     ,m_y(y)
@@ -41,6 +49,7 @@ namespace Gl2D
                                                                                     ,m_active(false)
 
         {}
+
         void SetAspectRatioKeeper(AspectRatioKeeper keeper);
         void SetParent(std::weak_ptr<Gl2dItem> parent);
         AspectRatioKeeper GetAspectRatioKeeper();
@@ -51,6 +60,7 @@ namespace Gl2D
         std::tuple<float,float,float, float> GetPosAndSize();
         void SetActive(bool status);
         virtual void Draw() = 0;
+        virtual std::string Load(const std::vector<std::string>& lines, Interface2D &interface) = 0;
         virtual ~Gl2dItem(){}
 
     };

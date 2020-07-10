@@ -17,11 +17,16 @@ namespace Gl2D
                                                         ,m_shader(shader)
 
                                                          {}
+        GlImage(float aspect_ratio) :
+            Gl2dItem(aspect_ratio)
+        {}
+
         ~GlImage(){}
 
         void SetImage(sp_texture image);
 
         void Draw();
+        std::string Load(const std::vector<std::string>& lines, Interface2D& interface);
     };
 
 }

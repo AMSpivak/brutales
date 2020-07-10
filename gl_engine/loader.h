@@ -20,7 +20,7 @@ namespace LoaderUtility
     T GetFromStream(std::istream & is)
     {
         T value;
-        is>>value;
+        is >> value;
         return value;
     }
 
@@ -65,7 +65,7 @@ namespace LoaderUtility
         private:
         std::map<std::string,const std::function<void(std::stringstream&)>> execute_funcs;
         public:
-        void Process(std::vector<std::string> &lines) const;
+        void Process(const std::vector<std::string> &lines) const;
         void Process(const std::string & value) const; 
         void Add(std::string tag,const std::function<void(std::stringstream&)> function);
     };

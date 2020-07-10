@@ -10,7 +10,7 @@ namespace EngineSettings
     Settings::Settings()
     {
         std::ifstream loadfile;
-        loadfile.open ("engine.cfg");
+        loadfile.open("engine.cfg");
         if(loadfile.is_open())
             LoadSettings(loadfile);
         loadfile.close();
@@ -19,7 +19,7 @@ namespace EngineSettings
     Settings::~Settings()
     {
         std::ofstream savefile;
-        savefile.open ("engine.cfg");
+        savefile.open("engine.cfg");
         SaveSettings(savefile);
         savefile.close();
     }
