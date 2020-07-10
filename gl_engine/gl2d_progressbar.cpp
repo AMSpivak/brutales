@@ -33,8 +33,8 @@ namespace Gl2D
 			);
     }
 
-	void GlProgressbar::Load(const std::vector<std::string>& lines)
+	std::string GlProgressbar::Load(const std::vector<std::string>& lines, Interface2D& interface)
 	{
-
+		return "";
 	}
 }

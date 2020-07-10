@@ -10,7 +10,6 @@ namespace Gl2D
     class GlButton : public Gl2dItem
     {
         using sp_texture = std::shared_ptr<IGlTextureStruct>;
-        using Action = std::function<void()>;
         private:
         sp_texture m_texture;
         sp_texture m_texture_active;
@@ -38,7 +37,7 @@ namespace Gl2D
         void SetImage(sp_texture image) { m_texture = image; }
         void SetActiveSizer(float value) { m_active_mul = value; }
         void Draw();
-        void Load(const std::vector<std::string>& lines);
+        std::string Load(const std::vector<std::string>& lines, Interface2D& interface);
         
         std::weak_ptr<Gl2dItem> ProcessInput(Inputs::InputCommands input) override;
     };

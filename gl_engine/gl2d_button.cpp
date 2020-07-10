@@ -4,11 +4,14 @@
 #include "glm/glm.hpp"
 #include "../gl_engine/loader.h"
 #include "gl_resources_manager.h"
+#include "gl2d_interface.h"
 
 namespace Gl2D
 {
-    void GlButton::Load(const std::vector<std::string>& lines)
+    std::string GlButton::Load(const std::vector<std::string>& lines, Interface2D& interface)
     {
+        //auto actions = interface.GetActionMap;
+        std::string ret_value = "";
         LoaderUtility::LinesProcessor processor;
         processor.Add("geometry", [this](std::stringstream& sstream)
             {
@@ -30,6 +33,13 @@ namespace Gl2D
                 m_texture_active = GetResourceManager()->m_texture_atlas.Assign(tmp_str);
             });
 
+        processor.Add("sizer_active", [this](std::stringstream& sstream)
+            {
+                float sizer;
+                sstream >> sizer;
+                SetActiveSizer(sizer);
+            });
+
         processor.Add("shader", [this](std::stringstream& sstream)
             {
                 std::string tmp_str;
@@ -43,13 +53,30 @@ namespace Gl2D
                 sstream >> tmp_str;
                 m_text = tmp_str;
             });
-        /*m_texture(texture), m_texture_active(texture_active)
-            , m_font(font), m_text(text)
-            , m_shader(shader), m_active_mul(1.0f)
-            , m_action(action)*/
+
+        processor.Add("name", [this,&ret_value](std::stringstream& sstream)
+            {
+                sstream >> ret_value;
+            });
+        processor.Add("action", [this, &ret_value, &interface](std::stringstream& sstream)
+            {
+                std::string tmp_str;
+                sstream >> tmp_str;
+                SetAction(interface.GetAction(tmp_str));
+                
+            });
+
+        processor.Add("font", [this, &ret_value, &interface](std::stringstream& sstream)
+        {
+            std::string tmp_str;
+            sstream >> tmp_str;
+            SetFont(interface.GetFont(tmp_str));
+
+        });
 
         processor.Process(lines);
 
+        return ret_value;
     }
 
     void GlButton::Draw()

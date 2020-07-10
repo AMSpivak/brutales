@@ -232,6 +232,7 @@
     <ClCompile Include="gl_light.cpp" />
     <ClCompile Include="gl_model.cpp" />
     <ClCompile Include="gl_render_target.cpp" />
+    <ClCompile Include="input_abstracts.cpp" />
     <ClCompile Include="main.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\work\repositories\brutales_vs\gl_engine\glm;C:\work\repositories\brutales_vs\brutales_vs\includes\sound;C:\work\repositories\brutales_vs\brutales_vs\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>

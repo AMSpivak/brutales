@@ -114,63 +114,20 @@ GlGameStateMenu::GlGameStateMenu(std::map<const std::string,GLuint> &shader_map,
     float a_ratio = static_cast<float>(screen_width);
     a_ratio /= screen_height;
     m_gl_text = std::make_shared<GlText16x16>("font2.png",GetResourceManager()->m_texture_atlas,0.1f,0.1f);
+
+    m_interface.AddFont("regular", m_gl_text);
     
     {
-        auto object_ptr = std::make_shared<Gl2D::GlImage>(-1.0f,-1.0f,2.0f,2.0f,a_ratio,
-                                    GetResourceManager()->m_texture_atlas.Assign("menu.png"),
-                                    m_shader_map["sprite2dsimple"]);
-                                    
-        object_ptr->SetAspectRatioKeeper(Gl2D::AspectRatioKeeper::Minimal);
-        m_interface.Add("wall",object_ptr);
+        auto exit_function = [this] {glfwSetWindowShouldClose(m_window, GL_TRUE); };
+        auto empty_function = [] {};
+        auto start_function = [this] {m_return_state = m_states_map["main_game"]; };
+        m_interface.AddAction("empty", empty_function);
+        m_interface.AddAction("exit", exit_function);
+        m_interface.AddAction("start", start_function);
 
-        
-            /*auto button_ptr1 = std::make_shared<Gl2D::GlButton>(-0.6f,-0.65f,1.2f,0.3f,a_ratio,
-                                    GetResourceManager()->m_texture_atlas.Assign("button.png"),GetResourceManager()->m_texture_atlas.Assign("button_p.png"),
-                                    m_gl_text,"EXIT",
-                                    GetResourceManager()->GetShader("sprite2dsimple"),
-                                    [this]{glfwSetWindowShouldClose(m_window, GL_TRUE);});*/
+        m_interface.SetAspectRatio(a_ratio);
 
-        auto exit_function = [this] {glfwSetWindowShouldClose(m_window, GL_TRUE);};
-            std::vector<std::string> lines;
-            lines.push_back("geometry -0.6 -0.65 1.2 0.3");
-            lines.push_back("image button.png");
-            lines.push_back("image_active button_p.png");
-            lines.push_back("shader sprite2dsimple");
-            lines.push_back("text EXIT");
-
-            auto button_ptr1 = std::make_shared<Gl2D::GlButton>(a_ratio);
-            button_ptr1->Load(lines);
-            button_ptr1->SetAction(exit_function);
-            button_ptr1->SetFont(m_gl_text);
-
-            auto button_ptr2 = std::make_shared<Gl2D::GlButton>(-0.6f,-0.35f,1.2f,0.3f,a_ratio,
-                                    GetResourceManager()->m_texture_atlas.Assign("button.png"),GetResourceManager()->m_texture_atlas.Assign("button_p.png"),
-                                    m_gl_text,"SETTINGS",
-                                    m_shader_map["sprite2dsimple"],[]{});
-            auto button_ptr3 = std::make_shared<Gl2D::GlButton>(-0.6f,-0.05f,1.2f,0.3f,a_ratio,
-                        GetResourceManager()->m_texture_atlas.Assign("button.png"),GetResourceManager()->m_texture_atlas.Assign("button_p.png"),
-                        m_gl_text,"START",
-                        m_shader_map["sprite2dsimple"],[this]{m_return_state = m_states_map["main_game"];});
-                        
-            button_ptr1->AddTab(Inputs::InputCommands::Up,button_ptr2);
-            button_ptr1->SetActiveSizer(1.05f);
-            
-            button_ptr2->AddTab(Inputs::InputCommands::Up,button_ptr3);
-            button_ptr2->AddTab(Inputs::InputCommands::Down,button_ptr1);
-            button_ptr2->SetActiveSizer(1.05f);
-
-            button_ptr3->AddTab(Inputs::InputCommands::Down,button_ptr2);
-            button_ptr3->SetActiveSizer(1.05f);
-
-            m_interface.Add("btn1",button_ptr1);
-            m_interface.Add("btn2",button_ptr2);
-            m_interface.Add("btn3",button_ptr3);
-            m_interface.SetActive("btn3");
-
-            m_interface.GetElement("btn1")->SetParent(m_interface.GetElement("wall"));
-            m_interface.GetElement("btn2")->SetParent(m_interface.GetElement("wall"));
-            m_interface.GetElement("btn3")->SetParent(m_interface.GetElement("wall"));
-
+        m_interface.Load("menus/main.txt");
     }
 
 

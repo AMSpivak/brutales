@@ -5,12 +5,17 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <functional>
 #include "input_abstracts.h"
 
 namespace Gl2D
 {
+    class Interface2D;
+
     enum class ItemAligment {None,Fill,Center,Left,Right,Top,Bottom};
     enum class AspectRatioKeeper {None,Width,Height,Maximal,Minimal};
+
+    using Action = std::function<void()>;
 
     class Gl2dItem
     {
@@ -55,7 +60,7 @@ namespace Gl2D
         std::tuple<float,float,float, float> GetPosAndSize();
         void SetActive(bool status);
         virtual void Draw() = 0;
-        virtual void Load(const std::vector<std::string>& lines) = 0;
+        virtual std::string Load(const std::vector<std::string>& lines, Interface2D &interface) = 0;
         virtual ~Gl2dItem(){}
 
     };
