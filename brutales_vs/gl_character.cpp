@@ -176,6 +176,7 @@ void GlCharacter::AddSequence(const std::string & name, const AnimationSequence 
 
 void GlCharacter::Draw(GlScene::Scene &scene) const
 {
+    
     for(auto model : Models) model->Draw(scene,now_frame);
 }
 

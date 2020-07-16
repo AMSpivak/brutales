@@ -6,7 +6,7 @@ namespace Math3D
                             const glm::vec3 & positive_disorientation)
     {
         float disorientation = 1.0f - glm::dot(face_direction,object_direction);
-        if(glm::dot(positive_disorientation,object_direction)< 0.0f)
+        if(glm::dot(positive_disorientation,object_direction) < 0.0f)
         {
             disorientation = -disorientation;
         }
@@ -34,9 +34,17 @@ namespace Math3D
                                 const glm::vec3 & normal
                                 )
     {
-        const glm::vec3 a12(a2- a1);
-        const glm::vec3 a13(a3- a1);
+        const glm::vec3 a12(a2 - a1);
+        const glm::vec3 a13(a3 - a1);
+        return TripleProduct(a13, a12, normal) > 0;
         return  glm::dot(normal,(glm::cross(a13,a12))) > 0.0f;
+    }
+
+    float  	TripleProduct(const glm::vec3& a1,
+        const glm::vec3& a2,
+        const glm::vec3& a3)
+    {
+        return glm::dot(a3, (glm::cross(a1, a2)));
     }
     
     std::ostream& operator << ( std::ostream& os, const SimpleDirections & value)

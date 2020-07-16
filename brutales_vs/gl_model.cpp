@@ -38,8 +38,8 @@ void glModel::Draw(GlScene::Scene &scene, Animation &animation, int now_frame,co
 		glUseProgram(scene.render_shader);
 		unsigned int cameraLoc  = glGetUniformLocation(scene.render_shader, "camera");
 		glUniformMatrix4fv(cameraLoc, 1, GL_FALSE, glm::value_ptr(scene.render_camera->CameraMatrix()));
-		unsigned int zero_offset = glGetUniformLocation(scene.render_shader, "zero_offset");
-		glUniform3fv(zero_offset, 1, glm::value_ptr(scene.zero_offset));
+		//unsigned int zero_offset = glGetUniformLocation(scene.render_shader, "zero_offset");
+		//glUniform3fv(zero_offset, 1, glm::value_ptr(scene.zero_offset));
 		m_material->Assign(scene.render_shader, 0,0, "NormalTexture","UtilityTexture");
 		scene.material = m_material;
 	}

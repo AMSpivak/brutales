@@ -18,5 +18,9 @@ namespace Math3D
                                     const glm::vec3 & normal
                                     );
     std::ostream& operator << ( std::ostream& os, const SimpleDirections & value);
+
+    float  	TripleProduct(const glm::vec3& a1,
+        const glm::vec3& a2,
+        const glm::vec3& a3);
 }
 #endif
