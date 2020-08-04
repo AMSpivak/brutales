@@ -10,6 +10,7 @@
 #include <utility>
 #include <tuple>
 #include <algorithm>
+#include <set>
 #include <math.h>  
 #include "math3d.h"  
 //#define GLM_SWIZZLE_XYZW
@@ -664,12 +665,19 @@ void GlGameStateDungeon::DrawDungeon(GLuint &current_shader,std::shared_ptr<GlCh
     GlScene::Scene scene;
     scene.render_shader =  current_shader;
     scene.render_camera = &camera;       
-    scene.zero_offset = hero_position;       
+    scene.zero_offset = hero_position;
+
+
     
     for(auto object : dungeon_objects)
     {
         object->Draw(scene,glm::translate(glm::mat4(), object->GetPosition() - hero_position));
-    }    
+    }
+
+    scene.model_list.sort([](std::shared_ptr<glModel> a, std::shared_ptr<glModel> b) { return *a < *b; });
+
+
+    for (auto model : scene.model_list) model->Draw(scene, EngineSettings::GetEngineSettings()->GetFrame());
 }
 
 void DrawSimpleLight(const glm::vec4 &light_pos_vector,const glm::vec3 &light_color_vector,const glm::vec3 &camera_position,GLuint current_shader,glRenderTargetDeffered &render_target)

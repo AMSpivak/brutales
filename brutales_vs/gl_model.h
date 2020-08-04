@@ -73,6 +73,11 @@ public:
 	void Draw(GlScene::Scene &scene, int now_frame,const glm::mat4 &matrix);
 	void AttachAnimation(std::vector <std::shared_ptr<Animation> > &animations, std::string Filename);
 	void SetDrawMatrix(const glm::mat4 &value);
+
+	bool operator <(const glModel& b) const
+	{
+		return  (*m_material) < *(b.m_material);
+	}
 };
 
 #endif

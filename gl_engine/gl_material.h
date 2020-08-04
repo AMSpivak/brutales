@@ -27,6 +27,26 @@ namespace GameResource
         
         void Assign(GLuint shader, unsigned int start_texture, const char * albedo,const char * normal_height,const char *roughness_metalness);
 
+        bool operator <(const GlMaterial& b) const
+        {
+            
+            if (m_roughness_metalness_texture->m_texture == b.m_roughness_metalness_texture->m_texture)
+            {
+                if (m_normal_height_texture->m_texture == b.m_normal_height_texture->m_texture)
+                {
+                    return m_albedo_texture->m_texture < b.m_albedo_texture->m_texture;
+                    
+                }
+                else
+                {
+                    return m_normal_height_texture->m_texture < b.m_normal_height_texture->m_texture;
+                }
+            }
+            else
+            {
+                return m_roughness_metalness_texture->m_texture < b.m_roughness_metalness_texture->m_texture;
+            }
+        }
     };
 }
 #endif
