@@ -18,9 +18,24 @@ void glModel::Draw()
 	{
 	    glBindVertexArray(jal_mesh->VAO);
 	    glDrawArrays(GL_TRIANGLES, 0, jal_mesh->vertexcount);
-	    glBindVertexArray(0);
+		//scene.jal_mesh = jal_mesh;
 	}
 }
+
+void glModel::Draw(GlScene::Scene& scene)
+{
+
+	if (jal_mesh->vertexcount > 2)
+	{
+		if(scene.jal_mesh.expired() || (scene.jal_mesh.lock() != jal_mesh))
+		{
+			glBindVertexArray(jal_mesh->VAO);
+		}
+		glDrawArrays(GL_TRIANGLES, 0, jal_mesh->vertexcount);
+		scene.jal_mesh = jal_mesh;
+	}
+}
+
 void glModel::SetDrawMatrix(const glm::mat4 &value)
 {
 	draw_matrix = value;
@@ -38,16 +53,23 @@ void glModel::Draw(GlScene::Scene &scene, Animation &animation, int now_frame,co
 		glUseProgram(scene.render_shader);
 		unsigned int cameraLoc  = glGetUniformLocation(scene.render_shader, "camera");
 		glUniformMatrix4fv(cameraLoc, 1, GL_FALSE, glm::value_ptr(scene.render_camera->CameraMatrix()));
-		//unsigned int zero_offset = glGetUniformLocation(scene.render_shader, "zero_offset");
-		//glUniform3fv(zero_offset, 1, glm::value_ptr(scene.zero_offset));
+
 		m_material->Assign(scene.render_shader, 0,0, "NormalTexture","UtilityTexture");
 		scene.material = m_material;
 	}
 	else
 	{
-		if((scene.material.expired())||(m_material != scene.material.lock()))
+		if(auto material = scene.material.lock())
 		{
-			m_material->Assign(scene.render_shader, 0,0, "NormalTexture","UtilityTexture");
+			if (!(*m_material == *material))
+			{
+				m_material->Assign(scene.render_shader, 0, 0, "NormalTexture", "UtilityTexture");
+				scene.material = m_material;
+			}
+		}
+		else
+		{
+			m_material->Assign(scene.render_shader, 0, 0, "NormalTexture", "UtilityTexture");
 			scene.material = m_material;
 		}
 	}
@@ -65,7 +87,7 @@ void glModel::Draw(GlScene::Scene &scene, Animation &animation, int now_frame,co
 	
 	glUniformMatrix4fv(boneLoc, bones.size(), GL_FALSE, animation.GetDrawValues(now_frame,bones));
 	
-	Draw();
+	Draw(scene);
 }
 
 void glModel::Draw(GlScene::Scene &scene, int now_frame)

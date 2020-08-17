@@ -47,6 +47,20 @@ namespace GameResource
                 return m_roughness_metalness_texture->m_texture < b.m_roughness_metalness_texture->m_texture;
             }
         }
+
+        bool operator ==(const GlMaterial& b) const
+        {
+
+            if (*this<b)
+            {
+                return false;
+            }
+            if (b < *this)
+            {
+                return false;
+            }
+            return true;
+        }
     };
 }
 #endif

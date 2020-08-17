@@ -7,6 +7,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include <string>
 #include <vector>
+#include <set>
 #include <list>
 #include <memory>
 #include "glresourses.h"
@@ -26,6 +27,7 @@ namespace GlScene
         const glCamera * render_camera = nullptr;
         std::weak_ptr<GameResource::GlMaterial> material;
         std::weak_ptr<IGlJalStruct> jal_mesh;
+        //std::multiset<std::shared_ptr<glModel>, [](std::shared_ptr<glModel> a, std::shared_ptr<glModel> b) { return *a < *b; } > model_list;
         std::list<std::shared_ptr<glModel>> model_list;
     };
 }

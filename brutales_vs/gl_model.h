@@ -67,6 +67,7 @@ public:
 	void LoadModelBones(std::string FileName);
 	void LoadAll(std::string FileName);
 	void Draw();
+	void Draw(GlScene::Scene& scene);
 	void Draw(GlScene::Scene &scene, Animation &animation, int now_frame,const glm::mat4 &matrix);
 	void Draw(GlScene::Scene &scene, Animation &animation, int now_frame);
 	void Draw(GlScene::Scene &scene, int now_frame);

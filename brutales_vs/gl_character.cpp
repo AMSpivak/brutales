@@ -176,7 +176,23 @@ void GlCharacter::AddSequence(const std::string & name, const AnimationSequence 
 
 void GlCharacter::Draw(GlScene::Scene &scene) const
 {  
-    for(auto model : Models) scene.model_list.push_back(model);//model->Draw(scene,now_frame);
+    for (auto model : Models)
+    {
+        /*std::pair<iterator, bool> insert(const value_type & value)
+        {
+            auto range = std::equal_range(m_values.begin(), m_values.end(), value, m_comparator);
+            if (range.first != range.second)
+            {
+                //range.first.second = value.second;
+                return std::make_pair(range.first, false);
+            }
+
+            return std::make_pair(m_values.insert(range.first, value), true);
+        }*/
+        auto range = std::equal_range(scene.model_list.begin(), scene.model_list.end(), model, [](std::shared_ptr<glModel> a, std::shared_ptr<glModel> b) { return *a < *b; });
+        scene.model_list.insert(range.second,model);
+        //scene.model_list.push_back(model);//model->Draw(scene,now_frame);
+    }
 }
 
 bool GlCharacter::UseCommand(AnimationCommand command)

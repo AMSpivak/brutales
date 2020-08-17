@@ -674,7 +674,7 @@ void GlGameStateDungeon::DrawDungeon(GLuint &current_shader,std::shared_ptr<GlCh
         object->Draw(scene,glm::translate(glm::mat4(), object->GetPosition() - hero_position));
     }
 
-    scene.model_list.sort([](std::shared_ptr<glModel> a, std::shared_ptr<glModel> b) { return *a < *b; });
+    //scene.model_list.sort([](std::shared_ptr<glModel> a, std::shared_ptr<glModel> b) { return *a < *b; });
 
 
     for (auto model : scene.model_list) model->Draw(scene, EngineSettings::GetEngineSettings()->GetFrame());
