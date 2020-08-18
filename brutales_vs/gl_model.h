@@ -21,7 +21,7 @@ class glModel
 	std::shared_ptr<IGlJalStruct> jal_mesh;
 
 
-
+	int m_frame;
 	//GLResourcesManager &m_resources_manager;
 
 public:
@@ -29,6 +29,7 @@ public:
 	
 	int parent_idx;
 	int parent_bone;
+	
 
 	glm::mat4 model;
 	glm::mat4 draw_matrix;
@@ -74,7 +75,7 @@ public:
 	void Draw(GlScene::Scene &scene, int now_frame,const glm::mat4 &matrix);
 	void AttachAnimation(std::vector <std::shared_ptr<Animation> > &animations, std::string Filename);
 	void SetDrawMatrix(const glm::mat4 &value);
-
+	void SetFrame(int now_frame) { m_frame = now_frame; }
 	bool operator <(const glModel& b) const
 	{
 		return  (*m_material) < *(b.m_material);

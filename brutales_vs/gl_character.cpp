@@ -218,7 +218,7 @@ void GlCharacter::Draw(GlScene::Scene &scene,const glm::mat4 &draw_matrix)
     if(engine_frame != frame)
     {
       
-        for(auto model : Models) model->SetDrawMatrix(draw_matrix);
+        for (auto model : Models) model->SetDrawMatrix(draw_matrix);
         Draw(scene);
         engine_frame = frame;
     }
@@ -243,6 +243,7 @@ void GlCharacter::RefreshMatrixes(float approximation)
     
     for(auto model : Models)
     {
+        model->SetFrame(now_frame);
 
         if(model->parent_idx != -1)
         {

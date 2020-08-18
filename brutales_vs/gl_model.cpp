@@ -92,7 +92,7 @@ void glModel::Draw(GlScene::Scene &scene, Animation &animation, int now_frame,co
 
 void glModel::Draw(GlScene::Scene &scene, int now_frame)
 {
-	Draw(scene, *animation ,now_frame);
+	Draw(scene, *animation ,m_frame);
 }
 void glModel::Draw(GlScene::Scene &scene, int now_frame,const glm::mat4 &matrix)
 {
