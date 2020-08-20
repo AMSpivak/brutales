@@ -24,7 +24,7 @@ namespace GameMap
         float GetHeight(float x,float y);
         float GetMapScaler();
         float GetHeightScaler();
-        void Draw(GLuint current_shader,const glm::vec3 &position,const GlScene::glCamera &camera);
+        void Draw(GLuint current_shader,const glm::vec3 &position,const GlScene::glCamera &camera, size_t simplify = 1);
         const glm::vec3 GetMapSize();
         void SetMapSize(const glm::vec3 &size);
         std::shared_ptr<IGlTextureStruct> m_heightmap_texture;

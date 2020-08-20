@@ -1032,11 +1032,19 @@ void GlGameStateDungeon::Draw()
 
         float sun_angle =  (m_daytime_in_hours - 12.0f)*360.0f/24.0f;
         sun_angle = glm::cos(glm::radians(sun_angle));
-        sun_angle = glm::clamp(sun_angle + 0.05f,0.0f,1.0f);
-        float r = glm::smoothstep(0.0f,0.3f,sun_angle);
-        float g = glm::smoothstep(0.0f,0.5f,sun_angle);
-        float b = glm::smoothstep(0.0f,0.5f,sun_angle);
+        float sky_sun = glm::clamp(sun_angle + 0.05f, 0.1f, 1.0f);
         
+        float r = glm::smoothstep(0.0f,0.3f, sky_sun);
+        float g = glm::smoothstep(0.0f,0.5f, sky_sun);
+        float b = glm::smoothstep(0.0f,0.5f, sky_sun);
+        
+        actual_light_color_vector = glm::vec3(light_color_vector[0] * r, light_color_vector[1] * g, light_color_vector[2] * b);
+
+        sun_angle = glm::clamp(sun_angle + 0.05f, 0.0f, 1.0f);
+        r = glm::smoothstep(0.0f, 0.3f, sun_angle);
+        g = glm::smoothstep(0.0f, 0.5f, sun_angle);
+        b = glm::smoothstep(0.0f, 0.5f, sun_angle);
+
         glm::vec4 tmp_light_color = glm::vec4(light_color_vector[0] *r,light_color_vector[1] *g,light_color_vector[2] *b,r);
 
         glUniform4fv(light_color, 1, glm::value_ptr(tmp_light_color));
@@ -1084,8 +1092,8 @@ void GlGameStateDungeon::Draw()
 		    glUniform3fv(light_dir, 1, glm::value_ptr(light_dir_vector));
 
        
-            //GLuint light_color  = glGetUniformLocation(current_shader, "LightColor");
-            //glUniform3fv(light_color, 1, glm::value_ptr(light_color_vector));
+            GLuint light_color  = glGetUniformLocation(current_shader, "LightColor");
+            glUniform3fv(light_color, 1, glm::value_ptr(actual_light_color_vector));
 
             glActiveTexture(GL_TEXTURE0);
             //glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.get()->m_texture);

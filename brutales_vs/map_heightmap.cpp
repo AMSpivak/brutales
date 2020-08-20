@@ -151,7 +151,7 @@ namespace GameMap
         m_map_size = size;
     }
 
-    void HeightMap::Draw(GLuint current_shader,const glm::vec3 &position,const GlScene::glCamera &camera)
+    void HeightMap::Draw(GLuint current_shader,const glm::vec3 &position,const GlScene::glCamera &camera, size_t simplify)
     {
         // glm::vec3 c = camera.m_position;
         // c[1] = 0.0f;

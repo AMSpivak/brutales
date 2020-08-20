@@ -113,6 +113,7 @@ private:
     glm::vec3 light_position;
     glm::vec3 light_dir_vector;
     glm::vec3 light_color_vector;
+    glm::vec3 actual_light_color_vector;
     std::string m_info_message;
 
     LoaderUtility::LinesProcessor m_message_processor;
