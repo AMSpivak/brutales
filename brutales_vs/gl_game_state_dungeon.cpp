@@ -711,7 +711,7 @@ void DrawSimpleLight(const glm::vec4 &light_pos_vector,const glm::vec3 &light_co
         renderQuad();
 }
 
-void GlGameStateDungeon::DrawLight(const glm::vec4 &light_pos_vector,const glm::vec3 &light_color_vector,glRenderTargetDeffered &render_target )
+void GlGameStateDungeon::DrawLight(const glm::vec4 &light_pos_vector, glRenderTargetDeffered &render_target )
 {
         //DrawSimpleLight(light_pos_vector,light_color_vector,current_shader,render_target );
 
@@ -1032,20 +1032,20 @@ void GlGameStateDungeon::Draw()
 
         float sun_angle =  (m_daytime_in_hours - 12.0f)*360.0f/24.0f;
         sun_angle = glm::cos(glm::radians(sun_angle));
-        float sky_sun = glm::clamp(sun_angle + 0.05f, 0.1f, 1.0f);
+
+        glm::vec3 red_light(0.6f, 0.05f, 0.0f);
+        glm::vec3 yellow_light(0.8f, 0.2f, 0.0f);
+        glm::vec3 day_light(1.0f);
         
-        float r = glm::smoothstep(0.0f,0.3f, sky_sun);
-        float g = glm::smoothstep(0.0f,0.5f, sky_sun);
-        float b = glm::smoothstep(0.0f,0.5f, sky_sun);
-        
-        actual_light_color_vector = glm::vec3(light_color_vector[0] * r, light_color_vector[1] * g, light_color_vector[2] * b);
+        float mix_yellow = glm::smoothstep(0.15f, 0.45f, sun_angle);
+        float mix_red = glm::smoothstep(0.1f, 0.35f, sun_angle);
+        day_light = (yellow_light * (1.0f - mix_yellow) + day_light * mix_yellow);
+        actual_light_color_vector = (red_light * (1.0f - mix_red ) + day_light * mix_red) * light_color_vector;// glm::vec3(light_color_vector[0] * r, light_color_vector[1] * g, light_color_vector[2] * b);
 
         sun_angle = glm::clamp(sun_angle + 0.05f, 0.0f, 1.0f);
-        r = glm::smoothstep(0.0f, 0.3f, sun_angle);
-        g = glm::smoothstep(0.0f, 0.5f, sun_angle);
-        b = glm::smoothstep(0.0f, 0.5f, sun_angle);
+        float r = glm::smoothstep(0.0f, 0.2f, sun_angle);
 
-        glm::vec4 tmp_light_color = glm::vec4(light_color_vector[0] *r,light_color_vector[1] *g,light_color_vector[2] *b,r);
+        glm::vec4 tmp_light_color = glm::vec4(actual_light_color_vector,r);
 
         glUniform4fv(light_color, 1, glm::value_ptr(tmp_light_color));
 
@@ -1060,14 +1060,8 @@ void GlGameStateDungeon::Draw()
 
         DrawGlobalLight(ligh_loc,Light);
         
-        glDisable(GL_STENCIL_TEST); 
-
-
-    
-        
-        DrawLight(glm::vec4(hero_position[0],hero_position[1],hero_position[2],0.0f),glm::vec3(0.98f,0.1f,0.1f),render_target);
-        
-
+        glDisable(GL_STENCIL_TEST);    
+        DrawLight(glm::vec4(hero_position,0.0f),render_target);
 
 		postprocess_render_target.set();
 
