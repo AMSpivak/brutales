@@ -13,20 +13,21 @@ namespace GameMap
             DeleteHeightMap(m_heightmap);
         }
 
-        glDeleteVertexArrays(1, &quadVAO);
-		glDeleteBuffers(1, &quadVBO);
-		glDeleteBuffers(1, &quadIBO);
+        glDeleteVertexArrays(LOD_MAX, quadVAO);
+		glDeleteBuffers(LOD_MAX, quadVBO);
+		glDeleteBuffers(LOD_MAX, quadIBO);
     }
 
-    void HeightMap::CreateMap()
+    void HeightMap::CreateMap(size_t lod)
     {
         std::vector<float> quadVertices;
 
-		size_t map_vertex_size = 41;
+        //size_t map_vertex_size = 40 / (lod + 1) + 1;
+        size_t map_vertex_size = 41;
 		size_t map_size = map_vertex_size - 1;
-		const float tile_size = 1.0f;
-        m_mesh_size = tile_size * map_size;        
-		float offset = 0.5f * m_mesh_size;
+		const float tile_size = 1.0f * (lod + 1);
+        m_mesh_size[lod] = tile_size * map_size;
+		float offset = 0.5f * m_mesh_size[lod];
 
 		for(size_t i_z = 0; i_z < map_vertex_size; i_z++)
 		{
@@ -55,15 +56,15 @@ namespace GameMap
 
 			}
 		}
-		vert_count =  indices.size();
+		vert_count[lod] =  indices.size();
         // setup plane VAO
-        glGenVertexArrays(1, &quadVAO);
-        glGenBuffers(1, &quadVBO);
-		glGenBuffers(1, &quadIBO);
-        glBindVertexArray(quadVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glGenVertexArrays(1, &quadVAO[lod]);
+        glGenBuffers(1, &quadVBO[lod]);
+		glGenBuffers(1, &quadIBO[lod]);
+        glBindVertexArray(quadVAO[lod]);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO[lod]);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float)*quadVertices.size(), quadVertices.data(), GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadIBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadIBO[lod]);
 	    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 		
         glEnableVertexAttribArray(0);
@@ -162,7 +163,7 @@ namespace GameMap
         
 
         glUseProgram(current_shader);
-        const float tile_size = 1.0f;
+        const float tile_size = 1.0f * (simplify + 1);
         float inv = 1/tile_size;
         //glm::vec3 = glm::fract(position);
         float x = position[0]-trunc(position[0]);
@@ -190,13 +191,16 @@ namespace GameMap
         m_material[1]->Assign(current_shader,4,"Albedo_1","Normal_1","Utility_1");
 
         
-        if(quadVAO == 0)
+        if(quadVAO[0] == 0)
         {
-            CreateMap();
+            for (size_t lod = 0; lod < 3; lod++)
+            {
+                CreateMap(lod);
+            }
         }
         
         
-        glBindVertexArray(quadVAO);
+        glBindVertexArray(quadVAO[simplify]);
         // glDrawElements(GL_TRIANGLES,      // mode
         // vert_count,    // count
         // GL_UNSIGNED_INT,   // type
@@ -209,15 +213,17 @@ namespace GameMap
         bool intersects = true;
         const std::vector<glm::vec2> &frustrum = camera.GetFrustrum2d();
         Collision::C_2d_BB bbox;
-        bbox.size = glm::vec2(m_mesh_size,m_mesh_size);
+        bbox.size = glm::vec2(m_mesh_size[simplify],m_mesh_size[simplify]);
 
-        for(int i_y =-15; i_y<15; i_y++)
+        int map_size = 15 / (simplify + 2);
+
+        for(int i_y =-map_size; i_y< map_size; i_y++)
         {
             index_z = i_y;
-            for(int i_x =-15; i_x<15; i_x++)
+            for(int i_x =-map_size; i_x< map_size; i_x++)
             {
                 index_x = i_x;
-                offset_position_vector = glm::vec4(-offset_x + m_mesh_size*index_x,-position[1],-offset_z - m_mesh_size*index_z,tile_size);
+                offset_position_vector = glm::vec4(-offset_x + m_mesh_size[simplify] *index_x,-position[1],-offset_z - m_mesh_size[simplify] *index_z,tile_size);
 
                 if(frustrum.size()>1)
                 {
@@ -228,7 +234,7 @@ namespace GameMap
                 if(intersects)
                 {
                     glUniform4fv(offset_position, 1, glm::value_ptr(offset_position_vector));
-                    glDrawElements(GL_TRIANGLES,vert_count,GL_UNSIGNED_INT,0);
+                    glDrawElements(GL_TRIANGLES,vert_count[simplify],GL_UNSIGNED_INT,0);
                 }
             }
         }

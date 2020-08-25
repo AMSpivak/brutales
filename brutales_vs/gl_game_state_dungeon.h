@@ -141,7 +141,6 @@ private:
     void DrawGlobalLight(const GLuint light_loc, const glLight &Light);
 
     void DrawDungeon(GLuint &current_shader,  std::shared_ptr<GlCharacter>hero, const GlScene::glCamera &camera);
-    void DrawHeightMap(GLuint current_shader, std::shared_ptr<GlCharacter>hero,const GlScene::glCamera &camera);
     
     void DrawLight(const glm::vec4 &light_pos_vector, glRenderTargetDeffered &render_target );
     void Draw2D(GLuint depth_map);
