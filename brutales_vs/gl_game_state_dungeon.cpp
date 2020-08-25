@@ -674,9 +674,6 @@ void GlGameStateDungeon::DrawDungeon(GLuint &current_shader,std::shared_ptr<GlCh
         object->Draw(scene,glm::translate(glm::mat4(), object->GetPosition() - hero_position));
     }
 
-    //scene.model_list.sort([](std::shared_ptr<glModel> a, std::shared_ptr<glModel> b) { return *a < *b; });
-
-
     for (auto model : scene.model_list) model->Draw(scene, EngineSettings::GetEngineSettings()->GetFrame());
 }
 
@@ -851,14 +848,14 @@ void GlGameStateDungeon::PrerenderLight(glLight &Light,std::shared_ptr<GlCharact
     glReadBuffer(GL_NONE);
 
     glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(1.1,4000.0);
+    glPolygonOffset(1.1,80000.0);
 
     glClear( GL_DEPTH_BUFFER_BIT);
     GLuint current_shader = m_shader_map["shadowmap"];
 
     DrawDungeon(current_shader,hero,Light);
 
-    m_heightmap.Draw(m_shader_map["simple_heightmap"],hero_position,Light);
+    m_heightmap.Draw(m_shader_map["simple_heightmap"],hero_position,Light,2);
 
     glDisable(GL_POLYGON_OFFSET_FILL);
 }
@@ -870,11 +867,6 @@ void GlGameStateDungeon::DrawGlobalLight(const GLuint light_loc, const glLight &
 		glUniformMatrix4fv(light_loc, 1, GL_FALSE, glm::value_ptr(Light.CameraMatrix()));
 
 		renderQuad();
-}
-
-void GlGameStateDungeon::DrawHeightMap(GLuint current_shader, std::shared_ptr<GlCharacter>hero,const GlScene::glCamera &camera)
-{
-    m_heightmap.Draw(current_shader,hero_position,camera);
 }
 
 
@@ -1251,7 +1243,7 @@ void GlGameStateDungeon::FitObjects(int steps, float accuracy)
         {
             if(!(*it_object1)->ghost)
             {  
-                for(auto it_object2 = it_object1 ;it_object2 != dungeon_objects.end();it_object2++)
+                for(auto it_object2 = std::next(it_object1) ;it_object2 != dungeon_objects.end();it_object2++)
                 {  
                     if(!(*it_object2)->ghost)
                     {
