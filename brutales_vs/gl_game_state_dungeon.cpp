@@ -667,10 +667,30 @@ void GlGameStateDungeon::DrawDungeon(GLuint &current_shader,std::shared_ptr<GlCh
     scene.render_camera = &camera;       
     scene.zero_offset = hero_position;
 
-
+    auto point_ldf = glm::vec3(camera.GetFrustrumPoint(GlScene::FrustrumPoints::FarLD)) + hero_position;
+    auto point_run = glm::vec3(camera.GetFrustrumPoint(GlScene::FrustrumPoints::NearRU)) + hero_position;
     
     for(auto object : dungeon_objects)
     {
+        auto pos = object->GetPosition();
+        auto pos_ldf = pos - point_ldf;
+        if(glm::dot(pos_ldf, camera.GetFrustrumNormal(GlScene::FrustrumNormals::Far)) > object->radius * 2.0f)
+            continue;
+        if (glm::dot(pos_ldf, camera.GetFrustrumNormal(GlScene::FrustrumNormals::Left)) > object->radius * 2.0f)
+            continue;
+        if (glm::dot(pos_ldf, camera.GetFrustrumNormal(GlScene::FrustrumNormals::Down)) > object->radius * 2.0f)
+            continue;
+
+
+        auto pos_run = pos - point_run;
+
+        if (glm::dot(pos_run, camera.GetFrustrumNormal(GlScene::FrustrumNormals::Near)) > object->radius * 2.0f)
+            continue;
+        if (glm::dot(pos_run, camera.GetFrustrumNormal(GlScene::FrustrumNormals::Right)) > object->radius * 2.0f)
+            continue;
+        if (glm::dot(pos_run, camera.GetFrustrumNormal(GlScene::FrustrumNormals::Up)) > object->radius * 2.0f)
+            continue;
+
         object->Draw(scene,glm::translate(glm::mat4(), object->GetPosition() - hero_position));
     }
 
