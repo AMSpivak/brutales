@@ -39,7 +39,8 @@ void main()
 	texelSize = 1.0 / textureSize(NormalMap, 0);
 
 	Diffuse.w = 1.0;
-	vec4 texColor = Diffuse*vec4(Light.xyz,1.0)+ vec4(Spec.xyz,0.0);
+	//vec4 texColor = Diffuse*vec4(Light.xyz,1.0)+ vec4(Spec.xyz,0.0);
+	vec4 texColor = vec4(Light.xyz,1.0)+ vec4(Spec.xyz,0.0);
 
 	
 

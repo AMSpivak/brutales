@@ -429,5 +429,8 @@
     <None Include="shaders\vertex1.vs">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="shaders\skybox_cube.fs">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

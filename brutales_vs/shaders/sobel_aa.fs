@@ -28,7 +28,10 @@ void main()
 
 
 	Diffuse.w = 1.0;
-	vec4 texColor = Diffuse*vec4(Light.xyz + vec3(0.03),1.0)+ vec4(Spec.xyz,0.0);
+	//Diffuse = vec4(1.0);
+	//vec4 texColor = Diffuse*vec4(Light.xyz + vec3(0.03),1.0)+ vec4(Spec.xyz,0.0);
+    vec4 texColor = Diffuse*vec4(Light.xyz,1.0)+ vec4(Spec.xyz,0.0);
+	//vec4 texColor = vec4(Light.xyz,1.0)+ vec4(Spec.xyz,0.0);
 
 	vec3 color = texColor.rgb / (texColor.rgb + vec3(1.0));
     color = pow(color, vec3(1.0/2.2));  

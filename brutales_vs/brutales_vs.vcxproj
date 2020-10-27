@@ -276,6 +276,7 @@
     <None Include="shaders\sky.vs" />
     <None Include="shaders\skybox.fs" />
     <None Include="shaders\skybox.vs" />
+    <None Include="shaders\skybox_cube.fs" />
     <None Include="shaders\sobel.fs" />
     <None Include="shaders\sobel_aa.fs" />
     <None Include="shaders\sobel_aa_.fs" />

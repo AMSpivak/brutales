@@ -51,6 +51,8 @@ public:
 private:
 
     bool m_ready;
+    glRenderTargetCubicSimple simple_sky;
+
     std::weak_ptr<IGlGameState> return_state;
 
     irrklang::ISoundEngine  *m_sound_engine;

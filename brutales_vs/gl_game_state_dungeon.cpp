@@ -127,7 +127,7 @@ GlGameStateDungeon::GlGameStateDungeon(std::map<const std::string,GLuint> &shade
                                                         ,m_sound_engine(sound_engine)
                                                         ,m_ready(false)
 {
-
+    simple_sky.InitBuffer(512);
     hero->SetBrain(Character::CreateBrain(Character::BrainTypes::Hero,[this](GlCharacter & character){ControlUnit(character);}));
 
     glClearColor(0.0f,0.0f,0.0f,1.0f);
@@ -672,7 +672,7 @@ void GlGameStateDungeon::DrawDungeon(GLuint &current_shader,std::shared_ptr<GlCh
     
     for(auto object : dungeon_objects)
     {
-        auto pos = object->GetPosition();
+        const auto& pos = object->GetPosition();
         auto pos_ldf = pos - point_ldf;
         if(glm::dot(pos_ldf, camera.GetFrustrumNormal(GlScene::FrustrumNormals::Far)) > object->radius * 2.0f)
             continue;
@@ -1032,6 +1032,10 @@ void GlGameStateDungeon::Draw()
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, render_target.PositionMap);
 
+        glUniform1i(glGetUniformLocation(current_shader, "skybox"), 4);
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, simple_sky.AlbedoMap);
+
 
 		GLuint light_dir  = glGetUniformLocation(current_shader, "LightDir");
 		glUniform3fv(light_dir, 1, glm::value_ptr(light_dir_vector));
@@ -1052,7 +1056,7 @@ void GlGameStateDungeon::Draw()
         float mix_yellow = glm::smoothstep(0.15f, 0.45f, sun_angle);
         float mix_red = glm::smoothstep(0.1f, 0.35f, sun_angle);
         day_light = (yellow_light * (1.0f - mix_yellow) + day_light * mix_yellow);
-        actual_light_color_vector = (red_light * (1.0f - mix_red ) + day_light * mix_red) * light_color_vector;// glm::vec3(light_color_vector[0] * r, light_color_vector[1] * g, light_color_vector[2] * b);
+        actual_light_color_vector = 0.1f*((red_light * (1.0f - mix_red ) + day_light * mix_red) * light_color_vector);// glm::vec3(light_color_vector[0] * r, light_color_vector[1] * g, light_color_vector[2] * b);
 
         sun_angle = glm::clamp(sun_angle + 0.05f, 0.0f, 1.0f);
         float r = glm::smoothstep(0.0f, 0.2f, sun_angle);
@@ -1086,13 +1090,15 @@ void GlGameStateDungeon::Draw()
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         {// sky
+            //prerender
             
-            current_shader = m_shader_map["skybox"];
+
+
+            current_shader = m_shader_map["pre_skybox"];
     		glUseProgram(current_shader);
             glm::mat4 model_m = glm::inverse(Camera.CameraMatrix());
             cameraLoc  = glGetUniformLocation(current_shader, "camera");
 		    //glUniformMatrix4fv(cameraLoc, 1, GL_FALSE, glm::value_ptr(Camera.CameraMatrix()));
-		    glUniformMatrix4fv(cameraLoc, 1, GL_FALSE, glm::value_ptr(model_m));
 
             light_dir  = glGetUniformLocation(current_shader, "LightDir");
 		    glUniform3fv(light_dir, 1, glm::value_ptr(light_dir_vector));
@@ -1100,9 +1106,41 @@ void GlGameStateDungeon::Draw()
        
             GLuint light_color  = glGetUniformLocation(current_shader, "LightColor");
             glUniform3fv(light_color, 1, glm::value_ptr(actual_light_color_vector));
+            glm::vec3 skycolor{0.6f,0.6f,0.8f};
+            skycolor *= 2.0f;
+            GLuint sky_color = glGetUniformLocation(current_shader, "SkyColor");
+            glUniform3fv(sky_color, 1, glm::value_ptr(skycolor));
 
             glActiveTexture(GL_TEXTURE0);
             //glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.get()->m_texture);
+            
+            simple_sky.set();
+
+            for (unsigned int i = 0; i < 6; ++i)
+            {
+                auto view = simple_sky.SwitchSide(i);
+                glUniformMatrix4fv(cameraLoc, 1, GL_FALSE, glm::value_ptr(*view));
+
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                renderQuad();
+            }
+            //glBindTexture(GL_TEXTURE_CUBE_MAP, simple_sky.AlbedoMap);
+
+            glGenerateTextureMipmap(simple_sky.AlbedoMap);
+
+            //current_shader = m_shader_map["skybox"];
+            current_shader = m_shader_map["pre_skybox"];
+            glUseProgram(current_shader);
+            cameraLoc = glGetUniformLocation(current_shader, "camera");
+            
+            //glActiveTexture(GL_TEXTURE0);
+            //glBindTexture(GL_TEXTURE_CUBE_MAP, simple_sky.AlbedoMap);
+            glUniformMatrix4fv(cameraLoc, 1, GL_FALSE, glm::value_ptr(model_m));
+            skycolor = {0.0f,0.6f,1.0f};
+            glUniform3fv(sky_color, 1, glm::value_ptr(skycolor));
+            postprocess_render_target.set();
+
+            
             renderQuad();
             
 
@@ -1667,7 +1705,7 @@ void GlGameStateDungeon::ProcessInputsCamera(std::map <int, bool> &inputs,float 
         
         if(!simple_screen)
         {
-            light_position = glm::vec3(light_distance * glm::sin(glm::radians(sun_angle)), light_distance * glm::cos(glm::radians(sun_angle)),  light_offset);
+            light_position = glm::vec3(light_distance * glm::sin(glm::radians(sun_angle)), light_distance * glm::cos(glm::radians(sun_angle)), light_offset);
             light_dir_vector = glm::normalize(light_position);
             Light.SetCameraLocation(light_position,glm::vec3(0.0f, 0.0f, 0.0f), light_orientation);
         }

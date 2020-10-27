@@ -65,4 +65,25 @@ private:
 	void GenerateBuffers();
 
 };
+
+class glRenderTargetCubicSimple
+{
+
+public:
+	GLuint AlbedoMap = 0;
+	virtual void InitBuffer(unsigned int size);
+
+	virtual ~glRenderTargetCubicSimple();
+
+	void set();
+	const glm::mat4* const SwitchSide(int side_num);
+
+protected:
+
+	virtual void GenerateBuffers();
+	unsigned int m_size = 0;
+	GLuint FBO = 0;
+	//private:
+
+};
 #endif

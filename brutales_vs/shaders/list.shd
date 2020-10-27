@@ -6,7 +6,8 @@ fullscreen shaders/dbg.vs shaders/sprite.fs
 sprite2d shaders/sprite2d.vs shaders/sprite2d.fs
 simple shaders/simple_vert.vs shaders/simple_frag.fs
 sprite2dsimple shaders/sprite2dsimple.vs shaders/sprite2dsimple.fs
-skybox shaders/skybox.vs shaders/skybox.fs
+pre_skybox shaders/skybox.vs shaders/skybox.fs
+skybox shaders/skybox.vs shaders/skybox_cube.fs
 deffered shaders/dbg.vs shaders/deffered.fs
 deffered_global shaders/dbg.vs shaders/deffered_global.fs
 deffered_simple shaders/dbg.vs shaders/deff_simple.fs
