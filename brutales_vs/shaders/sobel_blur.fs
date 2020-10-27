@@ -31,16 +31,21 @@ void main()
 	float dif12 = 0.5*(dif1+dif2);
 	float dif34 = 0.5*(dif3+dif4);
 
-	float d_depth = abs(dif1 - dif12)+abs(dif2 - dif12)+abs(dif3 - dif34)+abs(dif4 - dif34);
+	//float d_depth =0.125 * (abs(dif1 - dif12)+abs(dif2 - dif12)+abs(dif3 - dif34)+abs(dif4 - dif34));
+	float d_depth =0.125 * (abs(dif1)+abs(dif2)+abs(dif3)+abs(dif4));
 
-	d_depth /= d_depth +0.0001;
+	//d_depth /= d_depth + 0.0001;
 
 	
-	float blur = 1.0 - clamp(d_depth,0.0,1.0);
+	//float blur = 1.0 - clamp(d_depth,0.0,1.0);
+	float blur = clamp(d_depth,0.0,1.0);
 	//blur = min(blur1,blur);
 
-	float edge_blur = 0.6 + 0.4*smoothstep(0.0,0.4, blur*blur);
+	//float edge_blur = 0.6 + 0.4*smoothstep(0.0,0.4, blur*blur);
+	float edge_blur =smoothstep(0.999,1.0, 1.0 - blur);
 
 	FragColor = vec4((edge_blur*Diffuse.xyz + (1.0 - edge_blur)*Diffuse_blur.xyz), 1.0);
+	//FragColor = vec4((edge_blur*vec3(1.0,0.0,0.0) + (1.0 - edge_blur)*vec3(0.0,0.0,1.0)), 1.0);
+	//FragColor = vec4((edge_blur*vec3(1.0,0.0,0.0)), 1.0);
 	//FragColor = vec4(Diffuse.xyz, 1.0);
 }
