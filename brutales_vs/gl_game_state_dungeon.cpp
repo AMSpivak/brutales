@@ -1203,16 +1203,22 @@ void GlGameStateDungeon::Draw()
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, postprocess_render_target.AlbedoMap);
+    //glBindTexture(GL_TEXTURE_2D, render_target.depthMap);
+
+    //glBindTexture(GL_TEXTURE_2D, postprocess_render_target.AlbedoMap);
 	//glBindTexture(GL_TEXTURE_2D, render_target.NormalMap);
 
     glUniform1i(glGetUniformLocation(current_shader, "blurMap"), 1);
     glActiveTexture(GL_TEXTURE0+1);
-    //glBindTexture(GL_TEXTURE_2D, buffer2_render_target.AlbedoMap);
-	glBindTexture(GL_TEXTURE_2D, render_target.NormalMap);
+    //glBindTexture(GL_TEXTURE_2D, render_target.depthMap);
+
+    glBindTexture(GL_TEXTURE_2D, buffer2_render_target.AlbedoMap);
+	//glBindTexture(GL_TEXTURE_2D, render_target.NormalMap);
 
 
     glUniform1i(glGetUniformLocation(current_shader, "DepthMap"), 2);
     glActiveTexture(GL_TEXTURE0+2);
+    //glBindTexture(GL_TEXTURE_2D, render_target.depthMap);
     glBindTexture(GL_TEXTURE_2D, render_target.depthMap);
 
     renderQuad();/**/
