@@ -44,33 +44,36 @@ void glModel::Draw(GlScene::Scene &scene, Animation &animation, int now_frame)
 {
 	Draw(scene, animation,now_frame,draw_matrix);
 }
-void glModel::Draw(GlScene::Scene &scene, Animation &animation, int now_frame,const glm::mat4 &matrix)
+void glModel::Draw(GlScene::Scene& scene, Animation& animation, int now_frame, const glm::mat4& matrix)
 {
-	if(m_shader && (scene.render_shader != m_shader) )
+	if(!scene.LockedShader)
 	{
-		
-		scene.render_shader = m_shader;
-		glUseProgram(scene.render_shader);
-		unsigned int cameraLoc  = glGetUniformLocation(scene.render_shader, "camera");
-		glUniformMatrix4fv(cameraLoc, 1, GL_FALSE, glm::value_ptr(scene.render_camera->CameraMatrix()));
-
-		m_material->Assign(scene.render_shader, 0,0, "NormalTexture","UtilityTexture");
-		scene.material = m_material;
-	}
-	else
-	{
-		if(auto material = scene.material.lock())
+		if (m_shader && (scene.render_shader != m_shader))
 		{
-			if (!(*m_material == *material))
+
+			scene.render_shader = m_shader;
+			glUseProgram(scene.render_shader);
+			unsigned int cameraLoc = glGetUniformLocation(scene.render_shader, "camera");
+			glUniformMatrix4fv(cameraLoc, 1, GL_FALSE, glm::value_ptr(scene.render_camera->CameraMatrix()));
+
+			m_material->Assign(scene.render_shader, 0, 0, "NormalTexture", "UtilityTexture");
+			scene.material = m_material;
+		}
+		else
+		{
+			if (auto material = scene.material.lock())
+			{
+				if (!(*m_material == *material))
+				{
+					m_material->Assign(scene.render_shader, 0, 0, "NormalTexture", "UtilityTexture");
+					scene.material = m_material;
+				}
+			}
+			else
 			{
 				m_material->Assign(scene.render_shader, 0, 0, "NormalTexture", "UtilityTexture");
 				scene.material = m_material;
 			}
-		}
-		else
-		{
-			m_material->Assign(scene.render_shader, 0, 0, "NormalTexture", "UtilityTexture");
-			scene.material = m_material;
 		}
 	}
 	

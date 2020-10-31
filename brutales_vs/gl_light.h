@@ -8,11 +8,20 @@ class glLight : public GlScene::glCamera
 	//const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 	const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 	public:
-	GLuint depthMap;
+		GLuint depthMap;
+		GLuint ExpDepthMap;
 	void RecalculateFrustrum(){};
 
 	glLight()
 	{
+		glGenTextures(1, &ExpDepthMap);
+		glBindTexture(GL_TEXTURE_2D, ExpDepthMap);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RED, GL_FLOAT, NULL);
+
 		glGenFramebuffers(1, &depthMapFBO);
 		glGenTextures(1, &depthMap);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
@@ -36,14 +45,16 @@ class glLight : public GlScene::glCamera
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, ExpDepthMap, 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
-		glDrawBuffer(GL_NONE);
-		glReadBuffer(GL_NONE);
+		//glDrawBuffer(GL_NONE);
+		//glReadBuffer(GL_NONE);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
+
 	~glLight()
 	{
+		glDeleteTextures(1, &ExpDepthMap);
 		glDeleteTextures(1,&depthMap);
 		glDeleteBuffers(1, &depthMapFBO);
 	}

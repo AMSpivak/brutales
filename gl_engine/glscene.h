@@ -22,6 +22,7 @@ namespace GlScene
 {
     struct Scene
     {
+        bool LockedShader = false;
         GLuint render_shader = 0;
         glm::vec3 zero_offset;
         const glCamera * render_camera = nullptr;

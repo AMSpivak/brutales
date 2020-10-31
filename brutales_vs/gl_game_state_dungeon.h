@@ -142,7 +142,7 @@ private:
     void PrerenderLight(glLight &Light,std::shared_ptr<GlCharacter>hero);
     void DrawGlobalLight(const GLuint light_loc, const glLight &Light);
 
-    void DrawDungeon(GLuint &current_shader,  std::shared_ptr<GlCharacter>hero, const GlScene::glCamera &camera);
+    void DrawDungeon(GLuint &current_shader,  std::shared_ptr<GlCharacter>hero, const GlScene::glCamera &camera, bool locked_shader);
     
     void DrawLight(const glm::vec4 &light_pos_vector, glRenderTargetDeffered &render_target );
     void Draw2D(GLuint depth_map);

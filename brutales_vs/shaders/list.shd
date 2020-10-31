@@ -20,4 +20,4 @@ deff_1st_pass_terrain shaders/vert_norm.vs shaders/frag_norm_terrain.fs
 deff_1st_pass_heght shaders/vert_norm_height.vs shaders/frag_norm_height.fs
 deff_heght shaders/norm_height.vs shaders/normals.fs shaders/norm_height.gs
 luminocity shaders/dbg.vs shaders/luminocity.fs
-simple_heightmap shaders/vert_height_simple.vs shaders/frag_height_simple.fs
+simple_heightmap shaders/vert_height_simple.vs shaders/frag1.fs
