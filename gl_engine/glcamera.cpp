@@ -50,8 +50,13 @@ namespace GlScene
         Frustrum[static_cast<int>(FrustrumPoints::FarLU)] = inverse * glm::vec4(-1.0f,1.0f,1.0f,1.0f);
         Frustrum[static_cast<int>(FrustrumPoints::FarRU)] = inverse * glm::vec4(1.0f,1.0f,1.0f,1.0f);
         Frustrum[static_cast<int>(FrustrumPoints::FarRD)] = inverse * glm::vec4(1.0f,-1.0f,1.0f,1.0f);
+		const float first_level = 0.7f;
+		Frustrum[static_cast<int>(FrustrumPoints::FirstLD)] = inverse * glm::vec4(-1.0f, -1.0f, first_level, 1.0f);
+		Frustrum[static_cast<int>(FrustrumPoints::FirstLU)] = inverse * glm::vec4(-1.0f, 1.0f, first_level, 1.0f);
+		Frustrum[static_cast<int>(FrustrumPoints::FirstRU)] = inverse * glm::vec4(1.0f, 1.0f, first_level, 1.0f);
+		Frustrum[static_cast<int>(FrustrumPoints::FirstRD)] = inverse * glm::vec4(1.0f, -1.0f, first_level, 1.0f);
 
-		for(int i = 0; i < 8; i++)
+		for(int i = 0; i < static_cast<int>(FrustrumPoints::FrustrumPointsCount); i++)
 		{
 			Frustrum[i]/=(Frustrum[i])[3];
 		}
@@ -149,6 +154,7 @@ namespace GlScene
 
 	void glCamera::SetCameraLens(float FOV, float aspect, float near, float far)
 	{
+
 		projection = glm::perspective(glm::radians(FOV), aspect, near, far);
 		full_matrix =  projection * view;
 	}

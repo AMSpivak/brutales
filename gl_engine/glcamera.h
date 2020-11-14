@@ -8,14 +8,14 @@
 
 namespace GlScene
 {
-	enum class FrustrumPoints { NearLD = 0, NearLU, NearRU, NearRD, FarLD, FarLU, FarRU, FarRD };
+	enum class FrustrumPoints { NearLD = 0, NearLU, NearRU, NearRD, FarLD, FarLU, FarRU, FarRD, FirstLD, FirstLU, FirstRU, FirstRD, FrustrumPointsCount};
 	enum class FrustrumNormals {Near = 0, Far, Up, Down, Left, Right};
 	class glCamera
 	{
 		glm::mat4 view;
 		glm::mat4 projection;
 		glm::mat4 full_matrix;
-		glm::vec4 Frustrum[8];
+		glm::vec4 Frustrum[static_cast<unsigned int>(FrustrumPoints::FrustrumPointsCount)];
 		glm::vec3 Normals[6];
 		glm::vec2 m_map_direction;
 		std::vector<glm::vec2> Frustrum_2d;

@@ -11,6 +11,7 @@
 #include <tuple>
 #include <algorithm>
 #include <set>
+#include <array>
 #include <math.h>  
 #include "math3d.h"  
 //#define GLM_SWIZZLE_XYZW
@@ -701,32 +702,32 @@ void GlGameStateDungeon::DrawDungeon(GLuint &current_shader,std::shared_ptr<GlCh
 void DrawSimpleLight(const glm::vec4 &light_pos_vector,const glm::vec3 &light_color_vector,const glm::vec3 &camera_position,GLuint current_shader,glRenderTargetDeffered &render_target)
 {
     glClear(GL_DEPTH_BUFFER_BIT);
-        //current_shader = m_shader_map["deffered_simple"];
-        glUseProgram(current_shader);
+    //current_shader = m_shader_map["deffered_simple"];
+    glUseProgram(current_shader);
 
-		glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, render_target.AlbedoMap);
+	glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, render_target.AlbedoMap);
 
-		glUniform1i(glGetUniformLocation(current_shader, "NormalMap"), 1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, render_target.NormalMap);
+	glUniform1i(glGetUniformLocation(current_shader, "NormalMap"), 1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, render_target.NormalMap);
 
-		glUniform1i(glGetUniformLocation(current_shader, "PositionMap"), 2);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, render_target.PositionMap);
+	glUniform1i(glGetUniformLocation(current_shader, "PositionMap"), 2);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, render_target.PositionMap);
 
-        GLuint view_pos  = glGetUniformLocation(current_shader, "viewPos");
-		glUniform3fv(view_pos, 1, glm::value_ptr(camera_position));
+    GLuint view_pos  = glGetUniformLocation(current_shader, "viewPos");
+	glUniform3fv(view_pos, 1, glm::value_ptr(camera_position));
 
 
-		GLuint light_pos  = glGetUniformLocation(current_shader, "LightLocation");
-		glUniform4fv(light_pos, 1, glm::value_ptr(light_pos_vector));
+	GLuint light_pos  = glGetUniformLocation(current_shader, "LightLocation");
+	glUniform4fv(light_pos, 1, glm::value_ptr(light_pos_vector));
 
         
-        GLuint light_color  = glGetUniformLocation(current_shader, "LightColor");
-        glUniform3fv(light_color, 1, glm::value_ptr(light_color_vector));
+    GLuint light_color  = glGetUniformLocation(current_shader, "LightColor");
+    glUniform3fv(light_color, 1, glm::value_ptr(light_color_vector));
 
-        renderQuad();
+    renderQuad();
 }
 
 void GlGameStateDungeon::DrawLight(const glm::vec4 &light_pos_vector, glRenderTargetDeffered &render_target )
@@ -1716,7 +1717,93 @@ void GlGameStateDungeon::ProcessInputsCamera(std::map <int, bool> &inputs,float 
         {
             light_position = glm::vec3(light_distance * glm::sin(glm::radians(sun_angle)), light_distance * glm::cos(glm::radians(sun_angle)), light_offset);
             light_dir_vector = glm::normalize(light_position);
+
+
+
+            const std::array<GlScene::FrustrumPoints, static_cast<size_t>(12/*GlScene::FrustrumPoints::FrustrumPointsCount*/)> cam_point_indexes { 
+                GlScene::FrustrumPoints::FarLD,
+                GlScene::FrustrumPoints::FarLU,
+                GlScene::FrustrumPoints::FarRD,
+                GlScene::FrustrumPoints::FarRU,
+                GlScene::FrustrumPoints::FirstLD,
+                GlScene::FrustrumPoints::FirstLU,
+                GlScene::FrustrumPoints::FirstRD,
+                GlScene::FrustrumPoints::FirstRU,
+                GlScene::FrustrumPoints::NearLD,
+                GlScene::FrustrumPoints::NearLU,
+                GlScene::FrustrumPoints::NearRD,
+                GlScene::FrustrumPoints::NearRU
+            };
+
+            auto view = glm::lookAt(light_position, glm::vec3(0.0f, 0.0f, 0.0f), light_orientation);
+
+            std::array < glm::vec4, 12>points;
+            //auto iter_points = points.begin();
+            for(auto point_index : cam_point_indexes)
+            {
+                //*iter_points = Camera.GetFrustrumPoint(point_index);
+                points[static_cast<int>(point_index)] = (Camera.GetFrustrumPoint(point_index));
+                //++iter_points;
+            }
+            /*
+            const std::array<GlScene::FrustrumPoints, static_cast<size_t>(8)> near_point_indexes{
+                GlScene::FrustrumPoints::FirstLD,
+                GlScene::FrustrumPoints::FirstLU,
+                GlScene::FrustrumPoints::FirstRD,
+                GlScene::FrustrumPoints::FirstRU,
+                GlScene::FrustrumPoints::NearLD,
+                GlScene::FrustrumPoints::NearLU,
+                GlScene::FrustrumPoints::NearRD,
+                GlScene::FrustrumPoints::NearRU
+            };*/
+
+            const float range = 0.1f;
+            for(int i = 0; i < 4; i++)
+            {
+                points[static_cast<int>(GlScene::FrustrumPoints::FirstLD) + i] = (range * points[static_cast<int>(GlScene::FrustrumPoints::FarLD) + i] + (1.0f - range) * points[static_cast<int>(GlScene::FrustrumPoints::NearLD) + i]);
+            }
+
+            for (auto point_index : cam_point_indexes)
+            {
+                //*iter_points = Camera.GetFrustrumPoint(point_index);
+                points[static_cast<int>(point_index)] = view * (points[static_cast<int>(point_index)] - glm::vec4(light_position, 0));
+                //++iter_points;
+            }
+
+            const std::array<GlScene::FrustrumPoints, static_cast<size_t>(8/*GlScene::FrustrumPoints::FrustrumPointsCount*/)> near_point_indexes{
+                GlScene::FrustrumPoints::FirstLD,
+                GlScene::FrustrumPoints::FirstLU,
+                GlScene::FrustrumPoints::FirstRD,
+                GlScene::FrustrumPoints::FirstRU,
+                GlScene::FrustrumPoints::NearLD,
+                GlScene::FrustrumPoints::NearLU,
+                GlScene::FrustrumPoints::NearRD,
+                GlScene::FrustrumPoints::NearRU
+            };
+
+            float min_x = 1000;
+            float max_x = -1000;
+            float min_y = 1000;
+            float max_y = -1000;
+            float min_z = 3000;
+            for (auto point_index : near_point_indexes)
+            {
+                float v = points[static_cast<int>(point_index)].x;
+                min_x = std::min(min_x, v);
+                max_x = std::max(max_x, v);
+                v = points[static_cast<int>(point_index)].y;
+                min_y = std::min(min_y, v);
+                max_y = std::max(max_y, v);
+                v = points[static_cast<int>(point_index)].z;
+                min_z = std::min(min_z, v);
+            }
+
+
+            std::cout << min_x << " " << max_x << " " << min_y << " " << max_y << " " << min_z << "\n";
+             
             Light.SetCameraLocation(light_position,glm::vec3(0.0f, 0.0f, 0.0f), light_orientation);
+            Light.SetCameraLens_Orto(min_x, max_x, min_y, max_y, 1.0f, -min_z);
+
         }
         else
         {
