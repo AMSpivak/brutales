@@ -13,6 +13,6 @@ void main()
     //v_Position = v_Position * 0.5 + 0.5;
 
     const float esm_factor = 10.00;
-    ExpShadow = exp(esm_factor * v_Position.z);
-    //ExpShadow = v_Position.z;
+    //ExpShadow = exp(esm_factor * v_Position.z);
+    ExpShadow = v_Position.z;
 }

@@ -36,17 +36,17 @@ float ShadowCalculation(vec4 PosLight)
     float abs_y =abs(fragPosLightSpace.y);
 
     if(abs_x>1.0||abs_y>1.0)
-        return 1.0;
-
-
+        discard;
+        //return 1.0;
+    
     projCoords = projCoords * 0.5 + 0.5;
     
     
     const float esm_bias   = 0.0;
     const float esm_factor = 10.0;
     float occluder = texture(shadowMap,projCoords.xy).r;
-    float receiver = exp(esm_bias - esm_factor * depth);
-    float shadowing   = clamp(occluder * receiver, 0.3, 1.0);
+    float receiver = depth;
+    float shadowing   = 0.4f + 0.6f * smoothstep(-0.01, -0.005, occluder - receiver);
     return shadowing;
 
 }

@@ -15,7 +15,10 @@
 #include "gl2d_image.h"
 #include "map_heightmap.h"
 #include <list>
+#include <array>
 #include <sound/irrKlang.h>
+
+constexpr size_t shadow_cascades = 4;
 
 class GlGameStateDungeon: public IGlGameState
 {
@@ -94,7 +97,7 @@ private:
     
     bool m_antialiase_enabled;
     std::string m_start_place;
-    glLight Light,Light2;
+    std::array<glLight, shadow_cascades> Lights;
     float light_angle;
     float light_radius;
     float camera_distance;
@@ -139,8 +142,8 @@ private:
     void LoadMapEvent(std::vector<std::string> &lines);
 
     void DrawGlobalCascade(const glRenderTargetDeffered &render_target);
-    void PrerenderLight(glLight &Light,std::shared_ptr<GlCharacter>hero);
-    void DrawGlobalLight(const GLuint light_loc, const glLight &Light);
+    void PrerenderLight(glLight &Lights,std::shared_ptr<GlCharacter>hero);
+    void DrawGlobalLight(const GLuint light_loc, const glLight &Lights);
 
     void DrawDungeon(GLuint &current_shader,  std::shared_ptr<GlCharacter>hero, const GlScene::glCamera &camera, bool locked_shader);
     

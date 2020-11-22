@@ -28,5 +28,5 @@ void main()
 
 
 
-        gl_Position = v_Position;
+    gl_Position = v_Position;
 }
