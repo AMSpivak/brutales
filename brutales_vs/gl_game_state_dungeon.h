@@ -142,7 +142,7 @@ private:
     void LoadMapEvent(std::vector<std::string> &lines);
 
     void DrawGlobalCascade(const glRenderTargetDeffered &render_target);
-    void PrerenderLight(glLight &Lights,std::shared_ptr<GlCharacter>hero);
+    void PrerenderLight(glLight &Lights,std::shared_ptr<GlCharacter>hero, size_t frustrum_sector);
     void DrawGlobalLight(const GLuint light_loc, const glLight &Lights);
 
     void DrawDungeon(GLuint &current_shader,  std::shared_ptr<GlCharacter>hero, const GlScene::glCamera &camera, bool locked_shader);

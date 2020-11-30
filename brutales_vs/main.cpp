@@ -143,9 +143,9 @@ GLFWwindow* CreateOpenGlWindow(bool fullscreen, const char * title)
 	//Настройка GLFW
 	//Задается минимальная требуемая версия OpenGL.
 	//Мажорная
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	//Минорная
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 	/*
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		//Минорная

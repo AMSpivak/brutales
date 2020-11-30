@@ -1,4 +1,4 @@
-#version 330 core
+#version 400 core
 
 #define M_PI 3.1415926535897932384626433832795
 
@@ -32,21 +32,33 @@ float ShadowCalculation(vec4 PosLight)
     vec4 fragPosLightSpace = lightSpaceMatrix * PosLight;
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     float depth = projCoords.z;
-    float abs_x =abs(fragPosLightSpace.x);
-    float abs_y =abs(fragPosLightSpace.y);
+    float abs_x =abs(projCoords.x);
+    float abs_y =abs(projCoords.y);
+    float abs_z =depth;
 
     if(abs_x>1.0||abs_y>1.0)
+        discard;
+    if(abs_z>1.0)
         discard;
         //return 1.0;
     
     projCoords = projCoords * 0.5 + 0.5;
-    
-    
-    const float esm_bias   = 0.0;
-    const float esm_factor = 10.0;
-    float occluder = texture(shadowMap,projCoords.xy).r;
-    float receiver = depth;
-    float shadowing   = 0.4f + 0.6f * smoothstep(-0.01, -0.005, occluder - receiver);
+    depth = projCoords.z;
+
+    float bias = 0.0005;
+    //float occluder = texture(shadowMap,projCoords.xy).r;
+    vec4 occluder = textureGather(shadowMap,projCoords.xy);
+    //vec2 min_v = min(occluder.xy,occluder.zw);
+    //float min_f = bias + min(min_v.x,min_v.y);
+    //vec2 max_v = max(occluder.xy,occluder.zw);
+    //float max_f = bias + max(max_v.x,max_v.y);
+    //float shdw = 1.0 - smoothstep(min_f,max_f,depth);
+    vec4 receiver = vec4(depth);
+    vec4 weight = vec4(0.25);
+    //vec4 sh = smoothstep(vec4(-0.01), vec4(-0.005), occluder - receiver);
+    vec4 sh = step(vec4(-bias), occluder - receiver);
+    float shdw = dot(sh,weight);
+    float shadowing   = shdw;
     return shadowing;
 
 }
@@ -114,6 +126,8 @@ void main()
 
         
         float shadow_res = (ShadowCalculation(vec4(FragPos.xyz,1.0)));
+        shadow_res = min(max(0,norm_l),shadow_res);
+        shadow_res = 0.4f + 0.6f * shadow_res;
         //shadow_res = mix(1.0,shadow_res,LightColor.w );
 
         //vec3 numerator    = D * G * shlick;
@@ -138,6 +152,8 @@ void main()
         //shadow_res = 1.0f;
         vec3 Diff_color = (shadow_res) * diffuse_c;
         //vec3 Diff_color = diffuse_c;
+        
+        gAlbedoSpec =shadow_res * LightColor;//vec4(Diff_color,1.0);
         gAlbedoSpec =vec4(Diff_color,1.0);
         //gAlbedoSpec =vec4(roughness,roughness,roughness,1.0);
         //gAlbedoSpec =vec4(1,1,1,1.0);

@@ -860,7 +860,7 @@ void GlGameStateDungeon::Draw2D(GLuint depth_map)
     }
 
 }
-void GlGameStateDungeon::PrerenderLight(glLight& light, std::shared_ptr<GlCharacter>hero)
+void GlGameStateDungeon::PrerenderLight(glLight& light, std::shared_ptr<GlCharacter>hero, size_t frustrum_sector)
 {
     if (simple_screen)
         return;
@@ -870,9 +870,9 @@ void GlGameStateDungeon::PrerenderLight(glLight& light, std::shared_ptr<GlCharac
         light.SetLigtRender();
         //glDrawBuffer(GL_NONE);
         //glReadBuffer(GL_NONE);
-
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glEnable(GL_POLYGON_OFFSET_FILL);
-        glPolygonOffset(1.1, 80000.0);
+        glPolygonOffset(1.1* frustrum_sector, 80000.0);
 
         glClear(GL_DEPTH_BUFFER_BIT);
         GLuint current_shader = m_shader_map["shadowmap"];
@@ -881,9 +881,11 @@ void GlGameStateDungeon::PrerenderLight(glLight& light, std::shared_ptr<GlCharac
         glUniformMatrix4fv(cameraLoc, 1, GL_FALSE, glm::value_ptr(light.CameraMatrix()));
         DrawDungeon(current_shader, hero, light, true);
 
-        m_heightmap.Draw(m_shader_map["simple_heightmap"], hero_position, light, 2);
+        m_heightmap.Draw(m_shader_map["simple_heightmap"], hero_position, light, frustrum_sector);
 
         glDisable(GL_POLYGON_OFFSET_FILL);
+        glPolygonMode(GL_FRONT, GL_FILL);
+
     }
     
 }
@@ -891,7 +893,8 @@ void GlGameStateDungeon::PrerenderLight(glLight& light, std::shared_ptr<GlCharac
 void GlGameStateDungeon::DrawGlobalLight(const GLuint light_loc, const glLight &light)
 {
 		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, light.ExpDepthMap);
+        //glBindTexture(GL_TEXTURE_2D, light.ExpDepthMap);
+        glBindTexture(GL_TEXTURE_2D, light.depthMap);
 		glUniformMatrix4fv(light_loc, 1, GL_FALSE, glm::value_ptr(light.CameraMatrix()));
 
 		renderQuad();
@@ -963,9 +966,10 @@ void GlGameStateDungeon::Draw()
 
 		unsigned int cameraLoc;
 
-        for (auto & light : Lights)
+        
+        for (size_t i = 0; i < Lights.size(); i++)//auto & light : Lights)
         {
-            PrerenderLight(light, hero);
+            PrerenderLight(Lights[i], hero,i);
         }
         //PrerenderLight(Light2,hero);
 
@@ -1084,10 +1088,13 @@ void GlGameStateDungeon::Draw()
 
         GLuint ligh_loc  = glGetUniformLocation(current_shader, "lightSpaceMatrix");
         glUniform1i(glGetUniformLocation(current_shader, "shadowMap"), 3);
+        const glm::vec4 light_colors[] = { {1.0f,0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f,1.0f},{0.0f,0.0f,1.0f,1.0f},{1.0f,1.0f,0.0f,1.0f} };
 
-        for (const auto& light : Lights)
+
+        for (size_t i = 0; i < Lights.size(); i++)//const auto & light : Lights)
         {
-            DrawGlobalLight(ligh_loc, light);
+            glUniform4fv(light_color, 1, glm::value_ptr(light_colors[i]));
+            DrawGlobalLight(ligh_loc, Lights[i]);
         }
         
         glDisable(GL_STENCIL_TEST);    
@@ -1788,6 +1795,7 @@ void GlGameStateDungeon::ProcessInputsCamera(std::map <int, bool> &inputs,float 
                 float min_y = 1000;
                 float max_y = -1000;
                 float min_z = 3000;
+                float max_z = 30;
 
 
                 
@@ -1812,10 +1820,11 @@ void GlGameStateDungeon::ProcessInputsCamera(std::map <int, bool> &inputs,float 
                     max_y = std::max(max_y, v);
                     v = points[split_offset2 + i].z;
                     min_z = std::min(min_z, v);
+                    max_z = std::max(max_z, v);
                 }
 
                 Lights[i_split].SetCameraLocation(light_position, glm::vec3(0.0f, 0.0f, 0.0f), light_orientation);
-                Lights[i_split].SetCameraLens_Orto(min_x, max_x, min_y, max_y, 1.0f, -min_z);
+                Lights[i_split].SetCameraLens_Orto(min_x, max_x, min_y, max_y, -max_z, -min_z);
             }
 
         }
