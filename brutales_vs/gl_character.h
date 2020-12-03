@@ -15,13 +15,17 @@ enum class CharacterTypes {hero,tile,map_object,mob};
 enum class AffectionCharacters {enemy,ally,map_object};
 
 class GlCharacter;
+
 struct DungeonHeroInfo
 {
     double attaker_time = 0.0f;
     double now_time = 0.0f;
     std::weak_ptr<GlCharacter> hero;
     std::list<std::pair<double,std::weak_ptr<GlCharacter>>> attackers;
+    typename decltype(attackers)::iterator FindInAttackers(const decltype(DungeonHeroInfo::attackers)::value_type& refernce);
 };
+
+
 
 
 class GlCharacter: public IGlModel

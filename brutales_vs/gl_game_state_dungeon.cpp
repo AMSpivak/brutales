@@ -1448,6 +1448,7 @@ std::weak_ptr<IGlGameState>  GlGameStateDungeon::Process(std::map <int, bool> &i
 
     int models_count = Models.size();
     double time_now = glfwGetTime();
+    double passed_time = time_now - time;
     m_dungeon_hero_info.now_time = time_now;
 
     if(m_mode == GameStateMode::Intro)
@@ -1466,9 +1467,10 @@ std::weak_ptr<IGlGameState>  GlGameStateDungeon::Process(std::map <int, bool> &i
         return std::weak_ptr<IGlGameState>();
     }
     else
-    if((time_now - time)>(1.0/30.0))
+    if((passed_time)>(1.0/30.0))
     {
         //simple_screen = !simple_screen;
+
 
         m_daytime_in_hours += 0.00055f;
         if(m_daytime_in_hours>24.0f)
@@ -1494,8 +1496,21 @@ std::weak_ptr<IGlGameState>  GlGameStateDungeon::Process(std::map <int, bool> &i
             object->Process(m_messages);
         }
 
+        
+
         m_dungeon_hero_info.attackers.remove_if([](decltype (m_dungeon_hero_info.attackers)::value_type val)
-                                                    {return val.second.expired();});
+            {   const double attacker_time_limit = 20.0;  
+                return val.second.expired() || (val.first > attacker_time_limit); });
+
+        for (auto &attacker : m_dungeon_hero_info.attackers)
+        {
+            attacker.first += passed_time;
+        }
+
+        //{return val.second.expired() || ;});
+        m_dungeon_hero_info.attackers.sort([](const decltype (m_dungeon_hero_info.attackers)::value_type& a,
+            const decltype (m_dungeon_hero_info.attackers)::value_type& b)
+            {return a.first < b.first; });
         std::cout<<"attackers: "<<m_dungeon_hero_info.attackers.size()<<"\n";
 
         FitObjects(10,0.01f);
@@ -1553,7 +1568,7 @@ std::pair<AnimationCommand,const glm::mat4>  GlGameStateDungeon::ProcessInputs(s
 
     auto direction = Math3D::SimplifyDirection(disorientation);
 
-    std::cout << "\n disorientation "<<disorientation<<" "<<direction<<"\n";
+    //std::cout << "\n disorientation "<<disorientation<<" "<<direction<<"\n";
     bool action_use = inputs[GLFW_KEY_LEFT_ALT];
     bool attack = inputs[GLFW_MOUSE_BUTTON_LEFT]|inputs[GLFW_KEY_SPACE];  
     bool fast_move = true;
@@ -1575,24 +1590,50 @@ std::pair<AnimationCommand,const glm::mat4>  GlGameStateDungeon::ProcessInputs(s
     float enemy_distance = 0.f;
     auto enemy_direction = Math3D::SimpleDirections::Forward;
     auto reaction = hero->GetDamageReaction();
+
+    float dis = 0.0f;
+    float min_disorient = 0.7;
     //float enemy_disorient = 0.0f
-    if(!hero->IsNoRotateable())
+    if (!hero->IsNoRotateable())
     {
-        if(auto enemy = hero->arch_enemy.lock())
+        if (auto enemy = hero->arch_enemy.lock())
         {
             glm::vec3 enemy_vector = enemy->GetPosition() - hero->GetPosition();
             enemy_distance = glm::length(enemy_vector);
             auto target_dir = glm::normalize(enemy_vector);
             float fit = 45.0f;
-            
-            if(reaction == DamageReaction::Block || reaction == DamageReaction::StrikeBack)
+
+            if (reaction == DamageReaction::Block || reaction == DamageReaction::StrikeBack)
             {
                 fit = 75.0f;
             }
-            float enemy_disorient = -Math3D::Disorientation(hero_direction,target_dir,hero_side);
+            float enemy_disorient = -Math3D::Disorientation(hero_direction, target_dir, hero_side);
             enemy_direction = Math3D::SimplifyDirection(enemy_disorient);
             rm = glm::rotate(glm::radians(fit * enemy_disorient), glm::vec3(0.0f, 1.0f, 0.0f)) * hero->model_matrix;
         }
+        else
+        {
+            //glm::vec3 direction = hero_direction;
+            for (const auto &mob : dungeon_objects)
+                if (mob->GetType() == CharacterTypes::mob)
+                {
+                    const float attack_length = 4.0f;
+                    auto enemy_direction = mob->GetPosition() - hero->GetPosition();
+                    float l = glm::length(enemy_direction);
+                    if (l < attack_length)
+                    {
+                        auto normed_dir = glm::normalize(enemy_direction);
+                        float enemy_disorient = -Math3D::Disorientation(hero_direction, normed_dir, hero_side);
+                        float a_disorient = abs(enemy_disorient);
+                        if (a_disorient < min_disorient)
+                        {
+                            min_disorient = a_disorient;
+                            dis = enemy_disorient;
+                        }
+                    }
+                }
+        }
+
         if(moving && (reaction != DamageReaction::Block)&& (reaction != DamageReaction::StrikeBack))
         {           
                 constexpr float fit = -30.0f;
@@ -1601,6 +1642,10 @@ std::pair<AnimationCommand,const glm::mat4>  GlGameStateDungeon::ProcessInputs(s
     }
 
  
+    if (min_disorient < 0.6f)
+    {
+        std::cout << "\n disorientation " << dis << " " << direction << "\n";
+    }
     
     if(attack)
     {
@@ -1629,6 +1674,12 @@ std::pair<AnimationCommand,const glm::mat4>  GlGameStateDungeon::ProcessInputs(s
             return std::make_pair(AnimationCommand::kStrike,rm);
         }
 
+        if(min_disorient < 0.9f)
+        {
+
+            float fit = 100.0f;
+            rm = glm::rotate(glm::radians(fit * dis), glm::vec3(0.0f, 1.0f, 0.0f)) * hero->model_matrix;
+        }
         return std::make_pair( enemy_distance > 5.0f ? AnimationCommand::kStrikeForward : AnimationCommand::kStrikeLong,rm);
     }
 
