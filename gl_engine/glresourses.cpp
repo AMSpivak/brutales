@@ -4,7 +4,8 @@
 #include <iostream>
 #include <fstream>
 #include <array>
-
+#include <sdl/SDL.h>
+#include <sdl/SDL_image.h>
 
 
 
@@ -801,10 +802,15 @@ void LoadTexture(std::string FileName,GLuint &texture)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // Load image, create texture and generate mipmaps
     int tex_width, tex_height;
-    unsigned char* image = SOIL_load_image(FileName.c_str(), &tex_width, &tex_height, 0, SOIL_LOAD_RGBA);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    //unsigned char* image = SOIL_load_image(FileName.c_str(), &tex_width, &tex_height, 0, SOIL_LOAD_RGBA);
+	SDL_Surface* surface;
+	surface = IMG_Load(FileName.c_str());
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+
     glGenerateMipmap(GL_TEXTURE_2D);
-    SOIL_free_image_data(image);
+	SDL_FreeSurface(surface);
+    //SOIL_free_image_data(image);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 

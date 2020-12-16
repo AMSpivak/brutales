@@ -42,9 +42,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FullScreenRelease|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -111,7 +111,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\..\Includes;$(ProjectDir)\..\brutales_vs\includes;$(ProjectDir)\..\gl_engine;$(ProjectDir)\..\gl_engine\glm;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\..\brutales_vs\includes\sdl;$(ProjectDir)\..\Includes;$(ProjectDir)\..\brutales_vs\includes;$(ProjectDir)\..\gl_engine;$(ProjectDir)\..\gl_engine\glm;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)\..\Libs\x86;$(LibraryPath)</LibraryPath>
     <TargetName>brutales_86</TargetName>
     <OutDir>.\x86</OutDir>
@@ -176,7 +176,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>./sound/irrKlang.lib;./GLEW/glew32s.lib;soil.lib;opengl32.lib;./GLFW/glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>./sound/irrKlang.lib;./GLEW/glew32s.lib;sdl2.lib;sdl2main.lib;opengl32.lib;./GLFW/glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FullScreenRelease|Win32'">
