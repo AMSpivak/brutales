@@ -89,6 +89,7 @@ std::string CommandToStream(std::pair<AnimationCommand,std::string> value)
     catch(const std::out_of_range& exp)
     {
         std::cout << "<error------->!\n";
+        std::cout << exp.what();
         return "";
     }
 }

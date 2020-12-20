@@ -56,7 +56,7 @@ public:
         return m_name;
     }
 
-    IGlModel():life_value(1.0),armor_value(1.0),ghost(false),model_matrix(),mass_inv(0),radius(1.0f), m_position(0.0f,0.0f,0.0f),m_is_light(false),m_name("unnamed")
+    IGlModel():life_value(1.0),armor_value(1.0),ghost(false),parent(-1),m_light_radius(0.0f), parent_attach_point(-1),model_matrix(),mass_inv(0),radius(1.0f), m_position(0.0f,0.0f,0.0f),m_is_light(false),m_name("unnamed")
     {
 
     }

@@ -10,7 +10,7 @@ GlText16x16::GlText16x16(const std::string & filename, GLAtlas<IGlTextureStruct>
 
 float GlText16x16::GetStringLength(const std::string &value)
 {
-	return m_width * 0.6 * value.length();
+	return m_width * 0.6f * value.length();
 }
 
 
@@ -39,7 +39,7 @@ void GlText16x16::DrawString(const std::string &value,float x,float y, GLuint sh
 			tile_size, tile_size,
 			tile_size * x_off, tile_size *y_off
 			);
-		x += m_width * 0.6;
+		x += m_width * 0.6f;
 	}
 
 	// glEnable(GL_CULL_FACE);

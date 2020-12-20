@@ -204,6 +204,7 @@ bool GlCharacter::UseCommand(AnimationCommand command)
     }
     catch(const std::out_of_range& exp)
     {
+        std::cout << exp.what();
         return false;
         // std::cout<<"Unknown command\n";
     } 

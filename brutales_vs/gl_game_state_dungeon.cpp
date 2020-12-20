@@ -1,4 +1,4 @@
-#define GLEW_STATIC
+//#define GLEW_STATIC
 #include <GL/glew.h>
 #include <GL/glfw3.h>
 #include <cstdlib>
@@ -136,7 +136,7 @@ GlGameStateDungeon::GlGameStateDungeon(std::map<const std::string,GLuint> &shade
     float a_ratio = static_cast<float>(screen_width);
     a_ratio /= screen_height;
 
-    auto object_ptr = std::make_shared<Gl2D::GlProgressbar>(-1.0,0.9,0.8,0.1,a_ratio,
+    auto object_ptr = std::make_shared<Gl2D::GlProgressbar>(-1.0f,0.9f,0.8f,0.1f,a_ratio,
                                 GetResourceManager()->m_texture_atlas.Assign("halfbar_border.png"),
                                 GetResourceManager()->m_texture_atlas.Assign("halfbar.png"),
                                 m_shader_map["sprite2dsimple"],
@@ -593,6 +593,7 @@ void GlGameStateDungeon::LoadMap(const std::string &filename,const std::string &
         }
         catch(const std::out_of_range& exp)
         {
+            std::cout << exp.what();
             // std::cout<<"Unknown prefix: "<<sufix<<"\n";
         }
     }
@@ -619,11 +620,11 @@ void GlGameStateDungeon::LoadMap(const std::string &filename,const std::string &
         }
         
         mob->SetName("Mob"+std::to_string(i));
-        float mob_x = std::rand();
-        float mob_z = std::rand();
+        float mob_x = static_cast<float>(std::rand());
+        float mob_z = static_cast<float>(std::rand());
         mob_x = mob_x * 360.0f / RAND_MAX - 180.0f;
         mob_z = mob_z * 360.0f / RAND_MAX - 180.0f;
-        float angle_in_radians = std::rand();
+        float angle_in_radians = static_cast<float>(std::rand());
         angle_in_radians = angle_in_radians * 6.0f / RAND_MAX;
 
         mob->SetPosition(glm::vec3(mob_x,0.0f,mob_z));
@@ -872,7 +873,7 @@ void GlGameStateDungeon::PrerenderLight(glLight& light, std::shared_ptr<GlCharac
         //glReadBuffer(GL_NONE);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glEnable(GL_POLYGON_OFFSET_FILL);
-        glPolygonOffset(1.1* frustrum_sector, 80000.0);
+        glPolygonOffset(1.1f* frustrum_sector, 80000.0f);
 
         glClear(GL_DEPTH_BUFFER_BIT);
         GLuint current_shader = m_shader_map["shadowmap"];
@@ -1442,9 +1443,6 @@ std::weak_ptr<IGlGameState>  GlGameStateDungeon::Process(std::map <int, bool> &i
     }
 
     glRenderTargetDeffered &render_target = *(dynamic_cast<glRenderTargetDeffered*>(m_render_target_map["base_deffered"].get()));
-    //std::shared_ptr<GlCharacter> hero_ptr = m_models_map["Hero"];
-   
-    GLuint current_shader;
 
     int models_count = Models.size();
     double time_now = glfwGetTime();
@@ -1456,7 +1454,7 @@ std::weak_ptr<IGlGameState>  GlGameStateDungeon::Process(std::map <int, bool> &i
         GLFWgamepadstate state;
         if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1)&&glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
         {
-            press |=state.buttons[GLFW_GAMEPAD_BUTTON_A];
+            press |= static_cast<bool>(state.buttons[GLFW_GAMEPAD_BUTTON_A]);
         }
         
         if((!pause_interface.IsPaused(time_now)) &&press)
@@ -1517,12 +1515,12 @@ std::pair<AnimationCommand,const glm::mat4>  GlGameStateDungeon::ProcessInputs(s
 
     if(inputs[GLFW_KEY_F9])
     {
-        m_daytime_in_hours -= 0.1;
+        m_daytime_in_hours -= 0.1f;
     }
 
     if(inputs[GLFW_KEY_F10])
     {
-        m_daytime_in_hours += 0.1;
+        m_daytime_in_hours += 0.1f;
     }
 
     auto move_inputs = GameInputs::ProcessInputsMoveControl(inputs);
@@ -1555,16 +1553,16 @@ std::pair<AnimationCommand,const glm::mat4>  GlGameStateDungeon::ProcessInputs(s
 
     std::cout << "\n disorientation "<<disorientation<<" "<<direction<<"\n";
     bool action_use = inputs[GLFW_KEY_LEFT_ALT];
-    bool attack = inputs[GLFW_MOUSE_BUTTON_LEFT]|inputs[GLFW_KEY_SPACE];  
+    bool attack = inputs[GLFW_MOUSE_BUTTON_LEFT]||inputs[GLFW_KEY_SPACE];  
     bool fast_move = true;
-    bool guard = inputs[GLFW_MOUSE_BUTTON_RIGHT]|inputs[GLFW_KEY_LEFT_CONTROL];
+    bool guard = inputs[GLFW_MOUSE_BUTTON_RIGHT]||inputs[GLFW_KEY_LEFT_CONTROL];
 
     GLFWgamepadstate state;
     if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1)&&glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
     {
-        attack |=state.buttons[GLFW_GAMEPAD_BUTTON_A];
-        action_use |=state.buttons[GLFW_GAMEPAD_BUTTON_X];
-        guard |=state.buttons[GLFW_GAMEPAD_BUTTON_B];
+        attack |= static_cast<bool>(state.buttons[GLFW_GAMEPAD_BUTTON_A]);
+        action_use |=static_cast<bool>(state.buttons[GLFW_GAMEPAD_BUTTON_X]);
+        guard |= static_cast<bool>(state.buttons[GLFW_GAMEPAD_BUTTON_B]);
 
         if(move_square < 0.36f)
         {

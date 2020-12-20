@@ -11,7 +11,7 @@ namespace Collision
         glm::vec3 norm;
         glm::vec4 norm4;
         float val;
-        for(auto edge :edges)
+        for(const auto &edge :edges)
         {
             norm4 = model_matrix * glm::vec4(edge.second,0.0f);
             norm = position + glm::vec3(norm4) ;
@@ -33,7 +33,7 @@ namespace Collision
         glm::vec3 norm;
         glm::vec3 norm_z(0.0f,0.0f,1.0f);
 
-        for(auto edge :m_edges)
+        for(const auto &edge :m_edges)
         {
             norm4 = model_matrix * glm::vec4(edge.second,0.0f);
             norm = glm::vec3(norm4);        
@@ -50,24 +50,24 @@ namespace Collision
 
     namespace _2d
     {
-        double cross(glm::vec2 const& a, glm::vec2 const& b)
+        auto cross(glm::vec2 const& a, glm::vec2 const& b)
         {
             return a.x * b.y - b.x * a.y;
         }
 
         bool IsLeft(glm::vec2 const& a, glm::vec2 const& b)
         {
-            float res = _2d::cross(a,b);
+            float res = static_cast<float>(_2d::cross(a,b));
             //std::cout<<"\nIsLeft: "<<a <<" "<< b <<" "<<res<<"\n";
             return res > 0;
         }
 
         bool Intersect(const std::vector<glm::vec2> &frustrum,const C_2d_BB & bbox)
         {
-            for(int i = 0; i < frustrum.size();i++)
+            for(size_t i = 0; i < frustrum.size();i++)
             {
-                int prev_i = i - 1;
-                if(prev_i < 0)
+                auto prev_i = i - 1;
+                if(i == 0)
                 {
                     prev_i = frustrum.size() - 1;
                 }

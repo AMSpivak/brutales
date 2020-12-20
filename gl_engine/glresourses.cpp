@@ -914,11 +914,11 @@ void Animation::LoadAnimation(const std::string &file_name, std::vector <Bone> &
 	//vector<AnimationFrame>().swap( frames );
 	int current_frame;
 	glm::mat4 tmp_matrix;
-	for(int i_frame = 0; i_frame < framescount; i_frame++)
+	for(size_t i_frame = 0; i_frame < framescount; i_frame++)
 	{
 		ModelFile>>tmp_string>>current_frame;
 		AnimationFrame a_frame;
-		for(int i = 0; i < bon_count; i++)
+		for(decltype(bon_count) i = 0; i < bon_count; i++)
 		{
 
 			ModelFile>>tmp_string>>tmp_matrix;
@@ -934,7 +934,7 @@ void Animation::LoadAnimation(const std::string &file_name, std::vector <Bone> &
 
 void Animation::LoadAnimation(const std::string & file_name)
 {
-	int bon_count = 0;
+	size_t bon_count = 0;
 	std::string tmp_string = "";
 	std::ifstream ModelFile;
 	ModelFile.open(file_name);
@@ -945,11 +945,11 @@ void Animation::LoadAnimation(const std::string & file_name)
 	frames.clear();
 	int current_frame;
 	glm::mat4 tmp_matrix;
-	for(int i_frame = 0; i_frame < framescount; i_frame++)
+	for(size_t i_frame = 0; i_frame < framescount; i_frame++)
 	{
 		ModelFile>>tmp_string>>current_frame;
 		AnimationFrame a_frame;
-		for(int i = 0; i < bon_count; i++)
+		for(decltype(bon_count) i = 0; i < bon_count; i++)
 		{
 
 			ModelFile>>tmp_string>>tmp_matrix;
@@ -1007,7 +1007,7 @@ void Animation::CalculateCache(const std::vector <Bone> &bones,size_t frame)
 	//glm::mat4 rot = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	if(bon_count>1)
 	{
-		for(int i = 1; i < bon_count; i++)
+		for(decltype(bon_count) i = 1; i < bon_count; i++)
 		{
 			//m_cashe_animation.bones[i] =  SlerpMatrix(m_cashe_animation.bones[i],base * frames[frame].bones[i] *  glm::inverse(bones[i].matrix),approx);
 			m_cashe_animation.bones[i] =  base * frames[frame].bones[i] *  glm::inverse(bones[i].matrix);

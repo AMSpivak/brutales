@@ -31,34 +31,21 @@ public:
     } 
     int GetMapTilesIndex(int x, int y, int z)
     {
-        if(
-            (x>=m_dungeon_width)
-            || (y>=m_dungeon_height)
-            || (z>=m_dungeon_floors)
-            || (x<0)
-            || (y<0)
-            || (z<0)
-        )
+        size_t pos = static_cast<size_t>(z * m_dungeon_width * m_dungeon_height + m_dungeon_width * y + x);
+        if (pos < m_dungeon_map_tiles.size())
         {
-            return -1;
+            return m_dungeon_map_tiles[pos];
         }
-        return m_dungeon_map_tiles[z*m_dungeon_width*m_dungeon_height + m_dungeon_width*y +x];
+        return -1;
     }
     int GetMapObjectIndex(int x, int y, int z)
     {
-        if(
-            (x<m_dungeon_width)
-            || (y<m_dungeon_height)
-            || (z<m_dungeon_floors)
-            || (x>=0)
-            || (y>=0)
-            || (z>=0)
-        )
+        size_t pos = static_cast<size_t>(z * m_dungeon_width * m_dungeon_height + m_dungeon_width * y + x);
+        if (pos < m_dungeon_map_objects.size())
         {
-            return m_dungeon_map_objects[z * m_dungeon_width * m_dungeon_height + m_dungeon_width * y + x];
+            return m_dungeon_map_objects[pos];
         }
-
-        return -1;
+        return -1;     
     }
     inline size_t Width()
     {
