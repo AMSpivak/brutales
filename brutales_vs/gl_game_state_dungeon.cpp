@@ -44,7 +44,7 @@ constexpr float sound_mul = 0.1f;
 
 void ResetModels(std::vector <std::shared_ptr<glModel> > &Models)
 {
-    for(auto tmpModel : Models)
+    for(auto &tmpModel : Models)
     {
         tmpModel->model = glm::rotate(tmpModel->model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         tmpModel->model = glm::rotate(tmpModel->model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -212,8 +212,8 @@ GlGameStateDungeon::GlGameStateDungeon(std::map<const std::string,GLuint> &shade
                                         sstream >> name;
                                         try
                                         {
-                                            auto script = m_scripts.at(name);
-                                            for(auto message:script)
+                                            const auto &script = m_scripts.at(name);
+                                            for(const auto &message: script)
                                             {
                                                 PostMessage(message);
                                             }
@@ -315,7 +315,7 @@ void GlGameStateDungeon::SelectStart(std::vector<std::string> &lines)
 {
     size_t y = 0;
     std::string start_name;
-    for(auto line : lines)
+    for(auto &line : lines)
     {
         size_t x = 0;
         size_t tile = 0;
@@ -331,7 +331,7 @@ void GlGameStateDungeon::SelectStart(std::vector<std::string> &lines)
 void GlGameStateDungeon::LoadTiles(std::vector<std::string> &lines)
 {
     size_t y = 0;
-    for(auto line : lines)
+    for(auto &line : lines)
     {
         size_t x = 0;
         size_t tile = 0;
@@ -351,7 +351,7 @@ void GlGameStateDungeon::LoadTiles(std::vector<std::string> &lines)
 void GlGameStateDungeon::LoadDungeonObjects(std::vector<std::string> &lines)
 {
     size_t y = 0;
-    for(auto line : lines)
+    for(auto &line : lines)
     {
         size_t x = 0;
         size_t object = 0;
@@ -489,11 +489,10 @@ void GlGameStateDungeon::SaveObjects(const std::string &filename)
         std::string extention = tmp_filename.replace(ext_pos,tmp_filename.length()- ext_pos,"sav");
         std::ofstream savefile;
         savefile.open (extention,std::ofstream::out | std::ofstream::trunc);
-        for(auto object:dungeon_objects)
+        for(const auto &object:dungeon_objects)
         {
             if(object->GetType() == CharacterTypes::map_object)
             {
-                // std::cout<<"Saving\n";
                 savefile  << (*object);
                 #ifdef DBG
                 std::cout<<(*object);
@@ -558,7 +557,7 @@ void GlGameStateDungeon::LoadMap(const std::string &filename,const std::string &
     execute_funcs.insert(std::make_pair("heightmap",[this](std::vector<std::string> &lines){SetHeightmap(lines);}));
     execute_funcs.insert(std::make_pair("models",[this](std::vector<std::string> &lines)
                                         {
-                                            for(auto line : lines)
+                                            for(auto &line : lines)
                                             {
                                                 Models.emplace_back(std::make_shared<glModel>(line));
                                             }
@@ -673,7 +672,7 @@ void GlGameStateDungeon::DrawDungeon(GLuint &current_shader,std::shared_ptr<GlCh
     auto point_ldf = glm::vec3(camera.GetFrustrumPoint(GlScene::FrustrumPoints::FarLD)) + hero_position;
     auto point_run = glm::vec3(camera.GetFrustrumPoint(GlScene::FrustrumPoints::NearRU)) + hero_position;
     
-    for(auto object : dungeon_objects)
+    for(auto &object : dungeon_objects)
     {
         const auto& pos = object->GetPosition();
         auto pos_ldf = pos - point_ldf;
@@ -740,7 +739,7 @@ void GlGameStateDungeon::DrawLight(const glm::vec4 &light_pos_vector, glRenderTa
     glm::vec4 light_position;
     glm::vec3 light_color;
     
-    for(std::shared_ptr<IMapEvent> event :map_events) 
+    for(auto &event :map_events) 
     {
         if(event->IsLight(light_position,light_color))
         {
@@ -748,7 +747,7 @@ void GlGameStateDungeon::DrawLight(const glm::vec4 &light_pos_vector, glRenderTa
         }
     }
 
-    for(auto object :dungeon_objects) 
+    for(auto &object :dungeon_objects) 
     {
         if(object->IsLight(light_position,light_color))
         {
@@ -787,7 +786,7 @@ void GlGameStateDungeon::DrawFxSprite(GLuint &current_shader, GLuint texture)
 
 void GlGameStateDungeon::Draw2D(GLuint depth_map)
 {
-    for(auto event :map_events) 
+    for(auto &event :map_events) 
     {
         event->Show(hero_position,Camera);
     }
@@ -806,7 +805,7 @@ void GlGameStateDungeon::Draw2D(GLuint depth_map)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_CULL_FACE);
         
-        // for(auto p_attacker : m_dungeon_hero_info.attackers)
+        // for(auto &p_attacker : m_dungeon_hero_info.attackers)
         // {
 
         //         float mix = glm::clamp((m_dungeon_hero_info.now_time - p_attacker.first),0.0,1.0);
@@ -838,7 +837,7 @@ void GlGameStateDungeon::Draw2D(GLuint depth_map)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_CULL_FACE);
     
-    for(auto item :Interface2D) 
+    for(auto &item :Interface2D) 
     {
         item->Draw();
     }
@@ -1332,7 +1331,7 @@ void GlGameStateDungeon::FitObjects(int steps, float accuracy)
                 }
             }
         }
-        for(auto object : dungeon_objects)
+        for(auto &object : dungeon_objects)
         {  
             auto res = FitObjectToMap(*object);
             summ =std::max( summ, res.first);
@@ -1356,7 +1355,7 @@ bool GlGameStateDungeon::MobKilled(std::shared_ptr<GlCharacter> obj)
     glRenderTargetDeffered &render_target = *(dynamic_cast<glRenderTargetDeffered*>(m_render_target_map["base_deffered"].get()));
 
     std::string event_return_string;
-    for(auto event : map_events)
+    for(auto &event : map_events)
     {
         ReactObjectToEvent(obj,*event.get(),event_return_string);
     }
@@ -1365,7 +1364,7 @@ bool GlGameStateDungeon::MobKilled(std::shared_ptr<GlCharacter> obj)
     
     if(obj->GetType() != CharacterTypes::hero)
     {
-        for(auto event : mob_events)
+        for(auto &event : mob_events)
         {
             ReactObjectToEvent(obj,*event.get(),event_return_string);
         }
@@ -1408,7 +1407,7 @@ void GlGameStateDungeon::ProcessMessages()
 bool GlGameStateDungeon::HeroEventsInteract(std::shared_ptr<GlCharacter> hero_ptr)
 {
     std::string event_return_string;
-    for(auto event : hero_events)
+    for(auto &event : hero_events)
     {
        if(ReactObjectToEvent(hero_ptr,*event,event_return_string) == InteractionResult::PostMessage)
        {
@@ -1487,7 +1486,7 @@ std::weak_ptr<IGlGameState>  GlGameStateDungeon::Process(std::map <int, bool> &i
         
         //ControlUnit(*hero);
 
-        for(auto object : dungeon_objects)
+        for(auto &object : dungeon_objects)
         {  
             object->Process(m_messages);
         }
@@ -1779,7 +1778,7 @@ void GlGameStateDungeon::ProcessInputsCamera(std::map <int, bool> &inputs,float 
                 }
             }
 
-            for(auto & point : points)
+            for(auto &point : points)
             {
                 point = view * (point - glm::vec4(light_position, 0));
             }
