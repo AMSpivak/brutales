@@ -77,6 +77,7 @@ namespace LoaderUtility
         catch(const std::out_of_range& exp)
         {
             std::cout<<"Unknown parameter: "<<value<<"\n";
+            std::cout << exp.what();
         }
     }
 

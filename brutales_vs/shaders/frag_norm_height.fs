@@ -70,13 +70,6 @@ void main()
     
     texColor = materials.x*texColor + materials.y*texColor1;
 
-    //if(texColor.a < 0.1)
-    //    discard;
-
-    //vec3 utility = texture(UtilityTexture, TexCoord*tex_mul).xyz;//texture(UtilityTexture, TexCoord).xyz;
-    //utility.x = 0.0;
-    //utility.z = 0.0;
-    //vec3 utility = vec3(0.0,0.9,0.1);
     float r_intensivity = 0.6;
     vec3 utility = vec3(0.0,1.0 - r_intensivity + texture(Utility_0, Coord).y * r_intensivity,0.1);
     vec3 utility1 = vec3(0.0,1.0 - r_intensivity + texture(Utility_1, Coord).y * r_intensivity,0.1);
@@ -87,14 +80,12 @@ void main()
     vec4 pos = vec4(v_Position,utility.x);
     gPosition = pos;
 
-    //vec3 normal = vec3(0.0,1.0,0.0);
 
-    
     normal = normal*materials.x + normal1*materials.y;
-    //normal.y = -normal.y;
     normal = normalize(normal * 2.0 - 1.0); 
     normal = normalize(TBN * normal); 
-    //normal = normal * 0.5 + 0.5; 
+    //normal = TBN[2]; 
+
     
     gNormal = vec4(normal.xyz, utility.y);
     //gNormal = vec4(vec3(0.0,1.0,0.0), utility.y);

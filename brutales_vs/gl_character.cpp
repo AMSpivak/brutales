@@ -46,12 +46,12 @@ void GlCharacter::ToStream(std::ostream& os) const
 {
     os<<"name " << GetName()<<"\n";
     
-    for(auto model_name : model_list)
+    for(auto &model_name : model_list)
     {
         os<<"model "<<model_name<<"\n";
     }
 
-    for(auto seq : sequence)
+    for(auto &seq : sequence)
     {
         os<<"sequence "<<seq<<"\n";
     }
@@ -83,7 +83,7 @@ void GlCharacter::ToStream(std::ostream& os) const
         os<< "breed "<<m_breed<<"\n";
     }
 
-    for(auto edge : m_edges)
+    for(auto &edge : m_edges)
     {
         os<<"edge "<<edge<<"\n";
     }
@@ -204,6 +204,7 @@ bool GlCharacter::UseCommand(AnimationCommand command)
     }
     catch(const std::out_of_range& exp)
     {
+        std::cout << exp.what();
         return false;
         // std::cout<<"Unknown command\n";
     } 

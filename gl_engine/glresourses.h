@@ -61,7 +61,7 @@ public:
 	void LoadAnimation(const std::string &file_name, std::vector <Bone> &bones);
 	void LoadAnimation(const std::string &file_name);
 	void CalculateCache(const std::vector <Bone> &bones,size_t frame);
-	Animation():m_precalculated(false)
+	Animation():framescount(0),m_precalculated(false), m_cache_frame(0)
 	{}
 	Animation(const std::string &file_name);
 	GLfloat * GetDrawValues(size_t frame,const std::vector <Bone> &bones);

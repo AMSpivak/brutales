@@ -39,7 +39,8 @@ public:
 
 	//glModel(GLResourcesManager &resources_manager):model(1.0f),draw_matrix(1.0f)
 	glModel(GLResourcesManager &resources_manager)//:draw_matrix(1.0f)
-		:m_shader(0)
+		: m_shader(0)
+		, m_frame(0)
 		, parent_idx(-1)
 		, parent_bone(-1)
 	{}

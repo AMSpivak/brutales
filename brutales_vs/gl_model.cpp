@@ -148,9 +148,9 @@ void glModel::LoadAll(std::string FileName)
 	getline(modelfile, tmp_str);
 
 	getline(modelfile, tmp_str);
-	if(tmp_str=="")
+	if(tmp_str == "")
 	{
-		tmp_str=="deff_1st_pass";
+		tmp_str = "deff_1st_pass";
 	}
 	m_shader = GetResourceManager()->GetShader(tmp_str);
 

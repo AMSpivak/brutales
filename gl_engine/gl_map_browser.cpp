@@ -81,7 +81,7 @@ namespace Gl2D
     {
         if(value > 0.001f && value < 1000.f)
         {
-            m_zoom = 1.0/value;
+            m_zoom = 1.0f/value;
         }
     }
 
@@ -97,7 +97,8 @@ namespace Gl2D
 
     const float GlMapBrowser::GetZoom()
     {
-        return 1.0/m_zoom;
+        const float val = 1.0f / m_zoom;
+        return val;
     }
 
     void GlMapBrowser::MoveMap(float x, float y)
