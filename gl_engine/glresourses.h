@@ -80,6 +80,7 @@ private:
 
 std::istream& operator>> ( std::istream& is, Bone& bone) ;
 
+std::istream& operator >> (std::istream& is, glm::vec4& glm_vector);
 
 
 std::istream& operator >> ( std::istream& is, glm::vec3 & glm_vector);
@@ -88,7 +89,7 @@ std::ostream& operator << ( std::ostream& os, const glm::vec3 & glm_vector);
 std::istream& operator >> ( std::istream& is, glm::vec2 & glm_vector);
 std::ostream& operator << ( std::ostream& os, const glm::vec2 & glm_vector);
 
-std::istream& operator>> ( std::istream& is, glm::mat4& mat);
+std::istream& operator >> ( std::istream& is, glm::mat4& mat);
 std::ostream& operator << ( std::ostream& os, const glm::mat4 & mat);
 
 std::ostream& operator << ( std::ostream& os, const glm::vec2 & glm_vector);

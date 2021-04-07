@@ -1,6 +1,9 @@
 #include "gl_model.h"
 #include <fstream>
 #include <iostream>
+#include <sstream>
+#include "../gl_engine/glm/glm.hpp"
+#include "../gl_engine/glresourses.h"
 
 
 
@@ -80,7 +83,14 @@ void glModel::Draw(GlScene::Scene& scene, Animation& animation, int now_frame, c
 	unsigned int modelLoc = glGetUniformLocation(scene.render_shader, "model");
 	unsigned int drawLoc = glGetUniformLocation(scene.render_shader, "draw");
 	unsigned int boneLoc  = glGetUniformLocation(scene.render_shader, "u_BoneMatrices");
+	unsigned int color_loc = glGetUniformLocation(scene.render_shader, "color_corrector");
+	unsigned int rough_metalLoc = glGetUniformLocation(scene.render_shader, "rzrv_rough_metal_corrector");
+	//glUniform4fv(color_loc, 1, glm::value_ptr(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)));
+	//glUniform4fv(color_loc, 1, glm::value_ptr(glm::vec4(1.0f,0.88f,0.608f,1.0f)));
+	//glUniform3fv(rough_metalLoc, 1, glm::value_ptr(glm::vec3( 1.0f, 0.99f, 1.0f)));
 
+	glUniform4fv(color_loc, 1, glm::value_ptr(m_material->m_color));
+	glUniform4fv(rough_metalLoc, 1, glm::value_ptr(m_material->m_rough_metal));
 
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 	glUniformMatrix4fv(drawLoc, 1, GL_FALSE, glm::value_ptr(matrix));
@@ -153,8 +163,7 @@ void glModel::LoadAll(std::string FileName)
 		tmp_str = "deff_1st_pass";
 	}
 	m_shader = GetResourceManager()->GetShader(tmp_str);
-
-	modelfile.close();
+	
 
 
 	GLResourcesManager * resources = GetResourceManager();
@@ -163,6 +172,35 @@ void glModel::LoadAll(std::string FileName)
 
 
 	m_material = std::make_shared<GameResource::GlMaterial>(png_name,png_normal_name,png_utility_name);
+
+	tmp_str = "";
+	getline(modelfile, tmp_str);
+	if (tmp_str == "")
+	{
+		m_material->m_color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	}
+	else
+	{
+		std::stringstream sstream;
+		sstream << tmp_str;
+		sstream >> m_material->m_color;
+		m_material->m_color = glm::pow(m_material->m_color,glm::vec4(2.2f));
+	}
+	tmp_str = "";
+	getline(modelfile, tmp_str);
+	if (tmp_str == "")
+	{
+		m_material->m_rough_metal = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	}
+	else
+	{
+		std::stringstream sstream;
+		sstream << tmp_str;
+		sstream >> m_material->m_rough_metal;
+	}
+	/**/
+
+	modelfile.close();
 
 	jub_bones = resources->m_bones_atlas.Assign(jub_name);
 	if(frames_name.compare("")) animation = resources->m_animation_atlas.Assign(frames_name);

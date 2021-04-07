@@ -9,19 +9,21 @@ layout (location = 0) out vec4 gAlbedoSpec;
 layout (location = 1) out vec4 gNormal;
 layout (location = 2) out vec4 gPosition;
 
-uniform vec3 zero_offset;
-
+uniform vec4 zero_offset;
+uniform vec4 color_corrector;
+uniform vec4 rzrv_rough_metal_corrector;
 uniform sampler2D ourTexture;
 uniform sampler2D UtilityTexture;
 uniform sampler2D NormalTexture;
 void main()
 {
 
-	vec4 texColor = texture(ourTexture, TexCoord);
+	vec4 texColor = texture(ourTexture, TexCoord) * color_corrector;
     if(texColor.a < 0.1)
         discard;
 
-    vec3 utility = texture(UtilityTexture, TexCoord).xyz;
+    vec3 utility = texture(UtilityTexture, TexCoord).xyz * rzrv_rough_metal_corrector.xyz;
+
     vec4 pos = vec4(v_Position,utility.x);
     gPosition = pos;
     // vec3 normal = vec3(0.0,0.0,1.0);//texture(NormalTexture, TexCoord).xyz;

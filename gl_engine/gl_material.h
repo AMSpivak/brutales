@@ -5,7 +5,9 @@
 #include <memory>
 #include "glresourses.h"
 #include "i_gl_texture_struct.h"
-
+#include "glm/glm.hpp"
+//#include "glm/gtc/matrix_transform.hpp"
+//#include "glm/gtc/type_ptr.hpp"
 namespace GameResource
 {
     struct GlMaterial
@@ -13,6 +15,9 @@ namespace GameResource
         std::shared_ptr<IGlTextureStruct> m_albedo_texture;
         std::shared_ptr<IGlTextureStruct> m_normal_height_texture;
         std::shared_ptr<IGlTextureStruct> m_roughness_metalness_texture;
+        glm::vec4 m_color;
+        glm::vec4 m_rough_metal;
+
 
         GlMaterial() = default;
 

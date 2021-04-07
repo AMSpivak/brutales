@@ -8,7 +8,7 @@ namespace GameResource
                             const std::string & roughness_metalness//,
                             //const std::map<const std::string,GLuint> &shader_map,
                             //const std::string & shader_deffered
-                        )
+                        ):m_color(1.0f),m_rough_metal(1.0f)
     {
         auto pmanager = GetResourceManager();
         if(albedo!="")

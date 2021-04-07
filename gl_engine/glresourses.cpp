@@ -1044,8 +1044,17 @@ const glm::mat4 SlerpMatrix(const glm::mat4 & m1,const glm::mat4 & m2,float appr
 }
 
 
+//<size_t >
 
+std::istream& operator>> (std::istream& is, glm::vec4& glm_vector)
+{
 
+	for (size_t i = 0; i < 4; i++)
+	{
+		is >> glm_vector[i];
+	}
+	return is;
+}
 std::istream& operator>> ( std::istream& is, glm::vec3 & glm_vector)
 {
 	

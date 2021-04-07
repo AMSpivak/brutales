@@ -88,7 +88,7 @@ void main()
     if(texColor.a < 0.05)
         discard;
      //texColor.xyz = pow(texColor.xyz,vec3(2.2));
-    float metallness = (texColor.a -0.06) * 1.064;
+    float metallness = min(1.0,(texColor.a -0.06) * 1.064);
     vec4 normal_map = texture(NormalMap, TexCoords);
 	vec3 texNormal= normal_map.xyz;
 
@@ -161,7 +161,7 @@ void main()
         //gNormal =vec4(ShadowLightColor * specular,1.0);
         //gNormal =vec4(shadow_res*specular* norm_l,1.0);
         //vec3 reflection =  vec3(0,0,0);//kS*textureLod(skybox, refl, 8 * roug_sqr).rgb;
-        vec3 reflection =  shadow_res * kS*textureLod(skybox, refl,9 * roughness).rgb;
+        vec3 reflection =  shadow_res * kS * textureLod(skybox, refl,9 * roughness).rgb;
         //vec3 reflection =  kS*textureLod(skybox, refl,0).rgb;
         //reflection =  kS*textureLod(skybox, refl, 7).rgb;
 
