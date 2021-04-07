@@ -524,6 +524,10 @@ AnimationCommand GlCharacter::GetCurrentCommand()
 }
 
 
+typename decltype(DungeonHeroInfo::attackers)::iterator DungeonHeroInfo::FindInAttackers(const decltype(DungeonHeroInfo::attackers)::value_type & refernce)
+{
+    return std::find_if(attackers.begin(),attackers.end(),[&refernce](decltype(refernce) el) {return el.second.lock() == refernce.second.lock(); });
+}
 
 
 

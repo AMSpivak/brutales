@@ -99,6 +99,8 @@ namespace Character
     
         return (d_ac) > (d_bc);
     }
+
+
     
     class BrainHero: public IBrain
     {
@@ -176,7 +178,7 @@ namespace Character
     };
 
     
-
+    
 
     class BrainMob: public IBrain
     {
@@ -190,6 +192,207 @@ namespace Character
         std::vector<glm::vec3>::iterator m_current_point;
 
         std::vector<glm::vec3> m_track_points;
+
+        bool FitDistance(GlCharacter* character, float enemy_distance, float fast_forward, float forward, float back)
+        {
+            if (enemy_distance > fast_forward)
+            {
+                character->UseCommand(AnimationCommand::kFastMove);   /* code */
+                return true;
+            }
+
+            if (enemy_distance > forward)
+            {
+                character->UseCommand(AnimationCommand::kMove);   /* code */
+                return true;
+            }
+            
+            if (enemy_distance < back)
+            {
+                character->UseCommand(AnimationCommand::kStepBack);   /* code */
+                return true;
+            }
+
+            return false;
+        }
+
+        void FitDirection(GlCharacter* character, const glm::vec3& enemy_vector, const float fit)
+        {
+            if (!character->IsNoRotateable())
+            {
+                character->model_matrix = RotateToDirection2d(*character, enemy_vector, fit);
+            }
+        }
+
+        void SimpleAttack(GlCharacter* character, float enemy_distance, const glm::vec3 &enemy_vector,  int dice_roll)
+        {
+            constexpr float fit = -45.0f;
+            FitDirection(character, enemy_vector, fit);
+
+            if (!FitDistance(character, enemy_distance, walk_distance, attak_distance, step_back_distance))
+            {
+                if (dice_roll > (random_maximum - 50))
+                {
+                    character->UseCommand(AnimationCommand::kStrike);
+                }
+                else
+                {
+                    character->UseCommand(AnimationCommand::kStance);
+                }
+            }
+        }
+
+        void HeroAttack(GlCharacter* character, float enemy_distance, const glm::vec3& enemy_vector, int dice_roll)
+        {
+            constexpr float fit = -45.0f;
+            FitDirection(character, enemy_vector, fit);
+
+            auto p_d_info = character->GetDungeonHeroInfo();
+
+            auto element = std::make_pair(p_d_info->now_time, character->GetDungeonListReference());
+            if (!p_d_info->attackers.empty())
+            {
+                auto attacker_it = p_d_info->FindInAttackers(element);
+                if (attacker_it != p_d_info->attackers.end())
+                {
+                    if (!FitDistance(character, enemy_distance, walk_distance, attak_distance, step_back_distance) && (p_d_info->attackers.cbegin() == attacker_it))
+                    {
+                        double wait_time = p_d_info->now_time - p_d_info->attaker_time;
+                        if (wait_time > attacker_time * 3)
+                        {
+                            if (attacker_it->first > attacker_time)
+                            {
+                                if (character->UseCommand(AnimationCommand::kStrike))
+                                {
+                                    attacker_it->first = 0;
+                                    p_d_info->attaker_time = p_d_info->now_time;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        character->UseCommand(AnimationCommand::kStepRight);
+                    }
+
+                    return;
+                }
+            }
+
+            const int attackers_max = 3;
+            if (p_d_info->attackers.size() < attackers_max)
+            {
+                auto element = std::make_pair(0, character->GetDungeonListReference());
+                auto res = p_d_info->FindInAttackers(element);
+                if (res == p_d_info->attackers.end())
+                {
+                    p_d_info->attackers.push_back(element);
+                }
+            }
+            else
+            {
+                if (!FitDistance(character, enemy_distance, walk_distance + attak_distance, walk_distance, attak_distance))
+                {
+                    character->UseCommand(AnimationCommand::kStepRight);
+                }
+
+            }  
+        }
+
+        void FreeRun(GlCharacter* character, std::uniform_int_distribution<int> &distribution)
+        {
+            auto dice_roll = distribution(random_generator);
+            if (dice_roll > random_maximum - 1)
+            {
+                dice_roll = distribution(random_generator);
+                if (dice_roll > (random_maximum / 2))
+                {
+                    if (dice_roll > (5 * random_maximum / 8))
+                    {
+                        character->UseCommand(AnimationCommand::kMove);
+                    }
+                    else
+                    {
+                        character->UseCommand(AnimationCommand::kFastMove);
+                    }
+                }
+                else
+                {
+                    if (dice_roll > (random_maximum / 4))
+                    {
+                        character->UseCommand(AnimationCommand::kStance);
+                        //character.UseSequence("stance");
+                    }
+                }
+            }
+
+
+            if (m_track_points.empty())
+            {
+                if (rotator == 0)
+                {
+                    dice_roll = distribution(random_generator);
+
+                    if (dice_roll > (random_maximum - 50))
+                    {
+                        rotator = distribution(random_generator) - random_maximum / 2;
+                    }
+                }
+                else
+                {
+                    int sign = 1;
+                    if (rotator > 0)
+                    {
+                        --rotator;
+                    }
+                    else
+                    {
+                        ++rotator;
+                        sign = -1;
+                    }
+                    character->model_matrix = glm::rotate(character->model_matrix, glm::radians(sign * 0.1f), glm::vec3(0.0f, 1.0f, 0.0f));
+                }
+            }
+            else
+            {
+                if (character->GetCurrentCommand() == AnimationCommand::kStance)
+                {
+                    if (dice_roll > random_maximum - random_maximum / 100)
+                    {
+                        character->UseCommand(AnimationCommand::kMove);
+                    }
+                }
+                else
+                {
+                    auto position = character->GetPosition();
+                    position[1] = 0.0f;
+                    position = *m_current_point - position;
+                    float enemy_distance = glm::length(position);
+
+                    constexpr float fit = -45.0f;
+                    character->model_matrix = RotateToDirection2d(*character, position, fit);
+
+                    if (enemy_distance > walk_distance)
+                    {
+                        character->UseCommand(AnimationCommand::kFastMove);
+                    }
+                    else if (enemy_distance < attak_distance)
+                    {
+                        if ((++m_current_point) == m_track_points.end())
+                        {
+                            m_current_point = m_track_points.begin();
+                        }
+                        character->UseCommand(AnimationCommand::kStance);
+                    }
+                    else
+                    {
+                        character->UseCommand(AnimationCommand::kMove);
+                    }
+                }
+
+            }
+        }
+
 
         public:
         BrainMob(std::function<void(GlCharacter & character)> world_reaction):  rotator(0), 
@@ -221,9 +424,6 @@ namespace Character
                 {
                     character->enemies_list.erase(enemy_it);
                 }
-                
-
-                
             }
 
 
@@ -232,187 +432,31 @@ namespace Character
             
             if(character->arch_enemy.expired())
             {
-                if(dice_roll>random_maximum - 1)
-                {
-                    dice_roll = distribution(random_generator);
-                    if(dice_roll > (random_maximum/2))
-                    {
-                        if(dice_roll > (5*random_maximum/8))
-                        {
-                            character->UseCommand(AnimationCommand::kMove);
-                        }
-                        else
-                        {
-                            character->UseCommand(AnimationCommand::kFastMove);
-                        } 
-                    }
-                    else
-                    {
-                        if(dice_roll > (random_maximum/4))
-                        {
-                            character->UseCommand(AnimationCommand::kStance);
-                            //character.UseSequence("stance");
-                        }
-                    }  
-                }
-
-
-                if(m_track_points.empty())
-                {
-                    if(rotator == 0)
-                    {
-                        dice_roll = distribution(random_generator);
-                        
-                        if(dice_roll>(random_maximum - 50))
-                        {
-                            rotator = distribution(random_generator)-random_maximum/2;
-                        }
-                    }
-                    else
-                    {
-                        int sign = 1;
-                        if(rotator > 0)
-                        {
-                            --rotator;
-                        }
-                        else
-                        {
-                        ++rotator;
-                        sign = -1;
-                        }
-                        character->model_matrix = glm::rotate(character->model_matrix , glm::radians(sign * 0.1f), glm::vec3(0.0f, 1.0f, 0.0f));
-                    }
-                }
-                else
-                {
-                    if(character->GetCurrentCommand() == AnimationCommand::kStance)
-                    {
-                        if(dice_roll>random_maximum - random_maximum/100)
-                        {
-                            character->UseCommand(AnimationCommand::kMove);
-                        }
-                    }
-                    else
-                    {
-                        auto position = character->GetPosition();
-                        position[1] = 0.0f;
-                        position = *m_current_point - position;
-                        float enemy_distance = glm::length(position);
-
-                        constexpr float fit = -45.0f;
-                        character->model_matrix = RotateToDirection2d(*character, position, fit);
-
-                        if(enemy_distance > walk_distance)
-                        {
-                            character->UseCommand(AnimationCommand::kFastMove);
-                        }
-                        else if(enemy_distance < attak_distance)
-                        {
-                            if((++m_current_point) == m_track_points.end())
-                            {
-                                m_current_point = m_track_points.begin();
-                            }
-                            character->UseCommand(AnimationCommand::kStance); 
-                        }
-                        else
-                        {
-                            character->UseCommand(AnimationCommand::kMove); 
-                        }
-                    }
-                    
-                }
-                
+                FreeRun(character, distribution);
             }
-            else
-            if(auto enemy = character->arch_enemy.lock())
+            else  if(auto enemy = character->arch_enemy.lock())
             {
                 glm::vec3 enemy_vector = enemy->GetPosition() - character->GetPosition();
                 float enemy_distance = glm::length(enemy_vector);
                 constexpr float distance_smooth = 0.1f;
                 distance = enemy_distance * distance_smooth + (1.0f - distance_smooth) * distance;
-                enemy_distance = distance; 
-                
-                if(!character->IsNoRotateable())
-                {
-                    constexpr float fit = -45.0f;
-                    character->model_matrix = RotateToDirection2d(*character, enemy_vector, fit);
-                }
+                enemy_distance = distance;
+
+                auto p_d_info = character->GetDungeonHeroInfo();
+
+                dice_roll = distribution(random_generator);
 
 
-                if(enemy_distance > walk_distance)
+                if (p_d_info->hero.lock() == character->arch_enemy.lock())
                 {
-                    character->UseCommand(AnimationCommand::kFastMove);
+                    HeroAttack(character, enemy_distance, enemy_vector, dice_roll);
+
                 }
                 else
                 {
-                    bool no_strike = true;
-                    auto p_d_info = character->GetDungeonHeroInfo();
-
-                    if(
-                        (!p_d_info->attackers.empty())
-                        &&(p_d_info->attackers.front().second.lock().get() == character)
-                        )
-                    {
-                        if((p_d_info->now_time - p_d_info->attackers.front().first) > attacker_time)
-                        {
-                            if(character->UseCommand(AnimationCommand::kStrike))
-                            {
-                                p_d_info->attackers.pop_front();
-                                no_strike = false;
-                            }
-                        }
-                        
-                    }
-
-                    if(no_strike)
-                    {
-                        if(enemy_distance > attak_distance)
-                        {
-                            character->UseCommand(AnimationCommand::kMove);   /* code */
-                        }
-                        else
-                        if(enemy_distance < step_back_distance)
-                        {
-                            character->UseCommand(AnimationCommand::kStepBack);   /* code */
-                        }
-                        else
-                        {                        
-                            dice_roll = distribution(random_generator);
-                            if(dice_roll>(random_maximum - 50))
-                            {
-                                if(p_d_info->hero.lock() != character->arch_enemy.lock()) 
-                                {
-                                    character->UseCommand(AnimationCommand::kStrike);
-                                }
-                                else
-                                {               
-                                    const int attackers_max = 3;
-                                    if(p_d_info->attackers.size() < attackers_max)
-                                    {
-                                        auto element = std::make_pair(p_d_info->now_time,character->GetDungeonListReference());
-                                        auto res = std::find_if(p_d_info->attackers.begin(),
-                                                                p_d_info->attackers.end(),
-                                                                [&element](decltype(element) el){return el.second.lock()==element.second.lock();});
-                                        if(res == p_d_info->attackers.end())
-                                        {
-                                            p_d_info->attackers.push_back(std::make_pair(p_d_info->now_time,character->GetDungeonListReference()));
-                                        }
-                                    }
-                                }
-
-                            }
-                            else
-                            {
-                                character->UseCommand(AnimationCommand::kStance);
-                            } 
-                        }
-                    }
-                    
+                    SimpleAttack(character, enemy_distance, enemy_vector, dice_roll);
                 }
-
-                
             }
-
         }
 
         virtual void UpdateFromLines(std::vector<std::string> &lines)
