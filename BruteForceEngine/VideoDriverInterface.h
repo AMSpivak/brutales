@@ -7,35 +7,33 @@
 #include <cstdint>
 
 ///////////////////////////////////
-#include <wrl.h>
-using namespace Microsoft::WRL;
-
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
-
-// D3D12 extension library.
-#include "d3dx12.h"
+#include "PlatformDefine.h"
+#include "EngineGpuCommands.h"
 ///////////////////////////////////
 #if defined(CreateWindow)
 #undef CreateWindow
 #endif
-namespace RenderInterface
+namespace BruteForce
 {	
 	using SimpleFunctionPtr = std::function<void()>;
+	using ResizeFunctionPtr = std::function<void(uint32_t, uint32_t)>;
 	class Window
 	{
 	protected:
 		SimpleFunctionPtr funcOnPaint;
+		ResizeFunctionPtr funcOnResize;
+		SwapChain* m_SwapChain;
+		uint32_t Width;
+		uint32_t Height;
 	public:
-		Window(){};
+		Window():m_SwapChain(nullptr), Width(0), Height(0) {};
 		virtual ~Window() {};
 		virtual void Show() = 0;
-		virtual ComPtr<IDXGISwapChain4> CreateSwapChain(
-			ComPtr<ID3D12CommandQueue> commandQueue,
-			uint32_t width, uint32_t height, uint32_t bufferCount) = 0;
-		void SetOnPaint(SimpleFunctionPtr func) { funcOnPaint = func;}
+		virtual SwapChain CreateSwapChain(CommandQueue& commandQueue, uint32_t bufferCount) = 0;
+		virtual SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount) = 0;
+		void SetOnPaint(SimpleFunctionPtr func) { funcOnPaint = func; }
+		void SetOnResize(ResizeFunctionPtr func) { funcOnResize = func; }
+		void SetSize(uint32_t width, uint32_t height) { Width = width; uint32_t Height = height; }
 	};
 
 	class VideoDriverInterface
@@ -44,6 +42,15 @@ namespace RenderInterface
 		virtual ~VideoDriverInterface() {}
 		virtual Window * CreateWindow(const wchar_t* windowClassName, const wchar_t* windowTitle, uint32_t width, uint32_t height) = 0;
 	};
+
+	Adapter GetAdapter(bool useWarp);
+	Device CreateDevice(Adapter adapter);
+	DescriptorHeap CreateDescriptorHeap(Device device, DescriptorHeapType type, uint32_t numDescriptors);
+
+	void EnableDebugLayer();
+	void UpdateRenderTargetViews(Device device, SwapChain swapChain, DescriptorHeap descriptorHeap, Resource* BackBuffers, uint8_t NumFrames);
+
+	//void WaitForFenceValue(Fence fence, uint64_t fenceValue, FenceEvent fenceEvent, std::chrono::milliseconds duration = std::chrono::milliseconds::max());
 }
 #endif
 

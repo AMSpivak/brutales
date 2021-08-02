@@ -1,25 +1,22 @@
 #include "VideoDriverDX12.h"
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include "Helpers.h"
 // Windows Runtime Library. Needed for Microsoft::WRL::ComPtr<> template class.
-#include <wrl.h>
+
 using namespace Microsoft::WRL;
 
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
 
 // D3D12 extension library.
 #include "d3dx12.h"
+#include "EngineGpuSwapChain.h"
 
-namespace RenderInterface
+namespace BruteForce
 {
     LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         WindowDX12* pWindow = (WindowDX12*)GetWindowLongPtr(hwnd, 0);
-        //if (false/*g_IsInitialized*/)
         {
             switch (message)
             {
@@ -55,13 +52,9 @@ namespace RenderInterface
                 break;
             case WM_SIZE:
             {
-                /*RECT clientRect = {};
-                ::GetClientRect(g_hWnd, &clientRect);
-
-                int width = clientRect.right - clientRect.left;
-                int height = clientRect.bottom - clientRect.top;
-
-                Resize(width, height);*/
+                if (pWindow) {
+                    pWindow->Resize();
+                }
             }
             break;
             case WM_DESTROY:
@@ -103,11 +96,17 @@ namespace RenderInterface
     }
 
 
-    Window * VideoDriverDX12::CreateWindow(const wchar_t* windowClassName, const wchar_t* windowTitle, uint32_t width, uint32_t height)
-	{
-		HINSTANCE	hInst = GetModuleHandle(NULL);
+    Window* VideoDriverDX12::CreateWindow(const wchar_t* windowClassName, const wchar_t* windowTitle, uint32_t width, uint32_t height)
+    {
+        // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
+     // Using this awareness context allows the client area of the window 
+     // to achieve 100% scaling while still allowing non-client window content to 
+     // be rendered in a DPI sensitive fashion.
+        SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
-		RegisterWindowClass(hInst, windowClassName);
+        HINSTANCE	hInst = GetModuleHandle(NULL);
+
+        RegisterWindowClass(hInst, windowClassName);
 
         int screenWidth = ::GetSystemMetrics(SM_CXSCREEN);
         int screenHeight = ::GetSystemMetrics(SM_CYSCREEN);
@@ -140,12 +139,27 @@ namespace RenderInterface
         assert(hWnd && "Failed to create window");
         auto ret_value = new WindowDX12(hWnd);
         SetWindowLongPtr(hWnd, 0, (LONG_PTR)ret_value);
-		return ret_value;
-	}
+        ret_value->SetSize(static_cast<uint32_t>(windowWidth), static_cast<uint32_t>(windowHeight));
+        return ret_value;
+    }
 
     void WindowDX12::Show() {
         ::ShowWindow(mhWnd, SW_SHOW);
     }
+
+    void WindowDX12::Resize()
+    {
+        if (funcOnResize) {
+            RECT clientRect = {};
+            ::GetClientRect(mhWnd, &clientRect);
+
+            int width = clientRect.right - clientRect.left;
+            int height = clientRect.bottom - clientRect.top;
+            SetSize(width, height);
+            funcOnResize(width, height);
+        }
+    }
+
 
     bool WindowDX12::CheckTearingSupport()
     {
@@ -173,46 +187,149 @@ namespace RenderInterface
         return allowTearing == TRUE;
     }
 
-    ComPtr<IDXGISwapChain4> WindowDX12::CreateSwapChain(
-        ComPtr<ID3D12CommandQueue> commandQueue,
-        uint32_t width, uint32_t height, uint32_t bufferCount)
+
+    SwapChain WindowDX12::CreateSwapChain(ComPtr<ID3D12CommandQueue>& commandQueue, uint32_t bufferCount)
     {
-        ComPtr<IDXGISwapChain4> dxgiSwapChain4;
-        ComPtr<IDXGIFactory4> dxgiFactory4;
+        return BruteForce::CreateSwapChain(commandQueue, bufferCount, Width, Height, CheckTearingSupport(), mhWnd);
+    }
+
+    SwapChain WindowDX12::CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount)
+    {
+        return BruteForce::CreateSwapChain(commandQueue, bufferCount, Width, Height, CheckTearingSupport(), mhWnd);
+    }
+
+
+    Adapter GetAdapter(bool useWarp)
+    {
+        ComPtr<IDXGIFactory4> dxgiFactory;
         UINT createFactoryFlags = 0;
 #if defined(_DEBUG)
         createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
 #endif
 
-        ThrowIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory4)));
-        DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-        swapChainDesc.Width = width;
-        swapChainDesc.Height = height;
-        swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        swapChainDesc.Stereo = FALSE;
-        swapChainDesc.SampleDesc = { 1, 0 };
-        swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapChainDesc.BufferCount = bufferCount;
-        swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
-        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-        swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-        // It is recommended to always allow tearing if tearing support is available.
-        swapChainDesc.Flags = CheckTearingSupport() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
-        ComPtr<IDXGISwapChain1> swapChain1;
-        ThrowIfFailed(dxgiFactory4->CreateSwapChainForHwnd(
-            commandQueue.Get(),
-            mhWnd,
-            &swapChainDesc,
-            nullptr,
-            nullptr,
-            &swapChain1));
+        ThrowIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory)));
 
-        // Disable the Alt+Enter fullscreen toggle feature. Switching to fullscreen
-        // will be handled manually.
-        ThrowIfFailed(dxgiFactory4->MakeWindowAssociation(mhWnd, DXGI_MWA_NO_ALT_ENTER));
+        ComPtr<IDXGIAdapter1> dxgiAdapter1;
+        ComPtr<IDXGIAdapter4> dxgiAdapter4;
 
-        ThrowIfFailed(swapChain1.As(&dxgiSwapChain4));
+        if (useWarp)
+        {
+            ThrowIfFailed(dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&dxgiAdapter1)));
+            ThrowIfFailed(dxgiAdapter1.As(&dxgiAdapter4));
+        }
+        else
+        {
+            SIZE_T maxDedicatedVideoMemory = 0;
+            for (UINT i = 0; dxgiFactory->EnumAdapters1(i, &dxgiAdapter1) != DXGI_ERROR_NOT_FOUND; ++i)
+            {
+                DXGI_ADAPTER_DESC1 dxgiAdapterDesc1;
+                dxgiAdapter1->GetDesc1(&dxgiAdapterDesc1);
 
-        return dxgiSwapChain4;
+                // Check to see if the adapter can create a D3D12 device without actually 
+                // creating it. The adapter with the largest dedicated video memory
+                // is favored.
+                if ((dxgiAdapterDesc1.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) == 0 &&
+                    SUCCEEDED(D3D12CreateDevice(dxgiAdapter1.Get(),
+                        D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr)) &&
+                    dxgiAdapterDesc1.DedicatedVideoMemory > maxDedicatedVideoMemory)
+                {
+                    maxDedicatedVideoMemory = dxgiAdapterDesc1.DedicatedVideoMemory;
+                    ThrowIfFailed(dxgiAdapter1.As(&dxgiAdapter4));
+                }
+            }
+        }
+
+        return dxgiAdapter4;
+    }
+
+
+
+    Device CreateDevice(Adapter adapter)
+    {
+        ComPtr<ID3D12Device2> d3d12Device2;
+        ThrowIfFailed(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12Device2)));
+        // Enable debug messages in debug mode.
+#if defined(_DEBUG)
+        ComPtr<ID3D12InfoQueue> pInfoQueue;
+        if (SUCCEEDED(d3d12Device2.As(&pInfoQueue)))
+        {
+            pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+            pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+            pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
+            // Suppress whole categories of messages
+            //D3D12_MESSAGE_CATEGORY Categories[] = {};
+
+            // Suppress messages based on their severity level
+            D3D12_MESSAGE_SEVERITY Severities[] =
+            {
+                D3D12_MESSAGE_SEVERITY_INFO
+            };
+
+            // Suppress individual messages by their ID
+            D3D12_MESSAGE_ID DenyIds[] = {
+                D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,   // I'm really not sure how to avoid this message.
+                D3D12_MESSAGE_ID_MAP_INVALID_NULLRANGE,                         // This warning occurs when using capture frame while graphics debugging.
+                D3D12_MESSAGE_ID_UNMAP_INVALID_NULLRANGE,                       // This warning occurs when using capture frame while graphics debugging.
+            };
+
+            D3D12_INFO_QUEUE_FILTER NewFilter = {};
+            //NewFilter.DenyList.NumCategories = _countof(Categories);
+            //NewFilter.DenyList.pCategoryList = Categories;
+            NewFilter.DenyList.NumSeverities = _countof(Severities);
+            NewFilter.DenyList.pSeverityList = Severities;
+            NewFilter.DenyList.NumIDs = _countof(DenyIds);
+            NewFilter.DenyList.pIDList = DenyIds;
+
+            ThrowIfFailed(pInfoQueue->PushStorageFilter(&NewFilter));
+        }
+#endif
+
+        return d3d12Device2;
+    }
+
+    ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(ComPtr<ID3D12Device2> device,
+        D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
+    {
+        ComPtr<ID3D12DescriptorHeap> descriptorHeap;
+
+        D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+        desc.NumDescriptors = numDescriptors;
+        desc.Type = type;
+
+        ThrowIfFailed(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptorHeap)));
+
+        return descriptorHeap;
+    }
+
+    void EnableDebugLayer()
+    {
+#if defined(_DEBUG)
+        // Always enable the debug layer before doing anything DX12 related
+        // so all possible errors generated while creating DX12 objects
+        // are caught by the debug layer.
+        ComPtr<ID3D12Debug> debugInterface;
+        ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
+        debugInterface->EnableDebugLayer();
+#endif
+    }
+
+
+    void UpdateRenderTargetViews(Device device, SwapChain swapChain, DescriptorHeap descriptorHeap, Resource * BackBuffers, uint8_t NumFrames)
+    {
+        auto rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(DescriptorHeapRTV);
+
+        CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(descriptorHeap->GetCPUDescriptorHandleForHeapStart());
+
+        for (int i = 0; i < NumFrames; ++i)
+        {
+            ComPtr<ID3D12Resource> backBuffer;
+            ThrowIfFailed(swapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer)));
+
+            device->CreateRenderTargetView(backBuffer.Get(), nullptr, rtvHandle);
+
+            BackBuffers[i] = backBuffer;
+
+            rtvHandle.Offset(rtvDescriptorSize);
+        }
     }
 }

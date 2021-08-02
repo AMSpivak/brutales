@@ -1,7 +1,7 @@
 #ifndef VIDEO_DRIVER_DX12_H
 #define VIDEO_DRIVER_DX12_H
 #include "VideoDriverInterface.h"
-namespace RenderInterface
+namespace BruteForce
 {
 	class WindowDX12 : public Window
 	{
@@ -9,13 +9,14 @@ namespace RenderInterface
 	private:
 		HWND mhWnd;
 		bool CheckTearingSupport();
+		void Resize();
 	public:
 		WindowDX12(HWND hWnd) : mhWnd(hWnd) {};
 		virtual void Show();
 		virtual ~WindowDX12() {};
-		virtual ComPtr<IDXGISwapChain4> CreateSwapChain(
-			ComPtr<ID3D12CommandQueue> commandQueue,
-			uint32_t width, uint32_t height, uint32_t bufferCount);
+		virtual SwapChain CreateSwapChain(CommandQueue& commandQueue, uint32_t bufferCount);
+		virtual SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount);
+
 	};
 
 	class VideoDriverDX12 : public VideoDriverInterface
