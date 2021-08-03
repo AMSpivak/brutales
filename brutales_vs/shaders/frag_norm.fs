@@ -18,7 +18,10 @@ uniform sampler2D NormalTexture;
 void main()
 {
 
-	vec4 texColor = texture(ourTexture, TexCoord) * color_corrector;
+    //const vec4 pows = vec4(2.2,2.2,2.2,1.0);
+    const vec4 pows = vec4(1.0,1.0,1.0,1.0);
+
+	vec4 texColor = pow(texture(ourTexture, TexCoord),pows)  * color_corrector;
     if(texColor.a < 0.1)
         discard;
 
@@ -31,11 +34,13 @@ void main()
     normal = normalize(normal * 2.0 - 1.0); 
     normal = normalize(TBN * normal); 
     //normal = normal * 0.5 + 0.5; 
-    
+    normal.x = (normal.x + 1.01) * (step(0,normal.z)*2.0 - 1.0);
+
+    normal.z = 0;
     gNormal = vec4(normal, utility.y);
     //gNormal = vec4(ourColor.xyz, utility.y);
     //gNormal = vec4(normal.xyz, utility.y);
-    float val = length(normal);
+    //float val = length(normal);
 
 	// gAlbedoSpec = vec4(normal.xyz, 0.06 + utility.z*0.94);//texColor;
 	gAlbedoSpec = vec4(texColor.xyz, 0.06 + utility.z*0.94);//texColor;

@@ -20,13 +20,30 @@ uniform samplerCube skybox;
 //uniform sampler2D shadowMap;
 
 uniform mat4 lightSpaceMatrix;
+uniform mat4 ProjInv;
+uniform mat4 ViewInv;
 
 uniform vec3 LightDir;
 uniform vec4 LightColor;
 uniform vec3 viewPos;
 
+vec3 PositionFromDepth(vec2 screen)
+{
+	float depth = texture(PositionMap, screen).x ;
+    
+    float z = depth * 2.0 - 1.0;
 
-float ShadowCalculation(vec4 PosLight)
+    vec4 clipSpacePosition = vec4(screen * 2.0 - 1.0, z, 1.0);
+    vec4 viewSpacePosition = ProjInv * clipSpacePosition;
+    viewSpacePosition /= viewSpacePosition.w;
+
+    vec4 worldSpacePosition = ViewInv * viewSpacePosition;
+
+    return worldSpacePosition.xyz;
+}
+
+
+float ShadowCalculation(vec4 PosLight, vec2 offset)
 {
     
     vec4 fragPosLightSpace = lightSpaceMatrix * PosLight;
@@ -47,7 +64,7 @@ float ShadowCalculation(vec4 PosLight)
 
     float bias = 0.0005;
     //float occluder = texture(shadowMap,projCoords.xy).r;
-    vec4 occluder = textureGather(shadowMap,projCoords.xy);
+    vec4 occluder = textureGather(shadowMap,projCoords.xy + offset);
     //vec2 min_v = min(occluder.xy,occluder.zw);
     //float min_f = bias + min(min_v.x,min_v.y);
     //vec2 max_v = max(occluder.xy,occluder.zw);
@@ -91,10 +108,12 @@ void main()
     float metallness = min(1.0,(texColor.a -0.06) * 1.064);
     vec4 normal_map = texture(NormalMap, TexCoords);
 	vec3 texNormal= normal_map.xyz;
-
+    float s = sign(normal_map.x);
+    texNormal.x = abs(normal_map.x) - 1.01;
+    texNormal.z = s * (1.0 - sqrt(dot(texNormal.xy,texNormal.xy)));
    // vec3 ibl_diff = textureLod(skybox, TexCoords,1);
-
-	vec3 FragPos= texture(PositionMap, TexCoords).xyz;
+   
+	vec3 FragPos= PositionFromDepth(TexCoords);//texture(PositionMap, TexCoords).xyz;
 	float norm_l = dot(texNormal,LightDir);
     
      
@@ -125,7 +144,11 @@ void main()
 
 
         
-        float shadow_res = (ShadowCalculation(vec4(FragPos.xyz,1.0)));
+        float shadow_res = (ShadowCalculation(vec4(FragPos.xyz,1.0),vec2(0.0,0.0)))
+        ;//+ 0.15 *(ShadowCalculation(vec4(FragPos.xyz,1.0),vec2(0.0006,0.0006)))
+        //+ 0.15 *(ShadowCalculation(vec4(FragPos.xyz,1.0),vec2(0.0006,-0.0006)))
+        //+ 0.15 *(ShadowCalculation(vec4(FragPos.xyz,1.0),vec2(-0.0006,0.0006)))
+        //+ 0.15 *(ShadowCalculation(vec4(FragPos.xyz,1.0),vec2(-0.0006,-0.0006)));
         shadow_res = min(max(0,norm_l),shadow_res);
         shadow_res = 0.4f + 0.6f * shadow_res;
         //shadow_res = mix(1.0,shadow_res,LightColor.w );

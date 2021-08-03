@@ -46,8 +46,8 @@ void ResetModels(std::vector <std::shared_ptr<glModel> > &Models)
 {
     for(auto &tmpModel : Models)
     {
-        tmpModel->model = glm::rotate(tmpModel->model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        tmpModel->model = glm::rotate(tmpModel->model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        //tmpModel->model = glm::rotate(tmpModel->model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        //tmpModel->model = glm::rotate(tmpModel->model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     }
 }
 
@@ -610,11 +610,13 @@ void GlGameStateDungeon::LoadMap(const std::string &filename,const std::string &
         if(i<40)
         {
             UpdateCharacterFromFile("heroes/hero_orc.chr",*mob);
+            constexpr float scale = 0.6f;
+            mob->model_matrix = glm::scale(mob->model_matrix, glm::vec3(scale, scale, scale));
         }
         else
         {
             UpdateCharacterFromFile("heroes/hero_orc_br2.chr",*mob);
-            constexpr float scale = 1.3f;
+            constexpr float scale = 0.7f;
             mob->model_matrix = glm::scale(mob->model_matrix,glm::vec3(scale, scale, scale));
         }
         
@@ -1045,7 +1047,8 @@ void GlGameStateDungeon::Draw()
 
 		glUniform1i(glGetUniformLocation(current_shader, "PositionMap"), 2);
 		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, render_target.PositionMap);
+        //glBindTexture(GL_TEXTURE_2D, render_target.PositionMap); render_target.depthMap
+        glBindTexture(GL_TEXTURE_2D, render_target.depthMap);
 
         glUniform1i(glGetUniformLocation(current_shader, "skybox"), 4);
         glActiveTexture(GL_TEXTURE4);
@@ -1086,10 +1089,17 @@ void GlGameStateDungeon::Draw()
         glStencilFunc(GL_EQUAL, 1, 0xFF);
         glStencilOp(GL_KEEP, GL_KEEP, GL_INCR); 
 
-        GLuint ligh_loc  = glGetUniformLocation(current_shader, "lightSpaceMatrix");
+        GLuint ligh_loc = glGetUniformLocation(current_shader, "lightSpaceMatrix");
+        GLuint proj_inv = glGetUniformLocation(current_shader, "ProjInv");
+        GLuint view_inv = glGetUniformLocation(current_shader, "ViewInv");
         glUniform1i(glGetUniformLocation(current_shader, "shadowMap"), 3);
         const glm::vec4 light_colors[] = { {1.0f,0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f,1.0f},{0.0f,0.0f,1.0f,1.0f},{1.0f,1.0f,0.0f,1.0f} };
 
+        glm::mat4 proj_inv_mat = glm::inverse(Camera.CameraProjectionMatrix());
+        glm::mat4 view_inv_mat = glm::inverse(Camera.CameraViewMatrix());
+        
+        glUniformMatrix4fv(proj_inv, 1, GL_FALSE, glm::value_ptr(proj_inv_mat));
+        glUniformMatrix4fv(view_inv, 1, GL_FALSE, glm::value_ptr(view_inv_mat));
 
         for (size_t i = 0; i < Lights.size(); i++)//const auto & light : Lights)
         {
@@ -1314,6 +1324,7 @@ InteractionResult GlGameStateDungeon::ReactObjectToEvent(std::weak_ptr<GlCharact
 void GlGameStateDungeon::FitObjects(int steps, float accuracy)
 {
     float summ = 0.0f;
+    //ApplyMapForces()
     for(int i =0; i< steps; i++)
     {
         summ = 0.0f;
@@ -1326,7 +1337,8 @@ void GlGameStateDungeon::FitObjects(int steps, float accuracy)
                 {  
                     if(!(*it_object2)->ghost)
                     {
-                        summ = std::max( summ,FitObjectToObject(**it_object1,**it_object2));
+                        //summ = std::max(summ, FitObjectToObject(**it_object1, **it_object2));
+                        summ = std::max( summ,Physics::Collide(**it_object1,**it_object2));
                     }  
                 }
             }
@@ -1726,7 +1738,7 @@ void GlGameStateDungeon::ProcessInputsCamera(std::map <int, bool> &inputs,float 
         if(inputs[GLFW_KEY_RIGHT_BRACKET]) camera_distance +=0.1f;
         if(inputs[GLFW_KEY_LEFT_BRACKET]) camera_distance -=0.1f;
     
-        camera_distance = glm::clamp(camera_distance,6.0f,14.0f);
+        camera_distance = glm::clamp(camera_distance,3.0f,20.0f);
 
         float joy_diff = joy_x - old_joy_x;
         if(std::abs(joy_diff) <  0.01f)
@@ -1764,7 +1776,7 @@ void GlGameStateDungeon::ProcessInputsCamera(std::map <int, bool> &inputs,float 
         }
 
 
-        Camera.SetCameraLocation(camera_position,glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        Camera.SetCameraLocation(camera_position,glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         auto norm = glm::normalize(-camera_position);
         auto sound_pos = sound_mul * (hero_position + camera_position);
         m_sound_engine->setListenerPosition(irrklang::vec3df(sound_pos[0],sound_pos[1],sound_pos[2]),

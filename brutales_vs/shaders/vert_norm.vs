@@ -59,4 +59,5 @@ void main()
 
     	TexCoord.x = texCoord.x;
 		TexCoord.y = 1.0 - texCoord.y;
+		//TexCoord.y = texCoord.y;
 }

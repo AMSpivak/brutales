@@ -86,7 +86,8 @@ void main()
     normal = normalize(TBN * normal); 
     //normal = TBN[2]; 
 
-    
+    normal.x = (normal.x + 1.01) * (step(0,normal.z)*2.0 - 1.0);
+    normal.z = 0;
     gNormal = vec4(normal.xyz, utility.y);
     //gNormal = vec4(vec3(0.0,1.0,0.0), utility.y);
 

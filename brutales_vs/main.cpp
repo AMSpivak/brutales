@@ -278,6 +278,7 @@ int main(int argc, char const *argv[])
     auto hero = std::make_shared<GlCharacter>(CharacterTypes::hero);
 	m_glmodels_map["Hero"] = hero;
 	UpdateCharacterFromFile(argc > 2 ? argv[2] : "heroes/hero.chr",*hero);
+	//hero->model_matrix = glm::rotate(hero->model_matrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	hero->SetName("Hero");
 
 	std::map<std::string,std::shared_ptr<IGlGameState>> states;

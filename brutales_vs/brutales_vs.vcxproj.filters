@@ -22,6 +22,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{c4ad17c8-c8cb-4eee-9752-df7f90167395}</UniqueIdentifier>
     </Filter>
+    <Filter Include="heroes">
+      <UniqueIdentifier>{3b5bdf63-8b78-4eac-a611-a1f221fa5c85}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="animation_sequence.h">
@@ -431,6 +434,15 @@
     </None>
     <None Include="shaders\skybox_cube.fs">
       <Filter>Shaders</Filter>
+    </None>
+    <None Include="heroes\hero.chr">
+      <Filter>heroes</Filter>
+    </None>
+    <None Include="heroes\hero_orc.chr">
+      <Filter>heroes</Filter>
+    </None>
+    <None Include="heroes\hero_orc_br2.chr">
+      <Filter>heroes</Filter>
     </None>
   </ItemGroup>
 </Project>

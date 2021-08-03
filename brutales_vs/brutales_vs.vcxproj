@@ -327,6 +327,9 @@
     <ResourceCompile Include="game.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="heroes\hero.chr" />
+    <None Include="heroes\hero_orc.chr" />
+    <None Include="heroes\hero_orc_br2.chr" />
     <None Include="shaders\dbg.fs" />
     <None Include="shaders\dbg.vs" />
     <None Include="shaders\deffered.fs" />

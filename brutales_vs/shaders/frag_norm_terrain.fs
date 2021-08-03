@@ -32,9 +32,12 @@ void main()
     //vec3 weight_summ = 
     ///weight /= (weight.x + weight.y + weight.z ).x; 
 
-    
 
-    vec4 texColor = weight.x*texture(ourTexture, TexCoord_X) + weight.y*texture(ourTexture, TexCoord_Y) + weight.z*texture(ourTexture, TexCoord_Z);
+    const vec4 pows = vec4(2.2,2.2,2.2,1.0);
+
+    vec4 texColor = weight.x*pow(texture(ourTexture, TexCoord_X),pows) 
+                    + weight.y*pow(texture(ourTexture, TexCoord_Y),pows)
+                    + weight.z*pow(texture(ourTexture, TexCoord_Z),pows);
 
     // if(texColor.a < 0.1)
     //     discard;
@@ -66,7 +69,8 @@ void main()
     //vec3 normal = normalize(normal_bump); 
     vec3 normal = normalize(normal_bump); 
     //normal = normal * 0.5 + 0.5; 
-    
+    normal.x = (normal.x + 1.01) * (step(0,normal.z)*2.0 - 1.0);
+    normal.z = 0;
     gNormal = vec4(normal, utility.y);
     //gNormal = vec4(ourColor.xyz, utility.y);
     //gNormal = vec4(normal.xyz, utility.y);
