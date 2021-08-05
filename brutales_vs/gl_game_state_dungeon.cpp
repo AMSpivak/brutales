@@ -518,7 +518,7 @@ void GlGameStateDungeon::LoadMap(const std::string &filename,const std::string &
     if(!level_file.is_open()) return;
 
     
-    hero_position = glm::vec3(10.0f,0.0f,10.0f); 
+    hero_position = glm::vec3(0.0f,0.0f,0.0f); 
     hero->SetPosition(hero_position); 
     m_start_place = start_place;
     GLResourcesManager * resources_manager = GetResourceManager();
@@ -606,45 +606,7 @@ void GlGameStateDungeon::LoadMap(const std::string &filename,const std::string &
     hero->SetDungeonHeroInfo(&m_dungeon_hero_info);
     for(int i = 0; i <50; i++)
     {
-        mob = std::make_shared<GlCharacter>(CharacterTypes::mob);
-        if(i<40)
-        {
-            UpdateCharacterFromFile("heroes/hero_orc.chr",*mob);
-        }
-        else
-        {
-            UpdateCharacterFromFile("heroes/hero_orc_br2.chr",*mob);
-            constexpr float scale = 1.3f;
-            mob->model_matrix = glm::scale(mob->model_matrix,glm::vec3(scale, scale, scale));
-        }
-        
-        mob->SetName("Mob"+std::to_string(i));
-        float mob_x = static_cast<float>(std::rand());
-        float mob_z = static_cast<float>(std::rand());
-        mob_x = mob_x * 360.0f / RAND_MAX - 180.0f;
-        mob_z = mob_z * 360.0f / RAND_MAX - 180.0f;
-        float angle_in_radians = static_cast<float>(std::rand());
-        angle_in_radians = angle_in_radians * 6.0f / RAND_MAX;
-
-        mob->SetPosition(glm::vec3(mob_x,0.0f,mob_z));
-        mob->model_matrix = glm::rotate(mob->model_matrix, angle_in_radians, glm::vec3(0.0f, 1.0f, 0.0f)); 
-        mob->SetDungeonHeroInfo(&m_dungeon_hero_info);
-        mob->SetDungeonListReference(mob);
-        mob->UseSequence("stance");
-        auto brain = Character::CreateBrain(Character::BrainTypes::Npc,[this](GlCharacter & character){/*ControlUnit(character);*/});
-        std::vector<std::string> lines;
-        for(int ib = 0; ib <5; ib++)
-        {
-            mob_x = 80.0f * std::rand() / RAND_MAX - 40.0f;
-            mob_z = 80.0f * std::rand() / RAND_MAX - 40.0f;
-            std::ostringstream ss;
-            ss <<"track_point " <<glm::vec3(mob_x,0.0f,mob_z);
-            lines.push_back(ss.str());
-        }
-        brain->UpdateFromLines(lines);
-        mob->SetBrain(brain);
-        
-        dungeon_objects.push_back(mob);    
+        AddMob();
     }
 
 
@@ -659,6 +621,58 @@ void GlGameStateDungeon::LoadMap(const std::string &filename,const std::string &
     PostMessage("run_script start_script");
 
 }
+
+void GlGameStateDungeon::AddMob()
+{
+    auto mob = std::make_shared<GlCharacter>(CharacterTypes::mob);
+    if ((mobs_add_counter % 10) == 0)
+    {
+        UpdateCharacterFromFile("heroes/hero_orc.chr", *mob);
+    }
+    else
+    {
+        UpdateCharacterFromFile("heroes/hero_orc_br2.chr", *mob);
+        constexpr float scale = 1.2f;
+        mob->model_matrix = glm::scale(mob->model_matrix, glm::vec3(scale, scale, scale));
+    }
+
+    mob->SetName("Mob" + std::to_string(mobs_add_counter));
+    float angle_in_radians = static_cast<float>(std::rand());
+    constexpr float double_pi = 6.2831853f;
+    angle_in_radians = angle_in_radians * double_pi / RAND_MAX;
+    glm::vec3 mob_spawn = hero->GetPosition() + glm::rotate(glm::vec3(50.0f, 0.0f, 0.0f),angle_in_radians, glm::vec3(0.0f, 1.0f, 0.0f));
+ 
+    angle_in_radians = static_cast<float>(std::rand()) * double_pi / RAND_MAX;
+
+    mob->SetPosition(mob_spawn);
+    mob->model_matrix = glm::rotate(mob->model_matrix, angle_in_radians, glm::vec3(0.0f, 1.0f, 0.0f));
+    mob->SetDungeonHeroInfo(&m_dungeon_hero_info);
+    mob->SetDungeonListReference(mob);
+    mob->UseSequence("stance");
+    mob->AddEnemy(hero);
+    auto brain = Character::CreateBrain(Character::BrainTypes::Npc, [this](GlCharacter& character) {});
+    std::vector<std::string> lines;
+    /*for (int ib = 0; ib < 5; ib++)
+    {
+        mob_x = 80.0f * std::rand() / RAND_MAX - 40.0f;
+        mob_z = 80.0f * std::rand() / RAND_MAX - 40.0f;
+        std::ostringstream ss;
+        ss << "track_point " << glm::vec3(mob_x, 0.0f, mob_z);
+        lines.push_back(ss.str());
+    }*/
+    {
+        //hero->GetPosition();
+        std::ostringstream ss;
+        ss << "track_point " << hero->GetPosition();
+        lines.push_back(ss.str());
+    }
+    brain->UpdateFromLines(lines);
+    mob->SetBrain(brain);
+
+    dungeon_objects.push_back(mob);
+    ++mobs_add_counter;
+}
+
 
 
 void GlGameStateDungeon::DrawDungeon(GLuint &current_shader,std::shared_ptr<GlCharacter>hero,const GlScene::glCamera &camera, bool locked_shader)
@@ -1373,6 +1387,12 @@ bool GlGameStateDungeon::MobKilled(std::shared_ptr<GlCharacter> obj)
     
     if (obj->GetLifeValue() < 0.0f)
         {
+            if(obj->GetType() == CharacterTypes::mob)
+            {
+                constexpr float mob_kill_cure = 0.03f;
+                hero->SetLifeValue(std::clamp(hero->GetLifeValue() + mob_kill_cure,0.0f,1.0f));
+                AddMob();
+            }
             GameEvents::GeneralEventStruct info = {&(*obj),m_shader_map["sprite2d"],render_target.depthMap,&(fx_texture->m_texture)};
             map_events.push_back(CreateGameEvent( GameEvents::EventTypes::BarrelValhalla,&info));
             return true;

@@ -1,5 +1,5 @@
-mass_inv 1.0
-radius 0.5
+mass_inv 1.1
+radius 0.8
 breed 2
 model material/barb01/barb_orc_br2.mdl
 model material/sword/sword.mdl

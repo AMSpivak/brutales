@@ -59,6 +59,9 @@ private:
     std::weak_ptr<IGlGameState> return_state;
 
     irrklang::ISoundEngine  *m_sound_engine;
+
+    size_t mobs_add_counter = 0;
+
     float raged_mode = 0.0f;
     unsigned char simple_screen;
 
@@ -91,7 +94,7 @@ private:
     std::map<std::string,std::vector<std::string>> m_scripts;
     
     std::shared_ptr<GlCharacter> hero;
-    std::shared_ptr<GlCharacter> mob;
+    //std::shared_ptr<GlCharacter> mob;
     std::string m_level_file;
     std::shared_ptr<Gl2D::GlImage> m_intro;
     
@@ -166,6 +169,7 @@ private:
     void ProcessInputsCamera(std::map <int, bool> &inputs,float joy_x, float joy_y);
     void ControlUnit(GlCharacter & character);
     std::shared_ptr<GlCharacter> MobPointer(const std::string & name);
+    void AddMob();
     
     
 };
