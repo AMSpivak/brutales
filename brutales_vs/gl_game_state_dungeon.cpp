@@ -625,16 +625,16 @@ void GlGameStateDungeon::LoadMap(const std::string &filename,const std::string &
 void GlGameStateDungeon::AddMob()
 {
     auto mob = std::make_shared<GlCharacter>(CharacterTypes::mob);
-    if ((mobs_add_counter % 10) == 0)
+    //if ((mobs_add_counter % 10) != 0)
     {
         UpdateCharacterFromFile("heroes/hero_orc.chr", *mob);
     }
-    else
+    /*else
     {
         UpdateCharacterFromFile("heroes/hero_orc_br2.chr", *mob);
         constexpr float scale = 1.2f;
         mob->model_matrix = glm::scale(mob->model_matrix, glm::vec3(scale, scale, scale));
-    }
+    }*/
 
     mob->SetName("Mob" + std::to_string(mobs_add_counter));
     float angle_in_radians = static_cast<float>(std::rand());
@@ -650,7 +650,8 @@ void GlGameStateDungeon::AddMob()
     mob->SetDungeonListReference(mob);
     mob->UseSequence("stance");
     mob->AddEnemy(hero);
-    auto brain = Character::CreateBrain(Character::BrainTypes::Npc, [this](GlCharacter& character) {});
+    mob->SetHordePosition(hero->GetPosition());
+    auto brain = Character::CreateBrain(Character::BrainTypes::Horde, [this](GlCharacter& character) {});
     std::vector<std::string> lines;
     /*for (int ib = 0; ib < 5; ib++)
     {
@@ -1336,12 +1337,30 @@ void GlGameStateDungeon::FitObjects(int steps, float accuracy)
         {
             if(!(*it_object1)->ghost)
             {  
+                bool is_mob = ((*it_object1)->GetType() == CharacterTypes::mob);
                 for(auto it_object2 = std::next(it_object1) ;it_object2 != dungeon_objects.end();it_object2++)
                 {  
+
                     if(!(*it_object2)->ghost)
                     {
                         summ = std::max( summ,FitObjectToObject(**it_object1,**it_object2));
-                    }  
+                    }
+
+                    if (is_mob && ((*it_object2)->GetType() == CharacterTypes::mob))
+                    {
+                        glm::vec3 p1 = (*it_object1)->GetHordePosition();
+                        glm::vec3 p2 = (*it_object2)->GetHordePosition();
+                        glm::vec3 ph = hero->GetPosition();
+                        constexpr float mob_space = 3.0f;
+                        constexpr float mob_hero_space = 20.0f;
+                        constexpr float mob_hero_force = 0.1f;
+                        constexpr float base_force = 0.4f;
+                        Physics::Constrain(p1, p2, mob_space, 0.0f, base_force, 0.5f, 0.5f);
+                        Physics::Constrain(p2, ph, mob_hero_space, mob_hero_force, base_force, 1.0f, 0.0f);
+                        Physics::Constrain(p1, ph, mob_hero_space, mob_hero_force, base_force, 1.0f, 0.0f);
+                        (*it_object1)->SetHordePosition(p1);
+                        (*it_object2)->SetHordePosition(p2);
+                    }
                 }
             }
         }
@@ -1402,8 +1421,22 @@ bool GlGameStateDungeon::MobKilled(std::shared_ptr<GlCharacter> obj)
 
 bool IsKilled (std::shared_ptr<IMapEvent> value) { return value->Process() == EventProcessResult::Kill; }
 
+void GlGameStateDungeon::ThinkHorde()
+{
+   /*for(auto& obj: dungeon_objects)
+    { 
+        if (obj->GetType() == CharacterTypes::mob)
+        {
+            obj->SetHordePosition(hero->GetPosition());
+        }
+    }*/
+}
+
+
+
 void GlGameStateDungeon::MapObjectsEventsInteract()
 {
+
     dungeon_objects.remove_if([this](std::shared_ptr<GlCharacter> obj){return MobKilled(obj);});
 
     mob_events.remove_if(IsKilled);
@@ -1507,6 +1540,7 @@ std::weak_ptr<IGlGameState>  GlGameStateDungeon::Process(std::map <int, bool> &i
         unit_control_action = ProcessInputs(inputs);
         
         //ControlUnit(*hero);
+        ThinkHorde();
 
         for(auto &object : dungeon_objects)
         {  
@@ -1529,6 +1563,8 @@ std::weak_ptr<IGlGameState>  GlGameStateDungeon::Process(std::map <int, bool> &i
             const decltype (m_dungeon_hero_info.attackers)::value_type& b)
             {return a.first < b.first; });
         std::cout<<"attackers: "<<m_dungeon_hero_info.attackers.size()<<"\n";
+
+
 
         FitObjects(10,0.01f);
         GameSettings::GetHeroStatus()->SetLife(hero->GetLifeValue());

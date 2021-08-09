@@ -4,6 +4,8 @@
 #include "collision.h"
 namespace Physics
 {
+    void Constrain(glm::vec3& p1, glm::vec3& p2, float length, float force_in, float force_out, float weight1, float inv_mass2);
+
     template <typename   T1, typename T2>
     std::pair<float,glm::vec3> Intersection(T1 &object1,T2 &object2)
     {

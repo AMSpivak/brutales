@@ -172,6 +172,8 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <Optimization>MaxSpeed</Optimization>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -297,6 +299,7 @@
     <ClCompile Include="..\gl_engine\gl_font16x16.cpp" />
     <ClCompile Include="..\gl_engine\gl_map_browser.cpp" />
     <ClCompile Include="..\gl_engine\gl_material.cpp" />
+    <ClCompile Include="..\gl_engine\gl_physics.cpp" />
     <ClCompile Include="..\gl_engine\gl_resources_manager.cpp" />
     <ClCompile Include="..\gl_engine\loader.cpp" />
     <ClCompile Include="..\gl_engine\math3d.cpp" />
@@ -311,6 +314,7 @@
     <ClCompile Include="gl_game_state_menu.cpp" />
     <ClCompile Include="gl_light.cpp" />
     <ClCompile Include="gl_model.cpp" />
+    <ClCompile Include="gl_physics.cpp" />
     <ClCompile Include="gl_render_target.cpp" />
     <ClCompile Include="input_abstracts.cpp" />
     <ClCompile Include="main.cpp">

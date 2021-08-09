@@ -170,6 +170,7 @@ private:
     void ControlUnit(GlCharacter & character);
     std::shared_ptr<GlCharacter> MobPointer(const std::string & name);
     void AddMob();
+    void ThinkHorde();
     
     
 };

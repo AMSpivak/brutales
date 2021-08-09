@@ -68,6 +68,9 @@ public:
     DungeonHeroInfo * GetDungeonHeroInfo();
     std::weak_ptr<GlCharacter> GetDungeonListReference();
 
+    const glm::vec3& GetHordePosition() { return m_horde_pos; }
+    void SetHordePosition(const glm::vec3& pos) { m_horde_pos = pos; m_horde_pos[1] = 0.0f; }
+
 private:
     DungeonHeroInfo * m_dungeon_hero_info;
     std::shared_ptr<Character::IBrain> m_brain;
@@ -102,7 +105,7 @@ private:
     std::pair<glm::vec3, glm::vec3>  m_weapon_base;
     std::pair<glm::vec3, glm::vec3>  m_weapon_old;
 
-
+    glm::vec3 m_horde_pos;
 
     //void RefreshMatrixes();
 

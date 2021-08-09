@@ -9,7 +9,7 @@ class GlCharacter;
 
 namespace Character
 {
-    enum class BrainTypes {Empty,Hero,Npc};
+    enum class BrainTypes {Empty, Hero, Npc, Horde};
 
     class IBrain
     {
