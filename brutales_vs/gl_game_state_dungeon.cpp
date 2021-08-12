@@ -652,7 +652,7 @@ void GlGameStateDungeon::AddMob()
     mob->AddEnemy(hero);
     mob->SetHordePosition(hero->GetPosition());
     auto brain = Character::CreateBrain(Character::BrainTypes::Horde, [this](GlCharacter& character) {});
-    std::vector<std::string> lines;
+    //std::vector<std::string> lines;
     /*for (int ib = 0; ib < 5; ib++)
     {
         mob_x = 80.0f * std::rand() / RAND_MAX - 40.0f;
@@ -661,13 +661,13 @@ void GlGameStateDungeon::AddMob()
         ss << "track_point " << glm::vec3(mob_x, 0.0f, mob_z);
         lines.push_back(ss.str());
     }*/
-    {
-        //hero->GetPosition();
-        std::ostringstream ss;
-        ss << "track_point " << hero->GetPosition();
-        lines.push_back(ss.str());
-    }
-    brain->UpdateFromLines(lines);
+    //{
+    //    //hero->GetPosition();
+    //    std::ostringstream ss;
+    //    ss << "track_point " << hero->GetPosition();
+    //    lines.push_back(ss.str());
+    //}
+    //brain->UpdateFromLines(lines);
     mob->SetBrain(brain);
 
     dungeon_objects.push_back(mob);
@@ -1337,6 +1337,8 @@ void GlGameStateDungeon::FitObjects(int steps, float accuracy)
         {
             if(!(*it_object1)->ghost)
             {  
+                glm::vec3 p1 = (*it_object1)->GetHordePosition();
+
                 bool is_mob = ((*it_object1)->GetType() == CharacterTypes::mob);
                 for(auto it_object2 = std::next(it_object1) ;it_object2 != dungeon_objects.end();it_object2++)
                 {  
@@ -1348,20 +1350,22 @@ void GlGameStateDungeon::FitObjects(int steps, float accuracy)
 
                     if (is_mob && ((*it_object2)->GetType() == CharacterTypes::mob))
                     {
-                        glm::vec3 p1 = (*it_object1)->GetHordePosition();
+                        //glm::vec3 p1 = (*it_object1)->GetHordePosition();
                         glm::vec3 p2 = (*it_object2)->GetHordePosition();
                         glm::vec3 ph = hero->GetPosition();
+                        ph[1] = 0;
                         constexpr float mob_space = 3.0f;
-                        constexpr float mob_hero_space = 20.0f;
+                        constexpr float mob_hero_space = 16.0f;
                         constexpr float mob_hero_force = 0.1f;
                         constexpr float base_force = 0.4f;
                         Physics::Constrain(p1, p2, mob_space, 0.0f, base_force, 0.5f, 0.5f);
                         Physics::Constrain(p2, ph, mob_hero_space, mob_hero_force, base_force, 1.0f, 0.0f);
                         Physics::Constrain(p1, ph, mob_hero_space, mob_hero_force, base_force, 1.0f, 0.0f);
-                        (*it_object1)->SetHordePosition(p1);
+                        //(*it_object1)->SetHordePosition(p1);
                         (*it_object2)->SetHordePosition(p2);
                     }
                 }
+                (*it_object1)->SetHordePosition(p1);
             }
         }
         for(auto &object : dungeon_objects)
@@ -1421,8 +1425,29 @@ bool GlGameStateDungeon::MobKilled(std::shared_ptr<GlCharacter> obj)
 
 bool IsKilled (std::shared_ptr<IMapEvent> value) { return value->Process() == EventProcessResult::Kill; }
 
-void GlGameStateDungeon::ThinkHorde()
+void GlGameStateDungeon::ThinkHorde(double passed_time)
 {
+    if (m_dungeon_hero_info.attackers.empty())
+        return;
+    m_dungeon_hero_info.attackers.remove_if([](decltype (m_dungeon_hero_info.attackers)::value_type val)
+        {
+    return val.second.expired(); });
+
+    for (auto& attacker : m_dungeon_hero_info.attackers)
+    {
+        attacker.first += passed_time;
+    }
+
+    //{return val.second.expired() || ;});
+    m_dungeon_hero_info.attackers.sort([](const decltype (m_dungeon_hero_info.attackers)::value_type& a,
+        const decltype (m_dungeon_hero_info.attackers)::value_type& b)
+        {return a.first > b.first; });
+
+    //decltype (m_dungeon_hero_info.attackers)::value_type& attaker = m_dungeon_hero_info.attackers.front();
+
+    //constexpr double attacker_time = 0.5;
+
+    std::cout << "attackers: " << m_dungeon_hero_info.attackers.size() << "\n";
    /*for(auto& obj: dungeon_objects)
     { 
         if (obj->GetType() == CharacterTypes::mob)
@@ -1540,7 +1565,7 @@ std::weak_ptr<IGlGameState>  GlGameStateDungeon::Process(std::map <int, bool> &i
         unit_control_action = ProcessInputs(inputs);
         
         //ControlUnit(*hero);
-        ThinkHorde();
+        ThinkHorde(passed_time);
 
         for(auto &object : dungeon_objects)
         {  
@@ -1549,20 +1574,6 @@ std::weak_ptr<IGlGameState>  GlGameStateDungeon::Process(std::map <int, bool> &i
 
         
 
-        m_dungeon_hero_info.attackers.remove_if([](decltype (m_dungeon_hero_info.attackers)::value_type val)
-            {   const double attacker_time_limit = 20.0;  
-                return val.second.expired() || (val.first > attacker_time_limit); });
-
-        for (auto &attacker : m_dungeon_hero_info.attackers)
-        {
-            attacker.first += passed_time;
-        }
-
-        //{return val.second.expired() || ;});
-        m_dungeon_hero_info.attackers.sort([](const decltype (m_dungeon_hero_info.attackers)::value_type& a,
-            const decltype (m_dungeon_hero_info.attackers)::value_type& b)
-            {return a.first < b.first; });
-        std::cout<<"attackers: "<<m_dungeon_hero_info.attackers.size()<<"\n";
 
 
 

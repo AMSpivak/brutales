@@ -398,7 +398,7 @@ namespace Character
         BrainMob(std::function<void(GlCharacter & character)> world_reaction):  rotator(0), 
                                                                                 distance(0.0f),
                                                                                 step_back_distance(2.0f),
-                                                                                walk_distance(7.0f),
+                                                                                walk_distance(10.0f),
                                                                                 attak_distance(3.3f)
         {
             m_world_reaction = world_reaction;
@@ -600,82 +600,69 @@ namespace Character
                 else*/
                 {
                     float dist = MoveToPosition(character, character->GetHordePosition());
-                    constexpr float achive_dst = 0.7f;
-                    if(dist < achive_dst)
+                    if(enemy_distance < 2.5f * walk_distance)
                     {
                         //constexpr float fit = -45.0f;
                         //FitDirection(character, enemy_vector, fit);
                         auto p_d_info = character->GetDungeonHeroInfo();
-                        constexpr size_t max_attackers = 3;
-                        if (p_d_info->attackers.size() < 3)
+                        constexpr size_t max_attackers = 5;
+                        if (p_d_info->attackers.size() < max_attackers)
                         {
                             auto element = std::make_pair(0, character->GetDungeonListReference());
                             p_d_info->attackers.push_back(element);
                             individual_think = true;
                         }
+                        else
+                        {
+
+                        }
                     }
                     return;
                 }
-            }
+            }/*
             else if (enemy_distance > 3 * walk_distance)
             {
                 individual_think = false;
                 return;
-            }
+            }*/
 
             constexpr float fit = -45.0f;
             FitDirection(character, enemy_vector, fit);
 
             auto p_d_info = character->GetDungeonHeroInfo();
-
-            auto element = std::make_pair(p_d_info->now_time, character->GetDungeonListReference());
-            if (!p_d_info->attackers.empty())
+            decltype (p_d_info->attackers)::value_type& attaker = p_d_info->attackers.front();
+            bool is_attaker{ false };
+            if (auto sp_attaker = attaker.second.lock())
             {
-                auto attacker_it = p_d_info->FindInAttackers(element);
-                if (attacker_it != p_d_info->attackers.end())
-                {
-                    if (!FitDistance(character, enemy_distance, walk_distance, attak_distance, step_back_distance) && (p_d_info->attackers.cbegin() == attacker_it))
+                is_attaker = sp_attaker.get() == character;
+            }
+
+            if (is_attaker)
+            {
+
+                    if (!FitDistance(character, enemy_distance, walk_distance, attak_distance, step_back_distance))
                     {
                         double wait_time = p_d_info->now_time - p_d_info->attaker_time;
                         if (wait_time > attacker_time * 3)
                         {
-                            if (attacker_it->first > attacker_time)
+                            if (attaker.first > attacker_time)
                             {
                                 if (character->UseCommand(AnimationCommand::kStrike))
                                 {
-                                    attacker_it->first = 0;
+                                    attaker.first = 0;
                                     p_d_info->attaker_time = p_d_info->now_time;
                                 }
                             }
                         }
                     }
-                    else
-                    {
-                        character->UseCommand(AnimationCommand::kStepRight);
-                    }
 
-                    return;
-                }
             }
-
-            const int attackers_max = 3;
-            if (p_d_info->attackers.size() < attackers_max)
+            else if(!FitDistance(character, enemy_distance, walk_distance, attak_distance, step_back_distance))
             {
-                auto element = std::make_pair(0, character->GetDungeonListReference());
-                auto res = p_d_info->FindInAttackers(element);
-                if (res == p_d_info->attackers.end())
-                {
-                    p_d_info->attackers.push_back(element);
-                }
+                character->UseCommand(AnimationCommand::kStepRight);
             }
-            else
-            {
-                if (!FitDistance(character, enemy_distance, walk_distance + attak_distance, walk_distance, attak_distance))
-                {
-                    character->UseCommand(AnimationCommand::kStepRight);
-                }
+            
 
-            }
         }
 
 
