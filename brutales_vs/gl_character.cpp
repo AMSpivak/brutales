@@ -27,7 +27,6 @@ GlCharacter::GlCharacter(CharacterTypes type):
                             ,m_breed(0)
                             ,m_breed_friendly(false)
                             ,m_dungeon_hero_info(nullptr)
-                            ,m_horde_pos(0)
 {
     m_brain = Character::CreateBrain(Character::BrainTypes::Empty,[](GlCharacter & character) { return; });
 }

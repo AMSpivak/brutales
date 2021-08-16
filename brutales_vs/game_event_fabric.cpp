@@ -79,7 +79,7 @@ namespace GameEvents
             case EventTypes::BarrelValhalla:
             {
                 auto ptr = static_cast<const GeneralEventStruct *>(parameters);                
-                auto e_ptr = std::make_shared<MapEventValhalla>(ptr->current_shader,ptr->depthmap,ptr->texture,1.0f,1.4f);
+                auto e_ptr = std::make_shared<MapEventValhalla>(ptr->current_shader,ptr->depthmap,ptr->texture,1.0f,1.0f);
                 e_ptr->position = ptr->object->GetPosition();
                 e_ptr->position.y += 1.5f;
                 return e_ptr;

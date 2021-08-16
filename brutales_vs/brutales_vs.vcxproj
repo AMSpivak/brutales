@@ -314,7 +314,6 @@
     <ClCompile Include="gl_game_state_menu.cpp" />
     <ClCompile Include="gl_light.cpp" />
     <ClCompile Include="gl_model.cpp" />
-    <ClCompile Include="gl_physics.cpp" />
     <ClCompile Include="gl_render_target.cpp" />
     <ClCompile Include="input_abstracts.cpp" />
     <ClCompile Include="main.cpp">

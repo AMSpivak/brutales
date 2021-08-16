@@ -509,13 +509,11 @@ namespace Character
 
         std::vector<glm::vec3> m_track_points;
 
-        bool individual_think;
-
         const int random_maximum = 150;
         int rotator;
         static std::default_random_engine random_generator;
 
-        float MoveToPosition(GlCharacter* character, const glm::vec3& position)
+        float MoveToPosition(GlCharacter* character, const glm::vec3& position, const glm::vec3& stance_direction)
         {
             auto c_position = character->GetPosition();
             c_position[1] = 0.0f;
@@ -523,20 +521,25 @@ namespace Character
             float enemy_distance = glm::length(c_position);
 
             constexpr float fit = -45.0f;
-            character->model_matrix = RotateToDirection2d(*character, c_position, fit);
 
-            if (enemy_distance > walk_distance)
-            {
-                character->UseCommand(AnimationCommand::kFastMove);
-            }
-            else if (enemy_distance < attak_distance)
+            if (enemy_distance < attak_distance)
             {
                 character->UseCommand(AnimationCommand::kStance);
+                character->model_matrix = RotateToDirection2d(*character, stance_direction, fit);
             }
             else
             {
-                character->UseCommand(AnimationCommand::kMove);
+                character->model_matrix = RotateToDirection2d(*character, c_position, fit);
+                if (enemy_distance > walk_distance)
+                {
+                    character->UseCommand(AnimationCommand::kFastMove);
+                }
+                else
+                {
+                    character->UseCommand(AnimationCommand::kMove);
+                }
             }
+            
             return enemy_distance;
         }
 
@@ -591,59 +594,79 @@ namespace Character
 
         void HeroAttack(GlCharacter* character, float enemy_distance, const glm::vec3& enemy_vector, int dice_roll)
         {
-            if (individual_think == false)
+
+            auto status = character->GetHordeInfoUnsafe().horde_status;
+
+            switch (status)
             {
-                /*if (enemy_distance < 2 * walk_distance)
+            case HordeStatus::Dummy:
+            {
+                float dist = MoveToPosition(character, character->GetHordePosition(),enemy_vector);
+                if (enemy_distance < 1.2f * character->GetHordeInfoUnsafe().horde_distance)
                 {
-                    individual_think = true;
-                }
-                else*/
-                {
-                    float dist = MoveToPosition(character, character->GetHordePosition());
-                    if(enemy_distance < 2.5f * walk_distance)
+                    auto p_d_info = character->GetDungeonHeroInfo();
+                    auto& inners = p_d_info->inner_chrs;
+                    constexpr size_t max_attackers = 5;
+                    if (inners < max_attackers)
                     {
-                        //constexpr float fit = -45.0f;
-                        //FitDirection(character, enemy_vector, fit);
-                        auto p_d_info = character->GetDungeonHeroInfo();
-                        constexpr size_t max_attackers = 5;
-                        if (p_d_info->attackers.size() < max_attackers)
-                        {
-                            auto element = std::make_pair(0, character->GetDungeonListReference());
-                            p_d_info->attackers.push_back(element);
-                            individual_think = true;
-                        }
-                        else
-                        {
-
-                        }
+                        ++inners; 
+                        character->GetHordeInfoUnsafe().horde_status = HordeStatus::Ring;
                     }
-                    return;
                 }
-            }/*
-            else if (enemy_distance > 3 * walk_distance)
-            {
-                individual_think = false;
                 return;
-            }*/
-
-            constexpr float fit = -45.0f;
-            FitDirection(character, enemy_vector, fit);
-
-            auto p_d_info = character->GetDungeonHeroInfo();
-            decltype (p_d_info->attackers)::value_type& attaker = p_d_info->attackers.front();
-            bool is_attaker{ false };
-            if (auto sp_attaker = attaker.second.lock())
-            {
-                is_attaker = sp_attaker.get() == character;
             }
-
-            if (is_attaker)
+                break;
+            case HordeStatus::Ring:
             {
+                constexpr float fit = -45.0f;
+                FitDirection(character, enemy_vector, fit);
+                constexpr float scaleup = 1.2f;
+                constexpr float scaledown = 0.8f;
+                bool fitting = FitDistance(character, enemy_distance - character->GetHordeInfoUnsafe().inner_distance,
+                                            walk_distance * scaleup,
+                                            attak_distance * scaleup,
+                                            step_back_distance * scaledown);
+                if (!fitting)
+                {
+                    character->UseCommand(AnimationCommand::kStepRight);
+                }
 
-                    if (!FitDistance(character, enemy_distance, walk_distance, attak_distance, step_back_distance))
+                auto p_d_info = character->GetDungeonHeroInfo();
+                constexpr size_t max_attackers = 5;
+                if (p_d_info->attackers.size() < max_attackers)
+                {
+                    auto& inners = p_d_info->inner_chrs;
+                    if(inners)
+                    { 
+                        --inners;
+                    }
+                    auto element = std::make_pair(0, character->GetDungeonListReference());
+                    p_d_info->attackers.push_back(element);
+                    character->GetHordeInfoUnsafe().horde_status = HordeStatus::Fighter;
+                }
+                return;
+            }
+                break;
+            case HordeStatus::Fighter:
+            {
+                constexpr float fit = -45.0f;
+                FitDirection(character, enemy_vector, fit);
+
+                auto p_d_info = character->GetDungeonHeroInfo();
+                auto& attaker = p_d_info->attackers.front();
+                bool is_attaker{ false };
+                if (!p_d_info->attackers.empty())
+                {
+                    auto& attaker = p_d_info->attackers.front();
+                    if (auto sp_attaker = attaker.second.lock())
+                    {
+                        is_attaker = sp_attaker.get() == character;
+                    }
+
+                    if (is_attaker && !FitDistance(character, enemy_distance, walk_distance, attak_distance, step_back_distance))
                     {
                         double wait_time = p_d_info->now_time - p_d_info->attaker_time;
-                        if (wait_time > attacker_time * 3)
+                        if (wait_time > attacker_time * 2)
                         {
                             if (attaker.first > attacker_time)
                             {
@@ -655,12 +678,24 @@ namespace Character
                             }
                         }
                     }
+                }
+
+                
+                if (!is_attaker && !FitDistance(character, enemy_distance * 0.7f, walk_distance * 1.1f, attak_distance * 1.1f, step_back_distance * 0.9f))
+                {
+                    character->UseCommand(AnimationCommand::kStepRight);
+                }
 
             }
-            else if(!FitDistance(character, enemy_distance, walk_distance, attak_distance, step_back_distance))
-            {
-                character->UseCommand(AnimationCommand::kStepRight);
+                break;
+            default:
+                break;
             }
+
+
+
+
+            
             
 
         }
@@ -731,7 +766,7 @@ namespace Character
                 }
                 else
                 {
-                    float dist = MoveToPosition(character, *m_current_point);
+                    float dist = MoveToPosition(character, *m_current_point, glm::vec3{1,0,0});
 
                     if (dist < attak_distance)
                     {
@@ -751,8 +786,7 @@ namespace Character
             distance(0.0f),
             step_back_distance(2.0f),
             walk_distance(7.0f),
-            attak_distance(3.3f),
-            individual_think(false)
+            attak_distance(3.3f)
         {
             m_world_reaction = world_reaction;
         }
@@ -760,24 +794,6 @@ namespace Character
         {
             m_world_reaction(*character);
 
-            /*if (!character->enemies_list.empty())
-            {
-                auto enemy_it = std::max_element(character->enemies_list.begin(),
-                    character->enemies_list.end(),
-                    [&](std::pair<std::weak_ptr<GlCharacter>, float> a, std::pair<std::weak_ptr<GlCharacter>, float> b)->bool
-                    {
-                        return HatesLess(a, b, *character);
-                    });
-
-                if ((enemy_it->second > 0.0f) && !enemy_it->first.expired() && (enemy_it->first.lock()->GetLifeValue() > 0.0f))
-                {
-                    character->arch_enemy = enemy_it->first;
-                }
-                else
-                {
-                    character->enemies_list.erase(enemy_it);
-                }
-            }*/
 
             auto p_d_info = character->GetDungeonHeroInfo();
             character->arch_enemy = p_d_info->hero;
@@ -794,6 +810,7 @@ namespace Character
             if (auto enemy = character->arch_enemy.lock())
             {
                 glm::vec3 enemy_vector = enemy->GetPosition() - character->GetPosition();
+                enemy_vector[1] = 0; //planarization
                 float enemy_distance = glm::length(enemy_vector);
                 constexpr float distance_smooth = 0.1f;
                 distance = enemy_distance * distance_smooth + (1.0f - distance_smooth) * distance;
@@ -802,16 +819,16 @@ namespace Character
                 auto p_d_info = character->GetDungeonHeroInfo();
 
                 dice_roll = distribution(random_generator);
+                HeroAttack(character, enemy_distance, enemy_vector, dice_roll);
 
-
-                if (p_d_info->hero.lock() == character->arch_enemy.lock())
+                /*if (p_d_info->hero.lock() == character->arch_enemy.lock())
                 {
                     HeroAttack(character, enemy_distance, enemy_vector, dice_roll);
                 }
                 else
                 {
                     SimpleAttack(character, enemy_distance, enemy_vector, dice_roll);
-                }
+                }*/
             }
         }
 

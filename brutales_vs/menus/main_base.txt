@@ -6,7 +6,7 @@ shader sprite2dsimple
 <!image>
 <button>
 name btn1
-geometry -0.6 -0.55 1.2 0.3
+geometry -0.6 -0.65 1.2 0.3
 image button.png
 image_active button_p.png
 shader sprite2dsimple
@@ -17,7 +17,18 @@ font regular
 <!button>
 <button>
 name btn2
-geometry -0.6 -0.15 1.2 0.3
+geometry -0.6 -0.35 1.2 0.3
+image button.png
+image_active button_p.png
+shader sprite2dsimple
+text SETTINGS
+sizer_active 1.05
+action empty
+font regular
+<!button>
+<button>
+name btn3
+geometry -0.6 -0.05 1.2 0.3
 image button.png
 image_active button_p.png
 shader sprite2dsimple
@@ -28,10 +39,11 @@ font regular
 <!button>
 <structure>
 tabbing btn1 up btn2
-tabbing btn2 up btn1
-tabbing btn1 down btn2
+tabbing btn2 up btn3
 tabbing btn2 down btn1
-active btn2
+tabbing btn3 down btn2
+active btn3
 parent wall btn1
 parent wall btn2
+parent wall btn3
 <!structure>

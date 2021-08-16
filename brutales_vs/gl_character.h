@@ -20,9 +20,21 @@ struct DungeonHeroInfo
 {
     double attaker_time = 0.0f;
     double now_time = 0.0f;
+    size_t inner_chrs = 0;
     std::weak_ptr<GlCharacter> hero;
     std::list<std::pair<double,std::weak_ptr<GlCharacter>>> attackers;
     typename decltype(attackers)::iterator FindInAttackers(const decltype(DungeonHeroInfo::attackers)::value_type& refernce);
+};
+
+enum class HordeStatus { Dummy, Ring, Fighter };
+
+struct HordeMobInfo
+{
+    glm::vec3 horde_position;
+    float horde_distance;
+    float inner_distance;
+    HordeStatus horde_status;
+    bool step_right;
 };
 
 
@@ -68,11 +80,12 @@ public:
     DungeonHeroInfo * GetDungeonHeroInfo();
     std::weak_ptr<GlCharacter> GetDungeonListReference();
 
-    const glm::vec3& GetHordePosition() { return m_horde_pos; }
-    void SetHordePosition(const glm::vec3& pos) { m_horde_pos = pos; m_horde_pos[1] = 0.0f; }
-
+    const glm::vec3& GetHordePosition() { return m_horde_info.horde_position; }
+    void SetHordePosition(const glm::vec3& pos) { m_horde_info.horde_position = pos; m_horde_info.horde_position[1] = 0.0f; }
+    struct HordeMobInfo& GetHordeInfoUnsafe() { return m_horde_info;}
 private:
     DungeonHeroInfo * m_dungeon_hero_info;
+    HordeMobInfo m_horde_info;
     std::shared_ptr<Character::IBrain> m_brain;
     std::weak_ptr<GlCharacter> m_dungeon_weak_reference;
     CharacterTypes m_type;
@@ -104,8 +117,6 @@ private:
     std::pair<glm::vec3, glm::vec3>  m_weapon_now;
     std::pair<glm::vec3, glm::vec3>  m_weapon_base;
     std::pair<glm::vec3, glm::vec3>  m_weapon_old;
-
-    glm::vec3 m_horde_pos;
 
     //void RefreshMatrixes();
 

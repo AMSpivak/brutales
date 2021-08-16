@@ -613,7 +613,7 @@ void GlGameStateDungeon::LoadMap(const std::string &filename,const std::string &
 
     level_file.close(); 
 
-    fx_texture = resources_manager->m_texture_atlas.Assign("valh.png");  
+    fx_texture = resources_manager->m_texture_atlas.Assign("valh2.png");  
     fx_attacker_texture = resources_manager->m_texture_atlas.Assign("attacker.png");  
     fx_texture_2 = resources_manager->m_texture_atlas.Assign("fireball.png");  
     GetResourceManager()->Clean(); 
@@ -627,7 +627,8 @@ void GlGameStateDungeon::AddMob()
     auto mob = std::make_shared<GlCharacter>(CharacterTypes::mob);
     //if ((mobs_add_counter % 10) != 0)
     {
-        UpdateCharacterFromFile("heroes/hero_orc.chr", *mob);
+        //UpdateCharacterFromFile("heroes/hero_orc.chr", *mob);
+        UpdateCharacterFromFile("heroes/horde.chr", *mob);
     }
     /*else
     {
@@ -650,7 +651,14 @@ void GlGameStateDungeon::AddMob()
     mob->SetDungeonListReference(mob);
     mob->UseSequence("stance");
     mob->AddEnemy(hero);
-    mob->SetHordePosition(hero->GetPosition());
+    {
+        auto& horde = mob->GetHordeInfoUnsafe();
+        horde.horde_position = hero->GetPosition();
+        horde.horde_distance = 10.0f + 6.0f / RAND_MAX * std::rand();
+        horde.inner_distance = 5.0f + 5.0f / RAND_MAX * std::rand();
+        horde.horde_status = HordeStatus::Dummy;
+    }
+    //mob->SetHordePosition(hero->GetPosition());
     auto brain = Character::CreateBrain(Character::BrainTypes::Horde, [this](GlCharacter& character) {});
     //std::vector<std::string> lines;
     /*for (int ib = 0; ib < 5; ib++)
@@ -820,28 +828,38 @@ void GlGameStateDungeon::Draw2D(GLuint depth_map)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_CULL_FACE);
         
-        // for(auto &p_attacker : m_dungeon_hero_info.attackers)
-        // {
+         //for(auto &p_attacker : m_dungeon_hero_info.attackers)
+         if(!m_dungeon_hero_info.attackers.empty())
 
-        //         float mix = glm::clamp((m_dungeon_hero_info.now_time - p_attacker.first),0.0,1.0);
-        //         mix = mix * mix;
-        //         color =(color2 * mix + color1 * (1.0f - mix));
-        //         color[3] = 1.0f;
-        //         auto w_t = w * (mix+ 0.1f);
-        //         if(auto attacker = p_attacker.second.lock())
-        //         {
-        //             renderBillBoardDepth(sh,depth_map,&fx_attacker_texture->m_texture,   
-        //             w_t,w_t,color * a,position + attacker->GetPosition(),hero_position,Camera);
-        //         }
-        // }
-        // if(auto arch = hero->arch_enemy.lock())
-        // {
-        //     float w_t = 0.8f;
-        //     position = glm::vec3(0,5.0,0);
-        //     renderBillBoardDepth(sh,depth_map,&fx_attacker_texture->m_texture,   
-        //     w_t,w_t,color2 * a,position + arch->GetPosition(),hero_position,Camera);
+         {
+                 auto& p_attacker = m_dungeon_hero_info.attackers.front();
+                 float mix = glm::clamp((m_dungeon_hero_info.now_time - m_dungeon_hero_info.attaker_time),0.0,1.0);
+                 mix = mix * mix;
+                 mix = glm::clamp(mix * 2.0f - 1.0f, 0.0f, 1.0f);
+                 color =(color2 * mix + color1 * (1.0f - mix));
+                 color[3] = 1.0f;
+                 auto w_t = w * (mix+ 0.1f);
+                 if(auto attacker = p_attacker.second.lock())
+                 {
+                     
+                    renderBillBoardDepth(sh, depth_map, &fx_attacker_texture->m_texture,
+                        w_t, w_t, color * mix, position + attacker->GetPosition(), hero_position, Camera);
+                 }
+         }
+
+         //if(auto arch = hero->arch_enemy.lock())
+         //{
+         //    float mix = glm::clamp((m_dungeon_hero_info.now_time - p_attacker.first), 0.0, 1.0);
+         //             mix = mix * mix;
+         //             color =(color2 * mix + color1 * (1.0f - mix));
+         //             color[3] = 1.0f;
+         //             auto w_t = w * (mix+ 0.1f);
+         //    //float w_t = 0.8f;
+         //    position = glm::vec3(0,5.0,0);
+         //   renderBillBoardDepth(sh, depth_map, &fx_attacker_texture->m_texture,
+         //              w_t,w_t,color * a,position + arch->GetPosition(),hero_position, Camera);
   
-        // }
+         //}
 
     }
     
@@ -1338,6 +1356,9 @@ void GlGameStateDungeon::FitObjects(int steps, float accuracy)
             if(!(*it_object1)->ghost)
             {  
                 glm::vec3 p1 = (*it_object1)->GetHordePosition();
+                glm::vec3 p1_p = (*it_object1)->GetPosition();
+                p1_p[1] = 0;
+                float p1_horde_distance = ((*it_object1)->GetHordeInfoUnsafe()).horde_distance;
 
                 bool is_mob = ((*it_object1)->GetType() == CharacterTypes::mob);
                 for(auto it_object2 = std::next(it_object1) ;it_object2 != dungeon_objects.end();it_object2++)
@@ -1352,15 +1373,21 @@ void GlGameStateDungeon::FitObjects(int steps, float accuracy)
                     {
                         //glm::vec3 p1 = (*it_object1)->GetHordePosition();
                         glm::vec3 p2 = (*it_object2)->GetHordePosition();
+                        glm::vec3 p2_p = (*it_object2)->GetPosition();
+                        p2_p[1] = 0;
+                        float p2_horde_distance = ((*it_object2)->GetHordeInfoUnsafe()).horde_distance;
                         glm::vec3 ph = hero->GetPosition();
                         ph[1] = 0;
                         constexpr float mob_space = 3.0f;
                         constexpr float mob_hero_space = 16.0f;
                         constexpr float mob_hero_force = 0.1f;
+                        constexpr float mob_pos_force = 0.01f;
                         constexpr float base_force = 0.4f;
-                        Physics::Constrain(p1, p2, mob_space, 0.0f, base_force, 0.5f, 0.5f);
-                        Physics::Constrain(p2, ph, mob_hero_space, mob_hero_force, base_force, 1.0f, 0.0f);
-                        Physics::Constrain(p1, ph, mob_hero_space, mob_hero_force, base_force, 1.0f, 0.0f);
+                        Physics::Constrain(p1, p2, mob_space, 0.0f, 1.0f, 0.5f, 0.5f);
+                        Physics::Constrain(p2, p2_p, p2_horde_distance, mob_pos_force, 0.0f, 1.0f, 0.0f);
+                        Physics::Constrain(p1, p1_p, p1_horde_distance, mob_pos_force, 0.0f, 1.0f, 0.0f);
+                        Physics::Constrain(p2, ph, p2_horde_distance, mob_hero_force, base_force, 1.0f, 0.0f);
+                        Physics::Constrain(p1, ph, p1_horde_distance, mob_hero_force, base_force, 1.0f, 0.0f);
                         //(*it_object1)->SetHordePosition(p1);
                         (*it_object2)->SetHordePosition(p2);
                     }
@@ -1412,8 +1439,15 @@ bool GlGameStateDungeon::MobKilled(std::shared_ptr<GlCharacter> obj)
         {
             if(obj->GetType() == CharacterTypes::mob)
             {
-                constexpr float mob_kill_cure = 0.03f;
+                constexpr float mob_kill_cure = 0.01f;
                 hero->SetLifeValue(std::clamp(hero->GetLifeValue() + mob_kill_cure,0.0f,1.0f));
+
+                auto status = obj->GetHordeInfoUnsafe().horde_status;
+                if (status == HordeStatus::Ring && m_dungeon_hero_info.inner_chrs)
+                {
+                    --m_dungeon_hero_info.inner_chrs;
+                }
+
                 AddMob();
             }
             GameEvents::GeneralEventStruct info = {&(*obj),m_shader_map["sprite2d"],render_target.depthMap,&(fx_texture->m_texture)};
@@ -1442,6 +1476,8 @@ void GlGameStateDungeon::ThinkHorde(double passed_time)
     m_dungeon_hero_info.attackers.sort([](const decltype (m_dungeon_hero_info.attackers)::value_type& a,
         const decltype (m_dungeon_hero_info.attackers)::value_type& b)
         {return a.first > b.first; });
+
+
 
     //decltype (m_dungeon_hero_info.attackers)::value_type& attaker = m_dungeon_hero_info.attackers.front();
 
@@ -1583,6 +1619,8 @@ std::weak_ptr<IGlGameState>  GlGameStateDungeon::Process(std::map <int, bool> &i
         {
             PostMessage("run_script loose_script");
             hero->SetLifeValue(1.0f);
+            m_dungeon_hero_info.attackers.clear();
+            m_dungeon_hero_info.inner_chrs = 1;
             //return m_states_map["main_menu"];
         }
     }
