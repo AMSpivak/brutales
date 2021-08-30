@@ -8,15 +8,17 @@ namespace BruteForce
 		friend LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 	private:
 		HWND mhWnd;
+		bool m_IsFullscreen;
+		RECT m_WinRect;
 		bool CheckTearingSupport();
 		void Resize();
 	public:
-		WindowDX12(HWND hWnd) : mhWnd(hWnd) {};
+		WindowDX12(HWND hWnd) : mhWnd(hWnd), m_IsFullscreen(false){};
 		virtual void Show();
 		virtual ~WindowDX12() {};
 		virtual SwapChain CreateSwapChain(CommandQueue& commandQueue, uint32_t bufferCount);
 		virtual SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount);
-
+		void SetFullscreen(bool value);
 	};
 
 	class VideoDriverDX12 : public VideoDriverInterface

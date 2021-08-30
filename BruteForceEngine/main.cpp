@@ -215,7 +215,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
     pWindow->SetOnPaint([&g_SmartCommandQueue] {Update(); Render(g_SmartCommandQueue); });
     pWindow->Show();
-
+    pWindow->SetFullscreen(true);
     MSG msg = {};
     while (msg.message != WM_QUIT)
     {

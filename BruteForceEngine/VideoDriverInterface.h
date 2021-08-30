@@ -34,6 +34,7 @@ namespace BruteForce
 		void SetOnPaint(SimpleFunctionPtr func) { funcOnPaint = func; }
 		void SetOnResize(ResizeFunctionPtr func) { funcOnResize = func; }
 		void SetSize(uint32_t width, uint32_t height) { Width = width; uint32_t Height = height; }
+		virtual void SetFullscreen(bool value) = 0;
 	};
 
 	class VideoDriverInterface

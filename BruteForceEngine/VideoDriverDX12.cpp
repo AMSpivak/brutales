@@ -159,7 +159,47 @@ namespace BruteForce
             funcOnResize(width, height);
         }
     }
+    void WindowDX12::SetFullscreen(bool value)
+    {
+        if (m_IsFullscreen != value)
+        {
+            m_IsFullscreen = value;
 
+            if (m_IsFullscreen) // Switching to fullscreen.
+            {
+                ::GetWindowRect(mhWnd, &m_WinRect);
+
+                UINT windowStyle = WS_OVERLAPPEDWINDOW & ~(WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+                ::SetWindowLongW(mhWnd, GWL_STYLE, windowStyle);
+                HMONITOR hMonitor = ::MonitorFromWindow(mhWnd, MONITOR_DEFAULTTONEAREST);
+                MONITORINFOEX monitorInfo = {};
+                monitorInfo.cbSize = sizeof(MONITORINFOEX);
+                ::GetMonitorInfo(hMonitor, &monitorInfo);
+                ::SetWindowPos(mhWnd, HWND_TOP,
+                    monitorInfo.rcMonitor.left,
+                    monitorInfo.rcMonitor.top,
+                    monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+                    monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
+                    SWP_FRAMECHANGED | SWP_NOACTIVATE);
+
+                ::ShowWindow(mhWnd, SW_MAXIMIZE);
+            }
+            else
+            {
+                ::SetWindowLong(mhWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+
+                ::SetWindowPos(mhWnd, HWND_NOTOPMOST,
+                    m_WinRect.left,
+                    m_WinRect.top,
+                    m_WinRect.right - m_WinRect.left,
+                    m_WinRect.bottom - m_WinRect.top,
+                    SWP_FRAMECHANGED | SWP_NOACTIVATE);
+
+                ::ShowWindow(mhWnd, SW_NORMAL);
+            }
+        }
+
+    }
 
     bool WindowDX12::CheckTearingSupport()
     {
