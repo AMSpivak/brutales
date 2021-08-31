@@ -214,6 +214,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
 
     pWindow->SetOnPaint([&g_SmartCommandQueue] {Update(); Render(g_SmartCommandQueue); });
+    pWindow->SetOnResize([&g_SmartCommandQueue](uint32_t width, uint32_t height) {Resize(width, height, g_SmartCommandQueue); });
     pWindow->Show();
     pWindow->SetFullscreen(true);
     MSG msg = {};
