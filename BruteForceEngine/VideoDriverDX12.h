@@ -18,7 +18,7 @@ namespace BruteForce
 		virtual ~WindowDX12() {};
 		virtual SwapChain CreateSwapChain(CommandQueue& commandQueue, uint32_t bufferCount);
 		virtual SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount);
-		void SetFullscreen(bool value);
+		virtual void SetFullscreen(bool value);
 	};
 
 	class VideoDriverDX12 : public VideoDriverInterface

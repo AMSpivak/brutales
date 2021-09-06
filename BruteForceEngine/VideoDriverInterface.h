@@ -15,18 +15,21 @@
 #endif
 namespace BruteForce
 {	
+	class Window;
 	using SimpleFunctionPtr = std::function<void()>;
-	using ResizeFunctionPtr = std::function<void(uint32_t, uint32_t)>;
+	using ResizeFunctionPtr = std::function<void(uint32_t, uint32_t, Window *)>;
 	class Window
 	{
 	protected:
 		SimpleFunctionPtr funcOnPaint;
 		ResizeFunctionPtr funcOnResize;
-		SwapChain* m_SwapChain;
+		SwapChain m_SwapChain;
 		uint32_t Width;
 		uint32_t Height;
+		bool m_VSync;
+		bool m_Tearing;
 	public:
-		Window():m_SwapChain(nullptr), Width(0), Height(0) {};
+		Window(): Width(0), Height(0), m_VSync(true), m_Tearing(false){};
 		virtual ~Window() {};
 		virtual void Show() = 0;
 		virtual SwapChain CreateSwapChain(CommandQueue& commandQueue, uint32_t bufferCount) = 0;
@@ -34,6 +37,11 @@ namespace BruteForce
 		void SetOnPaint(SimpleFunctionPtr func) { funcOnPaint = func; }
 		void SetOnResize(ResizeFunctionPtr func) { funcOnResize = func; }
 		void SetSize(uint32_t width, uint32_t height) { Width = width; uint32_t Height = height; }
+		void SetVSync(bool value) { m_VSync = value; }
+		bool GetVSync() { return m_VSync; }
+		bool GetTearing() { return m_Tearing; }
+		SwapChain& GetSwapChainReference() { return m_SwapChain; }
+
 		virtual void SetFullscreen(bool value) = 0;
 	};
 

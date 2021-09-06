@@ -163,8 +163,10 @@
     <ClInclude Include="EngineGpuFence.h" />
     <ClInclude Include="EngineGpuSwapChain.h" />
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="IndexedGeometry.h" />
     <ClInclude Include="PlatformDefine.h" />
     <ClInclude Include="PlatformDX12.h" />
+    <ClInclude Include="Renderer.h" />
     <ClInclude Include="VideoDriverDX12.h" />
     <ClInclude Include="VideoDriverInterface.h" />
     <ClInclude Include="WindowInterface.h" />
@@ -177,6 +179,12 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.1</ShaderModel>
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="BasicPixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -38,6 +38,9 @@ namespace BruteForce
 	using DescriptorHeapType = D3D12_DESCRIPTOR_HEAP_TYPE;
 	constexpr DescriptorHeapType DescriptorHeapRTV = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 
+	using VertexBufferView = D3D12_VERTEX_BUFFER_VIEW;
+	using IndexBufferView = D3D12_INDEX_BUFFER_VIEW;
+
 	using KeyParameter = WPARAM;
 
 	using FenceEvent = HANDLE;

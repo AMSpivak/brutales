@@ -156,7 +156,7 @@ namespace BruteForce
             int width = clientRect.right - clientRect.left;
             int height = clientRect.bottom - clientRect.top;
             SetSize(width, height);
-            funcOnResize(width, height);
+            funcOnResize(width, height, this);
         }
     }
     void WindowDX12::SetFullscreen(bool value)
@@ -230,12 +230,12 @@ namespace BruteForce
 
     SwapChain WindowDX12::CreateSwapChain(ComPtr<ID3D12CommandQueue>& commandQueue, uint32_t bufferCount)
     {
-        return BruteForce::CreateSwapChain(commandQueue, bufferCount, Width, Height, CheckTearingSupport(), mhWnd);
+        return m_SwapChain = BruteForce::CreateSwapChain(commandQueue, bufferCount, Width, Height, CheckTearingSupport(), mhWnd);
     }
 
     SwapChain WindowDX12::CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount)
     {
-        return BruteForce::CreateSwapChain(commandQueue, bufferCount, Width, Height, CheckTearingSupport(), mhWnd);
+        return m_SwapChain = BruteForce::CreateSwapChain(commandQueue, bufferCount, Width, Height, CheckTearingSupport(), mhWnd);
     }
 
 
@@ -362,7 +362,7 @@ namespace BruteForce
 
         for (int i = 0; i < NumFrames; ++i)
         {
-            ComPtr<ID3D12Resource> backBuffer;
+            Resource backBuffer;
             ThrowIfFailed(swapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer)));
 
             device->CreateRenderTargetView(backBuffer.Get(), nullptr, rtvHandle);

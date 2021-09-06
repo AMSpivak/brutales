@@ -15,6 +15,7 @@
 #include "VideoDriverDX12.h"
 #include "EngineGpuFence.h"
 #include "EngineGpuCommands.h"
+
 // In order to define a function called CreateWindow, the Windows macro needs to
 // be undefined.
 #if defined(CreateWindow)
@@ -38,6 +39,7 @@ using namespace Microsoft::WRL;
 #include <chrono>
 // Helper functions
 #include "Helpers.h"
+#include "Renderer.h"
 // The number of swap chain back buffers.
 const uint8_t g_NumFrames = 3;
 // Use WARP adapter
@@ -53,21 +55,13 @@ BruteForce::Window * pWindow;
 //RECT g_WindowRect;
 
 // DirectX 12 Objects
-BruteForce::Device g_Device;
-BruteForce::SwapChain g_SwapChain;
-BruteForce::Resource g_BackBuffers[g_NumFrames];
-BruteForce::DescriptorHeap g_RTVDescriptorHeap;
-UINT g_RTVDescriptorSize;
-UINT g_CurrentBackBufferIndex;
-uint64_t g_FrameFenceValues[g_NumFrames] = {};
 
-// By default, enable V-Sync.
-// Can be toggled with the V key.
-bool g_VSync = true;
-bool g_TearingSupported = false;
+BruteForce::Device g_Device;
+using TutorialRenderer = BruteForce::Renderer<g_NumFrames>;
+TutorialRenderer* p_Renderer = nullptr;
+
 // By default, use windowed mode.
 // Can be toggled with the Alt+Enter or F11
-bool g_Fullscreen = false;
 
 
 void ParseCommandLineArguments()
@@ -120,10 +114,11 @@ void Update()
     }
 }
 
-void Render(BruteForce::SmartCommandQueue& g_SmartCommandQueue)
+void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Window* pWindow)
 {
-    auto smart_command_list = g_SmartCommandQueue.GetCommandList();
-    auto& backBuffer = g_BackBuffers[g_CurrentBackBufferIndex];
+    auto smart_command_list = in_SmartCommandQueue.GetCommandList();
+    auto& backBuffer = p_Renderer->m_BackBuffers[p_Renderer->m_CurrentBackBufferIndex];
+    auto refSwapChain = pWindow->GetSwapChainReference();
 
     // Clear the render target.
     {
@@ -133,8 +128,8 @@ void Render(BruteForce::SmartCommandQueue& g_SmartCommandQueue)
 
         smart_command_list.command_list->ResourceBarrier(1, &barrier);
         FLOAT clearColor[] = { 1.0f, 0.6f, 0.1f, 1.0f };
-        CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(g_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-            g_CurrentBackBufferIndex, g_RTVDescriptorSize);
+        CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(p_Renderer->m_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+            p_Renderer->m_CurrentBackBufferIndex, p_Renderer->m_RTVDescriptorSize);
 
         smart_command_list.command_list->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
     }
@@ -144,18 +139,18 @@ void Render(BruteForce::SmartCommandQueue& g_SmartCommandQueue)
             D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
         smart_command_list.command_list->ResourceBarrier(1, &barrier);
 
-        g_FrameFenceValues[g_CurrentBackBufferIndex] = g_SmartCommandQueue.ExecuteCommandList(smart_command_list);
-        UINT syncInterval = g_VSync ? 1 : 0;
-        UINT presentFlags = g_TearingSupported && !g_VSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
-        ThrowIfFailed(g_SwapChain->Present(syncInterval, presentFlags));
+        p_Renderer->m_FrameFenceValues[p_Renderer->m_CurrentBackBufferIndex] = in_SmartCommandQueue.ExecuteCommandList(smart_command_list);
+        UINT syncInterval = pWindow->GetVSync() ? 1 : 0;
+        UINT presentFlags = pWindow->GetTearing() && !pWindow->GetVSync() ? DXGI_PRESENT_ALLOW_TEARING : 0;
+        ThrowIfFailed(refSwapChain->Present(syncInterval, presentFlags));
 
-        g_CurrentBackBufferIndex = g_SwapChain->GetCurrentBackBufferIndex();
+        p_Renderer->m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
 
-        g_SmartCommandQueue.WaitForFenceValue(g_FrameFenceValues[g_CurrentBackBufferIndex]);
+        in_SmartCommandQueue.WaitForFenceValue(p_Renderer->m_FrameFenceValues[p_Renderer->m_CurrentBackBufferIndex]);
     }
 }
 
-void Resize(uint32_t width, uint32_t height, BruteForce::SmartCommandQueue& g_SmartCommandQueue)
+void Resize(uint32_t width, uint32_t height, BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Window * pWindow)
 {
     if (g_ClientWidth != width || g_ClientHeight != height)
     {
@@ -165,23 +160,25 @@ void Resize(uint32_t width, uint32_t height, BruteForce::SmartCommandQueue& g_Sm
 
         // Flush the GPU queue to make sure the swap chain's back buffers
         // are not being referenced by an in-flight command list.
-        g_SmartCommandQueue.Flush();
+        in_SmartCommandQueue.Flush();
 
         for (int i = 0; i < g_NumFrames; ++i)
         {
             // Any references to the back buffers must be released
             // before the swap chain can be resized.
-            g_BackBuffers[i].Reset();
-            g_FrameFenceValues[i] = g_FrameFenceValues[g_CurrentBackBufferIndex];
+            p_Renderer->m_BackBuffers[i].Reset();
+            p_Renderer->m_FrameFenceValues[i] = p_Renderer->m_FrameFenceValues[p_Renderer->m_CurrentBackBufferIndex];
         }
 
+        auto refSwapChain = pWindow->GetSwapChainReference();
+
         BruteForce::SwapChainDesc swapChainDesc = {};
-        ThrowIfFailed(g_SwapChain->GetDesc(&swapChainDesc));
-        ThrowIfFailed(g_SwapChain->ResizeBuffers(g_NumFrames, g_ClientWidth, g_ClientHeight,
+        ThrowIfFailed(refSwapChain->GetDesc(&swapChainDesc));
+        ThrowIfFailed(refSwapChain->ResizeBuffers(g_NumFrames, g_ClientWidth, g_ClientHeight,
             swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
 
-        g_CurrentBackBufferIndex = g_SwapChain->GetCurrentBackBufferIndex();
-        BruteForce::UpdateRenderTargetViews(g_Device, g_SwapChain, g_RTVDescriptorHeap, g_BackBuffers, g_NumFrames);
+        p_Renderer->m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
+        BruteForce::UpdateRenderTargetViews(g_Device, refSwapChain, p_Renderer->m_RTVDescriptorHeap, p_Renderer->m_BackBuffers, g_NumFrames);
     }
 }
 
@@ -191,32 +188,24 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
     ParseCommandLineArguments();
     BruteForce::EnableDebugLayer();
-    BruteForce::VideoDriverDX12 m_driver;
-    pWindow = m_driver.CreateWindow(L"DX12WindowClass", L"Learning DirectX 12",
-                                        g_ClientWidth, g_ClientHeight);
+    
 
     //::GetWindowRect(g_hWnd, &g_WindowRect);
 
-    BruteForce::Adapter dxgiAdapter4 = BruteForce::GetAdapter(g_UseWarp);
+    BruteForce::Adapter adapter = BruteForce::GetAdapter(g_UseWarp);
+    g_Device = BruteForce::CreateDevice(adapter);
 
-    g_Device = BruteForce::CreateDevice(dxgiAdapter4);
+    BruteForce::VideoDriverDX12 m_driver;
+    pWindow = m_driver.CreateWindow(L"DX12WindowClass", L"Learning DirectX 12",
+        g_ClientWidth, g_ClientHeight);
+    
+    p_Renderer = new TutorialRenderer(g_Device);
+    p_Renderer->Init(pWindow, false);
 
-    BruteForce::SmartCommandQueue g_SmartCommandQueue(g_Device, BruteForce::CommandListTypeDirect);
-
-    g_SwapChain = pWindow->CreateSwapChain(g_SmartCommandQueue, g_NumFrames);
-
-    g_CurrentBackBufferIndex = g_SwapChain->GetCurrentBackBufferIndex();
-
-    g_RTVDescriptorHeap = BruteForce::CreateDescriptorHeap(g_Device, BruteForce::DescriptorHeapRTV, g_NumFrames);
-    g_RTVDescriptorSize = g_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
-
-    BruteForce::UpdateRenderTargetViews(g_Device, g_SwapChain, g_RTVDescriptorHeap, g_BackBuffers, g_NumFrames);
-
-
-    pWindow->SetOnPaint([&g_SmartCommandQueue] {Update(); Render(g_SmartCommandQueue); });
-    pWindow->SetOnResize([&g_SmartCommandQueue](uint32_t width, uint32_t height) {Resize(width, height, g_SmartCommandQueue); });
+    pWindow->SetOnPaint([] {Update(); Render(p_Renderer->m_SmartCommandQueue, pWindow); });
+    pWindow->SetOnResize([](uint32_t width, uint32_t height, BruteForce::Window * pwindow) {Resize(width, height, p_Renderer->m_SmartCommandQueue, pwindow); });
     pWindow->Show();
-    pWindow->SetFullscreen(true);
+    //pWindow->SetFullscreen(true);
     MSG msg = {};
     while (msg.message != WM_QUIT)
     {
@@ -226,6 +215,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
             ::DispatchMessage(&msg);
         }
     }
-    g_SmartCommandQueue.Flush();
+
+    delete(p_Renderer);
     return 0;
 }
