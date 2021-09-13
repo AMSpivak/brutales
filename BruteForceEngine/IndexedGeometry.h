@@ -4,12 +4,18 @@
 #include "PlatformDefine.h"
 namespace BruteForce
 {
+    struct VertexPosColor
+    {
+        BruteForce::Math::Vec3Float Position;
+        BruteForce::Math::Vec3Float Color;
+    };
+
     class IndexedGeometry
     {
     public:
-        Resource m_VertexBuffer;
+        pResource m_VertexBuffer;
         VertexBufferView m_VertexBufferView;
-        Resource m_IndexBuffer;
+        pResource m_IndexBuffer;
         IndexBufferView m_IndexBufferView;
     };
 }

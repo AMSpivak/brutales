@@ -41,6 +41,8 @@ namespace BruteForce
 		bool GetVSync() { return m_VSync; }
 		bool GetTearing() { return m_Tearing; }
 		SwapChain& GetSwapChainReference() { return m_SwapChain; }
+		uint32_t GetWidth() { return Width; }
+		uint32_t GetHeight() { return Height; }
 
 		virtual void SetFullscreen(bool value) = 0;
 	};
