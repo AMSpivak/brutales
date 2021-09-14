@@ -36,7 +36,7 @@ namespace BruteForce
 		virtual SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount) = 0;
 		void SetOnPaint(SimpleFunctionPtr func) { funcOnPaint = func; }
 		void SetOnResize(ResizeFunctionPtr func) { funcOnResize = func; }
-		void SetSize(uint32_t width, uint32_t height) { Width = width; uint32_t Height = height; }
+		bool SetSize(uint32_t width, uint32_t height) { if (Width == width && Height == height) return false; Width = width; Height = height; return true; }
 		void SetVSync(bool value) { m_VSync = value; }
 		bool GetVSync() { return m_VSync; }
 		bool GetTearing() { return m_Tearing; }

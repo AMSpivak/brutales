@@ -14,7 +14,7 @@ namespace BruteForce
     template <const uint8_t t_NumFrames>
     class Renderer
     {
-    private:
+    protected:
         BruteForce::Window* m_Window;
         const uint8_t m_NumFrames;
     public:

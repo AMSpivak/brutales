@@ -38,7 +38,9 @@ public:
     }
 
     bool LoadContent(BruteForce::Device& device);
-    void Resize(BruteForce::Device& device, int width, int height);
+    void Resize(BruteForce::Device& device);
+    void Update();
+    void Render(BruteForce::SmartCommandList& smart_command_list);
     
 };
 

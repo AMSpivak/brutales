@@ -91,6 +91,21 @@ namespace BruteForce
 	{
 		using Matrix = DirectX::XMMATRIX;
 		using Vec3Float = DirectX::XMFLOAT3;
+		using Vector = DirectX::XMVECTOR;
+		inline Vector VectorSet(float x, float y, float z, float w)
+		{
+			return DirectX::XMVectorSet(x, y, z, w);
+		}
+		inline Matrix MatrixRotationAxis(Vector axe, float angle)
+		{
+			return DirectX::XMMatrixRotationAxis(axe, angle);
+		}
+		inline float DegToRad(float deg) { return DirectX::XMConvertToRadians(deg); }
+		inline Matrix MatrixLookAtLH(const Vector& Eye, const  Vector& Focus, const Vector& Up) { return DirectX::XMMatrixLookAtLH(Eye, Focus, Up); }
+		inline Matrix MatrixPerspectiveFovLH(float angel, float aspect, float near_plane, float far_plane) 
+		{
+			return DirectX::XMMatrixPerspectiveFovLH(angel, aspect, near_plane, far_plane);
+		}
 	}
 }
 

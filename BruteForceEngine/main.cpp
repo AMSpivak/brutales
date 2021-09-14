@@ -111,6 +111,7 @@ void Update()
         frameCounter = 0;
         elapsedSeconds = 0.0;
     }
+    p_Renderer->Update();
 }
 
 void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Window* pWindow)
@@ -122,10 +123,9 @@ void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Win
 
     // Clear the render target.
     {
-        FLOAT clearColor[] = { 1.0f, 0.6f, 0.1f, 1.0f };
-        BruteForce::DescriptorHandle rtv(p_Renderer->m_BackBuffersDHeap->GetCPUDescriptorHandleForHeapStart(),
-            p_Renderer->m_CurrentBackBufferIndex, p_Renderer->m_RTVDescriptorSize);
-        smart_command_list.command_list->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
+        
+        p_Renderer->Render(smart_command_list);
+
     }
 
     p_Renderer->SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
@@ -162,7 +162,7 @@ void Resize(uint32_t width, uint32_t height, BruteForce::SmartCommandQueue& in_S
 
         p_Renderer->m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
         BruteForce::UpdateRenderTargetViews(g_Device, refSwapChain, p_Renderer->m_BackBuffersDHeap, p_Renderer->m_BackBuffers, p_Renderer->GetBuffersCount());
-        p_Renderer->Resize(g_Device, g_ClientWidth, g_ClientHeight);
+        p_Renderer->Resize(g_Device);
     }
 }
 

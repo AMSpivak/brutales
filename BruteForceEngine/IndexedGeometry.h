@@ -17,6 +17,7 @@ namespace BruteForce
         VertexBufferView m_VertexBufferView;
         pResource m_IndexBuffer;
         IndexBufferView m_IndexBufferView;
+        size_t m_IndexesCount;
     };
 }
 
