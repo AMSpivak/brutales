@@ -89,10 +89,10 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
     return true;
 }
 
-void TutorialRenderer::Update()
+void TutorialRenderer::Update(float delta_time)
 {
-    float TotalTime = 12.0f;
-    float angle = static_cast<float>(TotalTime * 90.0);
+    m_time += delta_time;
+    float angle = static_cast<float>(m_time * 0.1f);
     const BruteForce::Math::Vector rotationAxis = BruteForce::Math::VectorSet(0, 1, 1, 0);
     m_ModelMatrix = BruteForce::Math::MatrixRotationAxis(rotationAxis, BruteForce::Math::DegToRad(angle));
     const BruteForce::Math::Vector eyePosition = BruteForce::Math::VectorSet(0, 0, -10, 1);
@@ -142,8 +142,9 @@ void TutorialRenderer::Resize(BruteForce::Device& device)
     }
 }
 
-void TutorialRenderer::Render(BruteForce::SmartCommandList& smart_command_list)
+void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue)
 {
+    auto smart_command_list = in_SmartCommandQueue.GetCommandList();
     auto& commandList = smart_command_list.command_list;
     FLOAT clearColor[] = { 1.0f, 0.6f, 0.1f, 1.0f };
     BruteForce::DescriptorHandle rtv(m_BackBuffersDHeap->GetCPUDescriptorHandleForHeapStart(), m_CurrentBackBufferIndex, m_RTVDescriptorSize);
@@ -164,5 +165,10 @@ void TutorialRenderer::Render(BruteForce::SmartCommandList& smart_command_list)
     commandList->SetGraphicsRoot32BitConstants(0, sizeof(BruteForce::Math::Matrix) / 4, &mvpMatrix, 0);
     commandList->DrawIndexedInstanced(m_cube.m_IndexesCount, 1, 0, 0, 0);
 
+    SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
+}
+TutorialRenderer::~TutorialRenderer()
+{
+    Flush();
 }
 

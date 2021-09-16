@@ -67,6 +67,7 @@ void ParseCommandLineArguments()
 {
     int argc;
     wchar_t** argv = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+    OutputDebugStringW(argv[0]);
 
     for (decltype(argc) i = 0; i < argc; ++i)
     {
@@ -102,6 +103,9 @@ void Update()
     auto deltaTime = t1 - t0;
     t0 = t1;
     elapsedSeconds += deltaTime.count() * 1e-9;
+
+    p_Renderer->Update(0.000001f * deltaTime.count());
+
     if (elapsedSeconds > 1.0)
     {
         char buffer[500];
@@ -111,25 +115,27 @@ void Update()
         frameCounter = 0;
         elapsedSeconds = 0.0;
     }
-    p_Renderer->Update();
 }
 
 void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Window* pWindow)
 {
-    auto smart_command_list = in_SmartCommandQueue.GetCommandList();
-    auto& backBuffer = p_Renderer->GetCurrentBackBufferRef();
+    //auto smart_command_list = in_SmartCommandQueue.GetCommandList();
+    //auto& backBuffer = p_Renderer->GetCurrentBackBufferRef();
+    /*{
+        auto smart_command_list = in_SmartCommandQueue.GetCommandList();
+        p_Renderer->StartFrame(smart_command_list);
+        p_Renderer->SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
+    }*/
 
-    p_Renderer->StartFrame(smart_command_list);
+     p_Renderer->Render(in_SmartCommandQueue);
 
-    // Clear the render target.
-    {
-        
-        p_Renderer->Render(smart_command_list);
+    /*{
+        auto smart_command_list = in_SmartCommandQueue.GetCommandList();
+        p_Renderer->SwapFrame(smart_command_list);
+        p_Renderer->SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
+    }*/
+    p_Renderer->SwapFrame();
 
-    }
-
-    p_Renderer->SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
-    p_Renderer->SwapFrame(smart_command_list);
     in_SmartCommandQueue.WaitForFenceValue(p_Renderer->GetCurrentFence());
 }
 

@@ -46,8 +46,9 @@ namespace BruteForce
 
             BruteForce::UpdateRenderTargetViews(m_Device, refSwapChain, m_BackBuffersDHeap, m_BackBuffers, m_NumFrames);
         }
-        ~Renderer() { m_SmartCommandQueue.Flush(); }
-        
+        void Flush() { m_SmartCommandQueue.Flush(); }
+        //~Renderer() { Flush(); }
+
         const uint8_t GetBuffersCount() { return m_NumFrames; }
         void SetCurrentFence(uint64_t value) { m_FrameFenceValues[m_CurrentBackBufferIndex] = value; };
         uint64_t GetCurrentFence() { return m_FrameFenceValues[m_CurrentBackBufferIndex]; };
@@ -66,13 +67,22 @@ namespace BruteForce
 
         void SwapFrame(SmartCommandList& smart_command_list)
         {
-            auto& backBuffer = GetCurrentBackBufferRef();
+            /*auto& backBuffer = GetCurrentBackBufferRef();
             BruteForce::ResourceBarrier barrier = BruteForce::ResourceBarrier::Transition(
                 backBuffer.Get(),
                 BruteForce::ResourceStatesRenderTarget,
                 BruteForce::ResourceStatesPresent);
-            smart_command_list.command_list->ResourceBarrier(1, &barrier);
+            smart_command_list.command_list->ResourceBarrier(1, &barrier);*/
 
+            UINT syncInterval = m_Window->GetVSync() ? 1 : 0;
+            UINT presentFlags = m_Window->GetTearing() && !m_Window->GetVSync() ? AllowTearing : 0;
+            auto& refSwapChain = m_Window->GetSwapChainReference();
+            ThrowIfFailed(refSwapChain->Present(syncInterval, presentFlags));
+            m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
+        }
+
+        void SwapFrame()
+        {
             UINT syncInterval = m_Window->GetVSync() ? 1 : 0;
             UINT presentFlags = m_Window->GetTearing() && !m_Window->GetVSync() ? AllowTearing : 0;
             auto& refSwapChain = m_Window->GetSwapChainReference();
