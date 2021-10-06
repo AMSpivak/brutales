@@ -147,13 +147,13 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     auto smart_command_list = in_SmartCommandQueue.GetCommandList();
     auto& commandList = smart_command_list.command_list;
     FLOAT clearColor[] = { 1.0f, 0.6f, 0.1f, 1.0f };
-    BruteForce::DescriptorHandle rtv(m_BackBuffersDHeap->GetCPUDescriptorHandleForHeapStart(), m_CurrentBackBufferIndex, m_RTVDescriptorSize);
+    BruteForce::CDescriptorHandle rtv(m_BackBuffersDHeap->GetCPUDescriptorHandleForHeapStart(), m_CurrentBackBufferIndex, m_RTVDescriptorSize);
     auto dsv = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
-
-    commandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
-    commandList->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-    commandList->SetPipelineState(m_PipelineState.Get());
-    commandList->SetGraphicsRootSignature(m_RootSignature.Get());
+    smart_command_list.ClearRTV(rtv, clearColor);
+    smart_command_list.ClearDSV(dsv, true, false, 1.0f, 0);
+    smart_command_list.SetPipelineState(m_PipelineState);
+    smart_command_list.SetRootSignature(m_RootSignature);
+    //commandList->SetGraphicsRootSignature(m_RootSignature.Get());
     commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     commandList->IASetVertexBuffers(0, 1, &m_cube.m_VertexBufferView);
     commandList->IASetIndexBuffer(&m_cube.m_IndexBufferView);

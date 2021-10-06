@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EngineGpuCommands.cpp" />
     <ClCompile Include="EngineGpuCommandsDX12.cpp" />
     <ClCompile Include="EngineGpuFenceDX12.cpp" />
     <ClCompile Include="EngineGpuSwapChainDX12.cpp" />

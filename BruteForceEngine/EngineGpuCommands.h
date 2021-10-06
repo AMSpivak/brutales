@@ -23,6 +23,11 @@ namespace BruteForce
         SmartCommandList(GraphicsCommandList list, CommandAllocator allocator) :command_list(list), command_allocator(allocator) {}
         CommandAllocator command_allocator;
         friend class SmartCommandQueue;
+    public: 
+        void ClearRTV(DescriptorHandle& rtv, const FLOAT* clearColor);
+        void ClearDSV(DescriptorHandle& dsv, bool depth, bool stencil, FLOAT depth_val, UINT8 stencil_val);
+        void SetPipelineState(const PipelineState& state);
+        void SetRootSignature(const RootSignature& signature);
     };
 
 

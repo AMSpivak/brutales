@@ -135,8 +135,7 @@ void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Win
         p_Renderer->SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
     }*/
     p_Renderer->SwapFrame();
-
-    in_SmartCommandQueue.WaitForFenceValue(p_Renderer->GetCurrentFence());
+    p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
 }
 
 void Resize(uint32_t width, uint32_t height, BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Window * pWindow)

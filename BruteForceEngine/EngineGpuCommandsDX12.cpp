@@ -100,6 +100,8 @@ namespace BruteForce
     }
 
 
+
+
     uint64_t SmartCommandQueue::ExecuteCommandList(SmartCommandList& list)
     {
         list.command_list->Close();
@@ -114,6 +116,38 @@ namespace BruteForce
         m_command_allocator_queue.emplace(CommandAllocatorEntry{ fence_value, list.command_allocator});
         m_command_list_queue.push(list.command_list);
         return fence_value;
+    }
+
+    void SmartCommandList::ClearRTV(BruteForce::DescriptorHandle& rtv, const FLOAT* clearColor)
+    {
+        command_list->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
+    }
+
+    void SmartCommandList::ClearDSV(BruteForce::DescriptorHandle& dsv, bool depth, bool stencil, FLOAT depth_val, UINT8 stencil_val)
+    {
+        D3D12_CLEAR_FLAGS flags = static_cast<D3D12_CLEAR_FLAGS>(0);
+
+        if (depth)
+        {
+            flags |= D3D12_CLEAR_FLAG_DEPTH;
+        }
+
+        if (stencil)
+        {
+            flags |= D3D12_CLEAR_FLAG_STENCIL;
+        }
+
+        command_list->ClearDepthStencilView(dsv, flags, depth_val, stencil_val, 0, nullptr);
+    }
+
+    void SmartCommandList::SetPipelineState(const PipelineState& state)
+    {
+        command_list->SetPipelineState(state.Get());
+    }
+
+    void SmartCommandList::SetRootSignature(const RootSignature& signature)
+    {
+        command_list->SetGraphicsRootSignature(signature.Get());
     }
 
     uint64_t SmartCommandQueue::Signal()

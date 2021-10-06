@@ -89,6 +89,10 @@ namespace BruteForce
             ThrowIfFailed(refSwapChain->Present(syncInterval, presentFlags));
             m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
         }
+        void WaitForCurrentFence(BruteForce::SmartCommandQueue& in_SmartCommandQueue)
+        {
+            in_SmartCommandQueue.WaitForFenceValue(GetCurrentFence());
+        }
     };
 }
 
