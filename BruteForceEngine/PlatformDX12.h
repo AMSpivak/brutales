@@ -25,7 +25,9 @@ namespace BruteForce
 
 	using Resource = Microsoft::WRL::ComPtr<ID3D12Resource>;
 	using pResource = ID3D12Resource*;
-	using ResourceDesc = CD3DX12_RESOURCE_DESC;
+	using CResourceDesc = CD3DX12_RESOURCE_DESC;
+	using ResourceDesc = D3D12_RESOURCE_DESC;
+	using SubresourceData = D3D12_SUBRESOURCE_DATA;
 
 	using GraphicsCommandList = Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>;
 	using GraphicsCommandList2 = Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2>;
@@ -64,6 +66,8 @@ namespace BruteForce
 	constexpr ResourceStates ResourceStatesRenderTarget = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	constexpr ResourceStates ResourceStatesPresent = D3D12_RESOURCE_STATE_PRESENT;
 	constexpr ResourceStates ResourceStateDepthWrite = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	constexpr ResourceStates ResourceStateCommon = D3D12_RESOURCE_STATE_COMMON;
+	constexpr ResourceStates ResourceStateCopyDest = D3D12_RESOURCE_STATE_COPY_DEST;
 	using ResourceFlags = D3D12_RESOURCE_FLAGS;
 
 	constexpr ResourceFlags ResourceFlagsNone = D3D12_RESOURCE_FLAG_NONE;

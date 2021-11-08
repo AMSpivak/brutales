@@ -6,6 +6,8 @@
 
 bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 {
+    BruteForce::Textures::LoadTextureFromFile(m_texture, L"me.png", device, m_CopyQueue);
+
     BruteForce::DataBlob vertexShaderBlob;
     ThrowIfFailed(D3DReadFileToBlob(L"BasicVertexShader.cso", &vertexShaderBlob));
 
@@ -120,7 +122,7 @@ void TutorialRenderer::Resize(BruteForce::Device& device)
         optimizedClearValue.Format = BruteForce::TargetFormat_D32_Float;
         optimizedClearValue.DepthStencil = { 1.0f, 0 };
         BruteForce::HeapProperties hp{ BruteForce::HeapTypeDefault };
-        BruteForce::ResourceDesc rd = BruteForce::ResourceDesc::Tex2D(optimizedClearValue.Format, width, height,
+        BruteForce::CResourceDesc rd = BruteForce::CResourceDesc::Tex2D(optimizedClearValue.Format, width, height,
                                         1, 0, 1, 0, BruteForce::ResourceFlagsDepthStencil);
         ThrowIfFailed(device->CreateCommittedResource(
             &hp,

@@ -45,6 +45,9 @@
     <ClCompile Include="EngineGpuCommands.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="TextureDX12.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VideoDriverDX12.h">
