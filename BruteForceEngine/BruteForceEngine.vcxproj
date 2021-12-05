@@ -176,6 +176,7 @@
     <ClInclude Include="PlatformDX12.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Resources.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="TutorialRenderer.h" />
     <ClInclude Include="VideoDriverDX12.h" />
     <ClInclude Include="VideoDriverInterface.h" />

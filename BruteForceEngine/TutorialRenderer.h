@@ -14,12 +14,13 @@ class TutorialRenderer :
     public MyRenderer
 {
 private: 
+    BruteForce::SmartCommandQueue m_CopyCommandQueue;
     BruteForce::Textures::Texture m_texture;
-    BruteForce::SmartCommandQueue m_CopyQueue;
 public:
 
     BruteForce::Resource m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;
+    BruteForce::DescriptorHeap m_SVRHeap;
 
     float m_FoV;
     float m_time;
@@ -35,7 +36,7 @@ public:
     TutorialRenderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp) :MyRenderer(device, pWindow, UseWarp),
         //, m_ScissorRect(ScissorRect(0, 0, LONG_MAX, LONG_MAX))
         //, m_Viewport(Viewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)))
-        m_CopyQueue(device, BruteForce::CommandListTypeCopy)
+          m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
         , m_FoV(45.0)
         , m_time(0.0f)
         , m_ContentLoaded(false)

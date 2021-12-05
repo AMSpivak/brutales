@@ -13,10 +13,12 @@ namespace BruteForce
 			std::mutex m_mutex;
 		public:
 			Resource image;
-		friend void LoadTextureFromFile(Texture&, const std::wstring& /*, TextureUsage textureUsage */, Device&, SmartCommandQueue&);
+			Resource srv;
+			void CreateSrv();
+		friend void LoadTextureFromFile(Texture&, DescriptorHeap&, const std::wstring& /*, TextureUsage textureUsage */, Device&, SmartCommandQueue&);
 		};
 
-		void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue);
+		void LoadTextureFromFile(Texture& texture, DescriptorHeap& srv_heap, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue);
 	}
 }
 

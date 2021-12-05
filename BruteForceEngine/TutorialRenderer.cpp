@@ -6,7 +6,7 @@
 
 bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 {
-    BruteForce::Textures::LoadTextureFromFile(m_texture, L"me.png", device, m_CopyQueue);
+    BruteForce::Textures::LoadTextureFromFile(m_texture, m_SVRHeap, L"test.png", device, m_CopyCommandQueue);
 
     BruteForce::DataBlob vertexShaderBlob;
     ThrowIfFailed(D3DReadFileToBlob(L"BasicVertexShader.cso", &vertexShaderBlob));

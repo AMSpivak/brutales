@@ -191,7 +191,7 @@ namespace BruteForce
         m_fence.WaitForFenceValue(fenceValue, duration);
     }
 
-    void SmartCommandQueue::CopyTextureSubresource(Resource desttexture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData)
+    void SmartCommandQueue::CopyTextureSubresource(Resource desttexture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData, ResourceStates finalResourceState)
     {
         if (desttexture)
         {
@@ -219,6 +219,13 @@ namespace BruteForce
                 IID_PPV_ARGS(&intermediateResource)
             ));
             UpdateSubresources(copy_list.command_list.Get(), desttexture.Get(), intermediateResource.Get(), 0, firstSubresource, numSubresources, subresourceData);
+            
+            ResourceBarrier barrier_dest = BruteForce::ResourceBarrier::Transition(
+                desttexture.Get(),
+                ResourceStateCopyDest,
+                finalResourceState);
+            copy_list.command_list->ResourceBarrier(1, &barrier_dest);
+
             auto fence = ExecuteCommandList(copy_list);
             WaitForFenceValue(fence);
         }

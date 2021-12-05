@@ -9,7 +9,7 @@ namespace BruteForce
 {
     namespace Textures
     {
-        void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue)
+        void LoadTextureFromFile(Texture& texture, DescriptorHeap& srv_heap, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue)
         {
             std::filesystem::path filePath(fileName);
             if (!std::filesystem::exists(filePath))
@@ -111,13 +111,22 @@ namespace BruteForce
                     texture.image,
                     0,
                     static_cast<uint32_t>(subresources.size()),
-                    subresources.data());
+                    subresources.data(), ResourceStateCommon);
 
                 if (subresources.size() < textureResource->GetDesc().MipLevels)
                 {
                     //GenerateMips(texture);
                 }
-                //ms_TextureCache[fileName] = textureResource.Get();
+
+                D3D12_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
+                shaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+                shaderResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+                shaderResourceViewDesc.Format = metadata.format;// DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+                shaderResourceViewDesc.Texture2D.MipLevels = 1;
+                shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
+                shaderResourceViewDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+                //device->CreateShaderResourceView(texture.srv.Get(), &shaderResourceViewDesc, srv_heap->GetCPUDescriptorHandleForHeapStart());
+
             }
         }
     }

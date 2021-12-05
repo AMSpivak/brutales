@@ -43,7 +43,7 @@ namespace BruteForce
         uint64_t ExecuteCommandList(SmartCommandList& list);
         uint64_t Signal();
         void WaitForFenceValue(uint64_t fenceValue, std::chrono::milliseconds duration = std::chrono::milliseconds::max());
-        void CopyTextureSubresource(Resource desttexture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData);
+        void CopyTextureSubresource(Resource desttexture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData, ResourceStates finalResourceState);
 
 
         //CommandQueue m_command_queue;

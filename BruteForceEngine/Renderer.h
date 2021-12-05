@@ -65,20 +65,20 @@ namespace BruteForce
             smart_command_list.command_list->ResourceBarrier(1, &barrier);
         }
 
-        void SwapFrame(SmartCommandList& smart_command_list)
+        void PrepareSwapFrame(SmartCommandList& smart_command_list)
         {
-            /*auto& backBuffer = GetCurrentBackBufferRef();
+            auto& backBuffer = GetCurrentBackBufferRef();
             BruteForce::ResourceBarrier barrier = BruteForce::ResourceBarrier::Transition(
                 backBuffer.Get(),
                 BruteForce::ResourceStatesRenderTarget,
                 BruteForce::ResourceStatesPresent);
-            smart_command_list.command_list->ResourceBarrier(1, &barrier);*/
+            smart_command_list.command_list->ResourceBarrier(1, &barrier);
 
-            UINT syncInterval = m_Window->GetVSync() ? 1 : 0;
+            /*UINT syncInterval = m_Window->GetVSync() ? 1 : 0;
             UINT presentFlags = m_Window->GetTearing() && !m_Window->GetVSync() ? AllowTearing : 0;
             auto& refSwapChain = m_Window->GetSwapChainReference();
             ThrowIfFailed(refSwapChain->Present(syncInterval, presentFlags));
-            m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
+            m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();*/
         }
 
         void SwapFrame()
