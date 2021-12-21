@@ -4,9 +4,51 @@
 #include <DirectXMath.h>
 
 
+TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp) :MyRenderer(device, pWindow, UseWarp),
+//, m_ScissorRect(ScissorRect(0, 0, LONG_MAX, LONG_MAX))
+//, m_Viewport(Viewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)))
+m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
+, m_FoV(45.0)
+, m_time(0.0f)
+, m_ContentLoaded(false)
+{
+    m_ScissorRect = BruteForce::ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
+    m_Viewport = BruteForce::Viewport{ 0.0f, 0.0f, static_cast<float>(pWindow->GetWidth()), static_cast<float>(pWindow->GetHeight()) };
+    BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
+    descHeapCbvSrv.NumDescriptors = 2;
+    descHeapCbvSrv.Type = BruteForce::DescriptorHeapCvbSrvUav;
+    descHeapCbvSrv.Flags = BruteForce::DescriptorHeapShaderVisible;
+    ThrowIfFailed(device->CreateDescriptorHeap(&descHeapCbvSrv, __uuidof(ID3D12DescriptorHeap), (void**)&m_SVRHeap));
+}
+
 bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 {
-    BruteForce::Textures::LoadTextureFromFile(m_texture, m_SVRHeap, L"test.png", device, m_CopyCommandQueue);
+    {
+        D3D12_DESCRIPTOR_HEAP_DESC descHeapSampler = {};
+        descHeapSampler.NumDescriptors = 1;
+        descHeapSampler.Type = BruteForce::DescriptorHeapSampler;
+        descHeapSampler.Flags = BruteForce::DescriptorHeapShaderVisible;
+        ThrowIfFailed(device->CreateDescriptorHeap(&descHeapSampler, __uuidof(ID3D12DescriptorHeap), (void**)&m_SamplerHeap));
+
+        BruteForce::SamplerDesc samplerDesc;
+        ZeroMemory(&samplerDesc, sizeof(samplerDesc));
+        samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+        samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+        samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+        samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+        samplerDesc.MinLOD = 0;
+        samplerDesc.MaxLOD = 0;// BruteForce::Math::floatMax;
+        samplerDesc.MipLODBias = 0.0f;
+        samplerDesc.MaxAnisotropy = 1;
+        samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+        device->CreateSampler(&samplerDesc, m_SamplerHeap->GetCPUDescriptorHandleForHeapStart());
+    }
+
+    auto srv_handle = m_SVRHeap->GetCPUDescriptorHandleForHeapStart();
+
+    BruteForce::Textures::LoadTextureFromFile(m_texture, L"test1.png", device, m_CopyCommandQueue, srv_handle);
+    srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+    BruteForce::Textures::LoadTextureFromFile(m_texture_2, L"test3.png", device, m_CopyCommandQueue, srv_handle);
 
     BruteForce::DataBlob vertexShaderBlob;
     ThrowIfFailed(D3DReadFileToBlob(L"BasicVertexShader.cso", &vertexShaderBlob));
@@ -36,19 +78,29 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+        D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;// |
+        //D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+    CD3DX12_DESCRIPTOR_RANGE1 descRange[2];
+    descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0);
+    descRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);
+    CD3DX12_ROOT_PARAMETER1 rootParameters[3];
+    rootParameters[2].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+    //rootParameters[3].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
 
-    CD3DX12_ROOT_PARAMETER1 rootParameters[1];
-    rootParameters[0].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+    rootParameters[0].InitAsDescriptorTable(1, &descRange[0],  D3D12_SHADER_VISIBILITY_PIXEL);
+    rootParameters[1].InitAsDescriptorTable(1, &descRange[1],  D3D12_SHADER_VISIBILITY_PIXEL);
 
+    //CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDescription;
+    //rootSignatureDescription.Init(3, rootParameters);
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
+
     rootSignatureDescription.Init_1_1(_countof(rootParameters), rootParameters, 0, nullptr, rootSignatureFlags);
 
     BruteForce::DataBlob rootSignatureBlob;
     BruteForce::DataBlob errorBlob;
     ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&rootSignatureDescription,
         featureData.HighestVersion, &rootSignatureBlob, &errorBlob));
+
     // Create the root signature.
     ThrowIfFailed(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
         rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)));
@@ -155,6 +207,21 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     smart_command_list.ClearDSV(dsv, true, false, 1.0f, 0);
     smart_command_list.SetPipelineState(m_PipelineState);
     smart_command_list.SetRootSignature(m_RootSignature);
+
+    /*BruteForce::ResourceBarrier barrier_dest = BruteForce::ResourceBarrier::Transition(
+        m_texture.image.Get(),
+        BruteForce::ResourceStateCommon,
+        BruteForce::ResourceStatePixelShader);
+    commandList->ResourceBarrier(1, &barrier_dest);*/
+
+
+    ID3D12DescriptorHeap* ppHeaps[] = { m_SVRHeap.Get(), m_SamplerHeap.Get() };
+    commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+
+    commandList->SetGraphicsRootDescriptorTable(0,
+    m_SVRHeap->GetGPUDescriptorHandleForHeapStart());
+    commandList->SetGraphicsRootDescriptorTable(1,
+    m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());
     //commandList->SetGraphicsRootSignature(m_RootSignature.Get());
     commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     commandList->IASetVertexBuffers(0, 1, &m_cube.m_VertexBufferView);
@@ -164,13 +231,22 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     commandList->OMSetRenderTargets(1, &rtv, FALSE, &dsv);
     BruteForce::Math::Matrix mvpMatrix = DirectX::XMMatrixMultiply(m_ModelMatrix, m_ViewMatrix);
     mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, m_ProjectionMatrix);
-    commandList->SetGraphicsRoot32BitConstants(0, sizeof(BruteForce::Math::Matrix) / 4, &mvpMatrix, 0);
-    commandList->DrawIndexedInstanced(m_cube.m_IndexesCount, 1, 0, 0, 0);
+    auto offset = sizeof(BruteForce::Math::Matrix) / 4;
+    commandList->SetGraphicsRoot32BitConstants(2, offset, &mvpMatrix, 0);
+    //commandList->SetGraphicsRoot32BitConstants(3, sizeof()/4, &mvpMatrix, offset);
+
+
+    commandList->DrawIndexedInstanced(m_cube.m_IndexesCount, 2, 0, 0, 0);
 
     SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
+
 }
 TutorialRenderer::~TutorialRenderer()
 {
     Flush();
+    m_SamplerHeap->Release();
+    m_SVRHeap->Release();
+    //ReportLiveObjects()
+
 }
 

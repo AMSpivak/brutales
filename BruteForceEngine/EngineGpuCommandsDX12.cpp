@@ -150,36 +150,6 @@ namespace BruteForce
         command_list->SetGraphicsRootSignature(signature.Get());
     }
 
-    //void SmartCommandList::CopyTextureSubresource(Device& device, Resource desttexture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData)
-    //{
-    //    if (desttexture)
-    //    {
-    //        //flush
-    //        ResourceBarrier barrier = BruteForce::ResourceBarrier::Transition(
-    //            desttexture.Get(),
-    //            ResourceStateCommon,
-    //            ResourceStateCopyDest);
-
-    //        command_list->ResourceBarrier(1, &barrier);
-
-    //        UINT64 requiredSize = GetRequiredIntermediateSize(desttexture.Get(), firstSubresource, numSubresources);
-
-    //        // Create a temporary (intermediate) resource for uploading the subresources
-    //        Resource intermediateResource;
-    //        auto hprop = HeapProperties(D3D12_HEAP_TYPE_UPLOAD);
-    //        auto buffer = CD3DX12_RESOURCE_DESC::Buffer(requiredSize);
-    //        ThrowIfFailed(device->CreateCommittedResource(
-    //            &hprop,
-    //            D3D12_HEAP_FLAG_NONE,
-    //            &buffer,
-    //            D3D12_RESOURCE_STATE_GENERIC_READ,
-    //            nullptr,
-    //            IID_PPV_ARGS(&intermediateResource)
-    //        ));
-    //        UpdateSubresources(command_list.Get(), desttexture.Get(), intermediateResource.Get(), 0, firstSubresource, numSubresources, subresourceData);
-    //    }
-    //    
-    //}
 
     uint64_t SmartCommandQueue::Signal()
     {
@@ -191,7 +161,7 @@ namespace BruteForce
         m_fence.WaitForFenceValue(fenceValue, duration);
     }
 
-    void SmartCommandQueue::CopyTextureSubresource(Resource desttexture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData, ResourceStates finalResourceState)
+    void SmartCommandQueue::CopyTextureSubresource(Resource& desttexture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData, ResourceStates finalResourceState)
     {
         if (desttexture)
         {

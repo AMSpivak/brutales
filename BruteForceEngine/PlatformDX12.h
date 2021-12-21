@@ -53,9 +53,12 @@ namespace BruteForce
 	using DescriptorHeapType = D3D12_DESCRIPTOR_HEAP_TYPE;
 	constexpr DescriptorHeapType DescriptorHeapRTV = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 	constexpr DescriptorHeapType DescriptorHeapDSV = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	constexpr DescriptorHeapType DescriptorHeapCvbSrvUav = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	constexpr DescriptorHeapType DescriptorHeapSampler = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
 
 	using DescriptorHeapFlags = D3D12_DESCRIPTOR_HEAP_FLAGS;
 	constexpr DescriptorHeapFlags DescriptorHeapFlagsNone = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	constexpr DescriptorHeapFlags DescriptorHeapShaderVisible = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
 	using VertexBufferView = D3D12_VERTEX_BUFFER_VIEW;
 	using IndexBufferView = D3D12_INDEX_BUFFER_VIEW;
@@ -73,6 +76,9 @@ namespace BruteForce
 
 	constexpr ResourceFlags ResourceFlagsNone = D3D12_RESOURCE_FLAG_NONE;
 	constexpr ResourceFlags ResourceFlagsDepthStencil = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+	using SrvDesc = D3D12_SHADER_RESOURCE_VIEW_DESC;
+	using SamplerDesc = D3D12_SAMPLER_DESC;
 
 
 	using TargetFormat = DXGI_FORMAT;
@@ -95,6 +101,7 @@ namespace BruteForce
 
 	namespace Math
 	{
+		constexpr float floatMax = D3D12_FLOAT32_MAX;
 		using Matrix = DirectX::XMMATRIX;
 		using Vec3Float = DirectX::XMFLOAT3;
 		using Vector = DirectX::XMVECTOR;

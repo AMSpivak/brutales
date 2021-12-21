@@ -10,17 +10,27 @@ constexpr uint8_t RendererNumFrames = 3;
 
 using MyRenderer = BruteForce::Renderer<RendererNumFrames>;
 
+struct TerrainInstanceData
+{
+    float x;
+    float y;
+    float scale;
+    uint32_t material;
+};
+
 class TutorialRenderer :
     public MyRenderer
 {
 private: 
     BruteForce::SmartCommandQueue m_CopyCommandQueue;
     BruteForce::Textures::Texture m_texture;
+    BruteForce::Textures::Texture m_texture_2;
 public:
 
     BruteForce::Resource m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;
     BruteForce::DescriptorHeap m_SVRHeap;
+    BruteForce::DescriptorHeap m_SamplerHeap;
 
     float m_FoV;
     float m_time;
@@ -33,17 +43,7 @@ public:
 
     BruteForce::IndexedGeometry m_cube;
 
-    TutorialRenderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp) :MyRenderer(device, pWindow, UseWarp),
-        //, m_ScissorRect(ScissorRect(0, 0, LONG_MAX, LONG_MAX))
-        //, m_Viewport(Viewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)))
-          m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
-        , m_FoV(45.0)
-        , m_time(0.0f)
-        , m_ContentLoaded(false)
-    {
-        m_ScissorRect = BruteForce::ScissorRect{0, 0, LONG_MAX, LONG_MAX};
-        m_Viewport = BruteForce::Viewport{ 0.0f, 0.0f, static_cast<float>(pWindow->GetWidth()), static_cast<float>(pWindow->GetHeight()) };
-    }
+    TutorialRenderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp);
 
     ~TutorialRenderer();
 
