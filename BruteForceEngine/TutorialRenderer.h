@@ -5,18 +5,19 @@
 #include "Renderer.h"
 #include "IndexedGeometry.h"
 #include "Texture.h"
+#include "Camera.h"
 
 constexpr uint8_t RendererNumFrames = 3;
 
 using MyRenderer = BruteForce::Renderer<RendererNumFrames>;
 
-struct TerrainInstanceData
-{
-    float x;
-    float y;
-    float scale;
-    uint32_t material;
-};
+//struct TerrainInstanceData
+//{
+//    float x;
+//    float y;
+//    float scale;
+//    uint32_t material;
+//};
 
 class TutorialRenderer :
     public MyRenderer
@@ -32,12 +33,9 @@ public:
     BruteForce::DescriptorHeap m_SVRHeap;
     BruteForce::DescriptorHeap m_SamplerHeap;
 
-    float m_FoV;
     float m_time;
 
-    BruteForce::Math::Matrix m_ModelMatrix;
-    BruteForce::Math::Matrix m_ViewMatrix;
-    BruteForce::Math::Matrix m_ProjectionMatrix;
+    BruteForce::Camera m_Camera;
 
     bool m_ContentLoaded;
 
@@ -51,7 +49,7 @@ public:
     void Resize(BruteForce::Device& device);
     void Update(float delta_time_ms);
     void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue);
-    
+    BruteForce::Camera* GetCameraPtr();
 };
 
 #endif

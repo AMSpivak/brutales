@@ -10,6 +10,18 @@ namespace BruteForce
         BruteForce::Math::Vec3Float Color;
     };
 
+    struct VertexPosNormTex
+    {
+        BruteForce::Math::Vec3Float Position;
+        BruteForce::Math::Vec3Float Normal;
+        BruteForce::Math::Vec2Float Texture;
+    };
+
+    struct VertexPos
+    {
+        BruteForce::Math::Vec3Float Position;
+    };
+
     class IndexedGeometry
     {
     public:
@@ -18,6 +30,11 @@ namespace BruteForce
         pResource m_IndexBuffer;
         IndexBufferView m_IndexBufferView;
         size_t m_IndexesCount;
+        ~IndexedGeometry()
+        {
+            m_VertexBuffer->Release();
+            m_IndexBuffer->Release();
+        }
     };
 }
 

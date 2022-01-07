@@ -15,7 +15,7 @@
 
 namespace BruteForce
 {
-	Fence CreateFence(Device device);
+	Fence CreateFence(Device& device);
 	uint64_t Signal(CommandQueue commandQueue, Fence fence, uint64_t& fenceValue);
 	EventHandle CreateEventHandle();
 	void CloseEventHandle(EventHandle& handle);
@@ -25,7 +25,7 @@ namespace BruteForce
 	class SmartFence
 	{
 	public:
-		SmartFence(Device device);
+		SmartFence(Device& device);
 		~SmartFence();
 		uint64_t Signal(CommandQueue commandQueue);
 		bool IsCompleted();

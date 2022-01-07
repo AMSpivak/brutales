@@ -104,6 +104,7 @@ namespace BruteForce
 		constexpr float floatMax = D3D12_FLOAT32_MAX;
 		using Matrix = DirectX::XMMATRIX;
 		using Vec3Float = DirectX::XMFLOAT3;
+		using Vec2Float = DirectX::XMFLOAT2;
 		using Vector = DirectX::XMVECTOR;
 		inline Vector VectorSet(float x, float y, float z, float w)
 		{
@@ -112,6 +113,16 @@ namespace BruteForce
 		inline Matrix MatrixRotationAxis(Vector axe, float angle)
 		{
 			return DirectX::XMMatrixRotationAxis(axe, angle);
+		}
+
+		inline Matrix MatrixTranslation(float OffsetX, float OffsetY, float OffsetZ)
+		{
+			return DirectX::XMMatrixTranslation(OffsetX, OffsetY, OffsetZ);
+		}
+
+		inline Matrix&& Multiply(const Matrix& a, const Matrix& b)
+		{
+			return DirectX::XMMatrixMultiply(a, b);
 		}
 		inline float DegToRad(float deg) { return DirectX::XMConvertToRadians(deg); }
 		inline Matrix MatrixLookAtLH(const Vector& Eye, const  Vector& Focus, const Vector& Up) { return DirectX::XMMatrixLookAtLH(Eye, Focus, Up); }

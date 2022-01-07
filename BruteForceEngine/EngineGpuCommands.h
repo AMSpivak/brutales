@@ -6,9 +6,9 @@
 #include <queue> 
 namespace BruteForce
 {
-    CommandQueue CreateCommandQueue(Device device, CommandListType type);
-    CommandAllocator CreateCommandAllocator(Device device, CommandListType type);
-    GraphicsCommandList CreateCommandList(Device device, CommandAllocator commandAllocator, CommandListType type);
+    CommandQueue CreateCommandQueue(Device& device, CommandListType type);
+    CommandAllocator CreateCommandAllocator(Device& device, CommandListType type);
+    GraphicsCommandList CreateCommandList(Device& device, CommandAllocator commandAllocator, CommandListType type);
     void Flush(CommandQueue commandQueue, Fence fence,
         uint64_t& fenceValue, EventHandle fenceEvent);
     void Flush(CommandQueue commandQueue, SmartFence& fence);
@@ -35,7 +35,7 @@ namespace BruteForce
     class SmartCommandQueue
     {
     public:
-        SmartCommandQueue(Device device, CommandListType type);
+        SmartCommandQueue(Device& device, CommandListType type);
         ~SmartCommandQueue();
         void Flush();
         SmartCommandList GetCommandList();
@@ -59,7 +59,7 @@ namespace BruteForce
 
         CommandQueue m_command_queue;
         SmartFence m_fence;
-        Device m_device;
+        Device& m_device;
         CommandListType m_list_type;
 
         friend SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount, int Width, int Height, bool tearing, WindowHandle mhWnd);

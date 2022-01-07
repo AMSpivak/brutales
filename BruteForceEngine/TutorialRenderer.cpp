@@ -1,17 +1,18 @@
 #include "TutorialRenderer.h"
 #include "Helpers.h"
 #include "IndexedGeometryGenerator.h"
+#include "RenderSubsystem.h"
 #include <DirectXMath.h>
-
 
 TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp) :MyRenderer(device, pWindow, UseWarp),
 //, m_ScissorRect(ScissorRect(0, 0, LONG_MAX, LONG_MAX))
 //, m_Viewport(Viewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)))
 m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
-, m_FoV(45.0)
 , m_time(0.0f)
 , m_ContentLoaded(false)
 {
+    //BruteForce::ReportLiveObjects();
+
     m_ScissorRect = BruteForce::ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
     m_Viewport = BruteForce::Viewport{ 0.0f, 0.0f, static_cast<float>(pWindow->GetWidth()), static_cast<float>(pWindow->GetHeight()) };
     BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
@@ -19,6 +20,12 @@ m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
     descHeapCbvSrv.Type = BruteForce::DescriptorHeapCvbSrvUav;
     descHeapCbvSrv.Flags = BruteForce::DescriptorHeapShaderVisible;
     ThrowIfFailed(device->CreateDescriptorHeap(&descHeapCbvSrv, __uuidof(ID3D12DescriptorHeap), (void**)&m_SVRHeap));
+
+    BruteForce::DescriptorHeapDesc dsvHeapDesc = {};
+    dsvHeapDesc.NumDescriptors = 1;
+    dsvHeapDesc.Type = BruteForce::DescriptorHeapDSV;
+    dsvHeapDesc.Flags = BruteForce::DescriptorHeapFlagsNone;
+    ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_DSVHeap)));
 }
 
 bool TutorialRenderer::LoadContent(BruteForce::Device& device)
@@ -48,7 +55,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 
     BruteForce::Textures::LoadTextureFromFile(m_texture, L"test1.png", device, m_CopyCommandQueue, srv_handle);
     srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
-    BruteForce::Textures::LoadTextureFromFile(m_texture_2, L"test3.png", device, m_CopyCommandQueue, srv_handle);
+    BruteForce::Textures::LoadTextureFromFile(m_texture_2, L"test2.png", device, m_CopyCommandQueue, srv_handle);
 
     BruteForce::DataBlob vertexShaderBlob;
     ThrowIfFailed(D3DReadFileToBlob(L"BasicVertexShader.cso", &vertexShaderBlob));
@@ -56,11 +63,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
     BruteForce::DataBlob pixelShaderBlob;
     ThrowIfFailed(D3DReadFileToBlob(L"BasicPixelShader.cso", &pixelShaderBlob));
 
-    BruteForce::DescriptorHeapDesc dsvHeapDesc = {};
-    dsvHeapDesc.NumDescriptors = 1;
-    dsvHeapDesc.Type = BruteForce::DescriptorHeapDSV;
-    dsvHeapDesc.Flags = BruteForce::DescriptorHeapFlagsNone;
-    ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_DSVHeap)));
+    
 
     D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -146,16 +149,6 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 void TutorialRenderer::Update(float delta_time)
 {
     m_time += delta_time;
-    float angle = static_cast<float>(m_time * 0.1f);
-    const BruteForce::Math::Vector rotationAxis = BruteForce::Math::VectorSet(0, 1, 1, 0);
-    m_ModelMatrix = BruteForce::Math::MatrixRotationAxis(rotationAxis, BruteForce::Math::DegToRad(angle));
-    const BruteForce::Math::Vector eyePosition = BruteForce::Math::VectorSet(0, 0, -10, 1);
-    const BruteForce::Math::Vector focusPoint = BruteForce::Math::VectorSet(0, 0, 0, 1);
-    const BruteForce::Math::Vector upDirection = BruteForce::Math::VectorSet(0, 1, 0, 0);
-    m_ViewMatrix = BruteForce::Math::MatrixLookAtLH(eyePosition, focusPoint, upDirection);
-
-    float aspectRatio = m_Window->GetWidth() / static_cast<float>(m_Window->GetHeight());
-    m_ProjectionMatrix = BruteForce::Math::MatrixPerspectiveFovLH(BruteForce::Math::DegToRad(m_FoV), aspectRatio, 0.1f, 100.0f);
 }
 
 
@@ -170,6 +163,7 @@ void TutorialRenderer::Resize(BruteForce::Device& device)
     {
         width = std::max(1, width);
         height = std::max(1, height);
+        m_Camera.SetAspectRatio(m_Window->GetWidth() / static_cast<float>(m_Window->GetHeight()), true);
         D3D12_CLEAR_VALUE optimizedClearValue = {};
         optimizedClearValue.Format = BruteForce::TargetFormat_D32_Float;
         optimizedClearValue.DepthStencil = { 1.0f, 0 };
@@ -196,57 +190,64 @@ void TutorialRenderer::Resize(BruteForce::Device& device)
     }
 }
 
+volatile bool DrawTest = false;
+
 void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue)
 {
     auto smart_command_list = in_SmartCommandQueue.GetCommandList();
     auto& commandList = smart_command_list.command_list;
     FLOAT clearColor[] = { 1.0f, 0.6f, 0.1f, 1.0f };
+
     BruteForce::CDescriptorHandle rtv(m_BackBuffersDHeap->GetCPUDescriptorHandleForHeapStart(), m_CurrentBackBufferIndex, m_RTVDescriptorSize);
-    auto dsv = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
+    BruteForce::DescriptorHandle dsv = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
     smart_command_list.ClearRTV(rtv, clearColor);
     smart_command_list.ClearDSV(dsv, true, false, 1.0f, 0);
-    smart_command_list.SetPipelineState(m_PipelineState);
-    smart_command_list.SetRootSignature(m_RootSignature);
 
-    /*BruteForce::ResourceBarrier barrier_dest = BruteForce::ResourceBarrier::Transition(
-        m_texture.image.Get(),
-        BruteForce::ResourceStateCommon,
-        BruteForce::ResourceStatePixelShader);
-    commandList->ResourceBarrier(1, &barrier_dest);*/
+    if(DrawTest)
+    {
+        BruteForce::Render::RenderDestination render_dest{
+            &m_Viewport,
+            &m_ScissorRect,
+            &rtv,
+            &dsv,
+            m_Camera
+        };
+
+        smart_command_list.SetPipelineState(m_PipelineState);
+        smart_command_list.SetRootSignature(m_RootSignature);
+
+        ID3D12DescriptorHeap* ppHeaps[] = { m_SVRHeap.Get(), m_SamplerHeap.Get() };
+        commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+
+        commandList->SetGraphicsRootDescriptorTable(0,
+            m_SVRHeap->GetGPUDescriptorHandleForHeapStart());
+        commandList->SetGraphicsRootDescriptorTable(1,
+            m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());
+
+        commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        commandList->IASetVertexBuffers(0, 1, &m_cube.m_VertexBufferView);
+        commandList->IASetIndexBuffer(&m_cube.m_IndexBufferView);
+        commandList->RSSetViewports(1, &m_Viewport);
+        commandList->RSSetScissorRects(1, &m_ScissorRect);
+        commandList->OMSetRenderTargets(1, &rtv, FALSE, &dsv);
+
+        auto offset = sizeof(BruteForce::Math::Matrix) / 4;
+        commandList->SetGraphicsRoot32BitConstants(2, offset, m_Camera.GetCameraMatrixPointer(), 0);
 
 
-    ID3D12DescriptorHeap* ppHeaps[] = { m_SVRHeap.Get(), m_SamplerHeap.Get() };
-    commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
-    commandList->SetGraphicsRootDescriptorTable(0,
-    m_SVRHeap->GetGPUDescriptorHandleForHeapStart());
-    commandList->SetGraphicsRootDescriptorTable(1,
-    m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());
-    //commandList->SetGraphicsRootSignature(m_RootSignature.Get());
-    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    commandList->IASetVertexBuffers(0, 1, &m_cube.m_VertexBufferView);
-    commandList->IASetIndexBuffer(&m_cube.m_IndexBufferView);
-    commandList->RSSetViewports(1, &m_Viewport);
-    commandList->RSSetScissorRects(1, &m_ScissorRect);
-    commandList->OMSetRenderTargets(1, &rtv, FALSE, &dsv);
-    BruteForce::Math::Matrix mvpMatrix = DirectX::XMMatrixMultiply(m_ModelMatrix, m_ViewMatrix);
-    mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, m_ProjectionMatrix);
-    auto offset = sizeof(BruteForce::Math::Matrix) / 4;
-    commandList->SetGraphicsRoot32BitConstants(2, offset, &mvpMatrix, 0);
-    //commandList->SetGraphicsRoot32BitConstants(3, sizeof()/4, &mvpMatrix, offset);
-
-
-    commandList->DrawIndexedInstanced(m_cube.m_IndexesCount, 2, 0, 0, 0);
+        commandList->DrawIndexedInstanced(m_cube.m_IndexesCount, 2, 0, 0, 0);
+    }
 
     SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
 
+
+}
+BruteForce::Camera* TutorialRenderer::GetCameraPtr()
+{
+    return &m_Camera;
 }
 TutorialRenderer::~TutorialRenderer()
 {
     Flush();
-    m_SamplerHeap->Release();
-    m_SVRHeap->Release();
-    //ReportLiveObjects()
-
 }
 

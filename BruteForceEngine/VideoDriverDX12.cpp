@@ -12,6 +12,8 @@ using namespace Microsoft::WRL;
 #include "d3dx12.h"
 #include "EngineGpuSwapChain.h"
 
+#include "dxgidebug.h"
+
 namespace BruteForce
 {
     LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -32,9 +34,9 @@ namespace BruteForce
 
                 switch (wParam)
                 {
-                case 'V':
-                    //g_VSync = !g_VSync;
-                    break;
+                //case 'V':
+                //    //g_VSync = !g_VSync;
+                //    break;
                 case VK_ESCAPE:
                     ::PostQuitMessage(0);
                     break;
@@ -42,6 +44,7 @@ namespace BruteForce
                 case VK_F11:
                     //SetFullscreen(!g_Fullscreen);
                     break;
+
                 }
             }
             break;
@@ -284,7 +287,7 @@ namespace BruteForce
 
 
 
-    Device CreateDevice(Adapter adapter)
+    Device CreateDevice(Adapter &adapter)
     {
         ComPtr<ID3D12Device2> d3d12Device2;
         ThrowIfFailed(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12Device2)));
@@ -327,7 +330,7 @@ namespace BruteForce
         return d3d12Device2;
     }
 
-    ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(ComPtr<ID3D12Device2> device,
+    ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(ComPtr<ID3D12Device2>& device,
         D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
     {
         ComPtr<ID3D12DescriptorHeap> descriptorHeap;
@@ -353,8 +356,17 @@ namespace BruteForce
 #endif
     }
 
+    void ReportLiveObjects()
+    {
+#if defined(_DEBUG)
+        IDXGIDebug* debugDev;
+        HRESULT hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debugDev));
+        debugDev->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+# endif
+    }
 
-    void UpdateRenderTargetViews(Device device, SwapChain swapChain, DescriptorHeap descriptorHeap, Resource * BackBuffers, uint8_t NumFrames)
+
+    void UpdateRenderTargetViews(Device &device, SwapChain &swapChain, DescriptorHeap &descriptorHeap, Resource * BackBuffers, uint8_t NumFrames)
     {
         auto rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(DescriptorHeapRTV);
 

@@ -55,11 +55,12 @@ namespace BruteForce
 	};
 
 	Adapter GetAdapter(bool useWarp);
-	Device CreateDevice(Adapter adapter);
-	DescriptorHeap CreateDescriptorHeap(Device device, DescriptorHeapType type, uint32_t numDescriptors);
+	Device CreateDevice(Adapter &adapter);
+	DescriptorHeap CreateDescriptorHeap(Device& device, DescriptorHeapType type, uint32_t numDescriptors);
 
 	void EnableDebugLayer();
-	void UpdateRenderTargetViews(Device device, SwapChain swapChain, DescriptorHeap descriptorHeap, Resource* BackBuffers, uint8_t NumFrames);
+	void ReportLiveObjects();
+	void UpdateRenderTargetViews(Device& Device, SwapChain& swapChain, DescriptorHeap& descriptorHeap, Resource* BackBuffers, uint8_t NumFrames);
 
 	//void WaitForFenceValue(Fence fence, uint64_t fenceValue, FenceEvent fenceEvent, std::chrono::milliseconds duration = std::chrono::milliseconds::max());
 }

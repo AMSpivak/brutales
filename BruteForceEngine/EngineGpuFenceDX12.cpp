@@ -28,7 +28,7 @@ namespace BruteForce
 		return fenceValueForSignal;
 	}
 
-	Fence CreateFence(Device device)
+	Fence CreateFence(Device& device)
 	{
 		Fence fence;
 
@@ -52,7 +52,7 @@ namespace BruteForce
 	}
 
 
-	SmartFence::SmartFence(Device device) : m_fence_value(0)
+	SmartFence::SmartFence(Device& device) : m_fence_value(0)
 	{
 		m_fence = CreateFence(device);
 		m_handle = CreateEventHandle();

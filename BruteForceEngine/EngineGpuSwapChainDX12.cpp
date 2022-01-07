@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdint>
 #include "Helpers.h"
+#include "VideoDriverInterface.h"
 
 using namespace Microsoft::WRL;
 #include "d3dx12.h"
@@ -21,7 +22,6 @@ namespace BruteForce
 #if defined(_DEBUG)
         createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
 #endif
-
         ThrowIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory4)));
         DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
         swapChainDesc.Width = Width;
@@ -44,12 +44,12 @@ namespace BruteForce
             nullptr,
             nullptr,
             &swapChain1));
-
         // Disable the Alt+Enter fullscreen toggle feature. Switching to fullscreen
         // will be handled manually.
         ThrowIfFailed(dxgiFactory4->MakeWindowAssociation(mhWnd, DXGI_MWA_NO_ALT_ENTER));
 
         ThrowIfFailed(swapChain1.As(&dxgiSwapChain4));
+
         return dxgiSwapChain4;
     }
 }

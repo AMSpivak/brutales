@@ -8,6 +8,7 @@
 #include "VideoDriverDX12.h"
 #include "EngineGpuFence.h"
 #include "EngineGpuCommands.h"
+#include "Camera.h"
 
 namespace BruteForce
 {
@@ -33,10 +34,10 @@ namespace BruteForce
 
         Viewport m_Viewport;
         ScissorRect m_ScissorRect;
-        Renderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp) : m_Window(pWindow), m_NumFrames(t_NumFrames), m_Device(device), m_SmartCommandQueue(m_Device, BruteForce::CommandListTypeDirect)
+        Renderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp) : m_Window(pWindow), m_NumFrames(t_NumFrames), m_Device(device)
+                , m_SmartCommandQueue(m_Device, BruteForce::CommandListTypeDirect)
         {
             m_Window->CreateSwapChain(m_SmartCommandQueue, m_NumFrames);
-
             auto refSwapChain = m_Window->GetSwapChainReference();
 
             m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
@@ -93,6 +94,8 @@ namespace BruteForce
         {
             in_SmartCommandQueue.WaitForFenceValue(GetCurrentFence());
         }
+
+        virtual Camera* GetCameraPtr() { return nullptr; }
     };
 }
 

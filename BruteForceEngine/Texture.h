@@ -12,8 +12,9 @@ namespace BruteForce
 		private:
 			std::mutex m_mutex;
 		public:
-			//Texture() = default;
-			//~Texture() { image->Release(); };
+			Texture() = default;
+			Texture(const Texture &) = default;
+			~Texture() {};
 			Resource image;
 			TargetFormat Format;
 			DescriptorHandle m_descriptor_handle;

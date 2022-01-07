@@ -8,7 +8,7 @@
 namespace BruteForce
 {
 
-    CommandQueue CreateCommandQueue(Device device, CommandListType type)
+    CommandQueue CreateCommandQueue(Device& device, CommandListType type)
     {
         CommandQueue d3d12CommandQueue;
 
@@ -23,7 +23,7 @@ namespace BruteForce
         return d3d12CommandQueue;
     }
 
-    CommandAllocator CreateCommandAllocator(Device device,
+    CommandAllocator CreateCommandAllocator(Device& device,
         CommandListType type)
     {
         CommandAllocator commandAllocator;
@@ -32,7 +32,7 @@ namespace BruteForce
         return commandAllocator;
     }
 
-    GraphicsCommandList CreateCommandList(Device device,
+    GraphicsCommandList CreateCommandList(Device& device,
         CommandAllocator commandAllocator, D3D12_COMMAND_LIST_TYPE type)
     {
         GraphicsCommandList commandList;
@@ -55,16 +55,18 @@ namespace BruteForce
         fence.WaitForFenceValue(fenceValueForSignal);
     }
 
-    SmartCommandQueue::SmartCommandQueue(Device device, CommandListType type) 
+    SmartCommandQueue::SmartCommandQueue(Device& device, CommandListType type) 
         :m_command_queue(CreateCommandQueue(device, type)),
         m_fence(device),
         m_device(device),
         m_list_type(type)
     {
+        //BruteForce::ReportLiveObjects();
     }
 
     SmartCommandQueue::~SmartCommandQueue()
     {
+        //m_device->Release();
     }
 
     SmartCommandList SmartCommandQueue::GetCommandList()
