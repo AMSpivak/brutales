@@ -110,31 +110,49 @@ void Update()
 
     if (test_controller && test_camera)
     {
-        if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::RotateRight))
-        {
-            test_camera->RotateView({ 0,1,0,0 }, -0.03f * msecs);
-        }
-        if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::RotateLeft))
-        {
-            test_camera->RotateView({ 0,1,0,0 }, 0.03f * msecs);
-        }
+        test_controller->Update();
+
+        test_camera->RotateView(test_controller->GetAxeState(BruteForce::Controller::Axes::CameraVertical) * (1.0f),
+            test_controller->GetAxeState(BruteForce::Controller::Axes::CameraHorizontal) * (1.0f),
+            0.0f
+        );
+        //test_camera->RotateView({ 0,1,0,0 }, test_controller->GetAxeState(BruteForce::Controller::Axes::CameraHorizontal) * (-10.0f));
+        //test_camera->RotateView({ 1,0,0,0 }, test_controller->GetAxeState(BruteForce::Controller::Axes::CameraVertical)*(-10.0f));
+        //if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::RotateRight))
+        //{
+        //    test_camera->RotateView({ 0,1,0,0 }, -0.03f * msecs);
+        //}
+        //if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::RotateLeft))
+        //{
+        //    test_camera->RotateView({ 0,1,0,0 }, 0.03f * msecs);
+        //}
 
         if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::MoveRight))
         {
-            test_camera->MoveView(-0.02f * msecs, 0.f, 0.f);
+            test_camera->MoveView(0.02f * msecs, 0.f, 0.f);
         }
         if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::MoveLeft))
         {
-            test_camera->MoveView(0.02f * msecs, 0.f, 0.f);
+            test_camera->MoveView(-0.02f * msecs, 0.f, 0.f);
         }
+
         if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::MoveForward))
-        {
-            test_camera->MoveView( 0.f, 0.f, -0.02f * msecs);
-        }
-        if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::MoveBack))
         {
             test_camera->MoveView( 0.f, 0.f, 0.02f * msecs);
         }
+        if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::MoveBack))
+        {
+            test_camera->MoveView( 0.f, 0.f, -0.02f * msecs);
+        }
+        if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::MoveUp))
+        {
+            test_camera->MoveView(0.f,  0.02f * msecs, 0.f);
+        }
+        if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::MoveDown))
+        {
+            test_camera->MoveView(0.f, -0.02f * msecs, 0.f);
+        }
+
     }
     
 
@@ -213,13 +231,13 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
     BruteForce::Adapter adapter = BruteForce::GetAdapter(g_UseWarp);
     g_Device = BruteForce::CreateDevice(adapter);
-    
+
     BruteForce::VideoDriverDX12 m_driver;
     pWindow = m_driver.CreateWindow(L"DX12WindowClass", L"Learning DirectX 12",
         g_ClientWidth, g_ClientHeight);
+    
     p_Renderer = new TutorialRenderer(g_Device, pWindow, false);
     p_Renderer->LoadContent(g_Device);
-
     test_controller = new BruteForce::Controller::ControllerWinKey();
     test_camera = p_Renderer->GetCameraPtr();
     pWindow->SetOnPaint([] {Update(); Render(p_Renderer->m_SmartCommandQueue, pWindow); });
@@ -238,7 +256,8 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
     delete(test_controller);
     delete(p_Renderer);
-    
-    //BruteForce::ReportLiveObjects();
+#ifdef DEBUG
+    //ReportLiveObjects()
+#endif
     return 0;
 }

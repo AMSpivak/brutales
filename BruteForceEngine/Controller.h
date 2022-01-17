@@ -19,7 +19,7 @@ namespace BruteForce
 		enum class Axes
 		{
 			CameraHorizontal = 0,
-			CameraVertical
+			CameraVertical,
 		};
 
 		class Controller
@@ -27,6 +27,7 @@ namespace BruteForce
 		public:
 			virtual bool GetKeyPressed(Keys key) = 0;
 			virtual float GetAxeState(Axes axe) = 0;
+			virtual void Update() = 0;
 		};
 	}
 }

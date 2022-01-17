@@ -106,13 +106,36 @@ namespace BruteForce
 		using Vec3Float = DirectX::XMFLOAT3;
 		using Vec2Float = DirectX::XMFLOAT2;
 		using Vector = DirectX::XMVECTOR;
+		inline Vector VectorAdd(const Vector& a, const Vector& b)
+		{
+			return DirectX::XMVectorAdd(a,b);
+		}
 		inline Vector VectorSet(float x, float y, float z, float w)
 		{
 			return DirectX::XMVectorSet(x, y, z, w);
 		}
-		inline Matrix MatrixRotationAxis(Vector axe, float angle)
+		inline Matrix MatrixRotationAxis(const Vector &axe, float angle)
 		{
 			return DirectX::XMMatrixRotationAxis(axe, angle);
+		}
+
+		inline Vector MatrixVectorMul(const Matrix& m, const Vector &v)
+		{
+			return DirectX::XMVector4Transform(v, m);
+		}
+		inline Vector MatrixVectorScale(const Vector& v, float scale)
+		{
+			return DirectX::XMVectorScale(v, scale);
+		}
+
+		inline Vector MatrixVector3Cross(const Vector& v1, const Vector& v2)
+		{
+			return DirectX::XMVector3Cross(v1, v2);
+		}
+
+		inline Matrix MatrixRotationRollPitchYaw(const Vector &rpy)
+		{
+			return DirectX::XMMatrixRotationRollPitchYawFromVector(rpy);
 		}
 
 		inline Matrix MatrixTranslation(float OffsetX, float OffsetY, float OffsetZ)

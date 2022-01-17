@@ -6,6 +6,7 @@
 #include "IndexedGeometry.h"
 #include "Texture.h"
 #include "Camera.h"
+#include "RenderSubsystem.h"
 
 constexpr uint8_t RendererNumFrames = 3;
 
@@ -26,6 +27,8 @@ private:
     BruteForce::SmartCommandQueue m_CopyCommandQueue;
     BruteForce::Textures::Texture m_texture;
     BruteForce::Textures::Texture m_texture_2;
+    BruteForce::Render::RenderSubsystem* pRenderInstanced;
+    BruteForce::Render::RenderSubsystem* pRenderTerrain;
 public:
 
     BruteForce::Resource m_DepthBuffer;
@@ -38,8 +41,6 @@ public:
     BruteForce::Camera m_Camera;
 
     bool m_ContentLoaded;
-
-    BruteForce::IndexedGeometry m_cube;
 
     TutorialRenderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp);
 

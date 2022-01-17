@@ -1,4 +1,4 @@
-#include "RenderInstanced.h"
+#include "RenderTerrain.h"
 #include "Helpers.h"
 #include "IndexedGeometryGenerator.h"
 
@@ -6,16 +6,16 @@ namespace BruteForce
 {
     namespace Render
     {
-        RenderInstanced::RenderInstanced()
+        RenderTerrain::RenderTerrain()
         {
         }
-        RenderInstanced::~RenderInstanced()
+        RenderTerrain::~RenderTerrain()
         {
         }
-        void RenderInstanced::Update(float delta_time)
+        void RenderTerrain::Update(float delta_time)
         {
         }
-        void RenderInstanced::LoadContent(Device& device)
+        void RenderTerrain::LoadContent(Device& device)
         {
             {
                 D3D12_DESCRIPTOR_HEAP_DESC descHeapSampler = {};
@@ -31,7 +31,7 @@ namespace BruteForce
                 samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
                 samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
                 samplerDesc.MinLOD = 0;
-                samplerDesc.MaxLOD = BruteForce::Math::floatMax;
+                samplerDesc.MaxLOD = 0;// BruteForce::Math::floatMax;
                 samplerDesc.MipLODBias = 0.0f;
                 samplerDesc.MaxAnisotropy = 1;
                 samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
@@ -134,11 +134,12 @@ namespace BruteForce
             };
             ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
 
-            Geometry::CreateCube(device, m_cube);
+            //Geometry::CreateCube(device, m_cube);
+            Geometry::CreatePlane(device, m_plane, 100, 100, 6.0f, 6.0f);
         }
 
 
-        void RenderInstanced::PrepareRenderCommandList(SmartCommandList& smart_command_list, const RenderDestination& render_dest)
+        void RenderTerrain::PrepareRenderCommandList(SmartCommandList& smart_command_list, const RenderDestination& render_dest)
         {
             auto& commandList = smart_command_list.command_list;
             smart_command_list.SetPipelineState(m_PipelineState);
@@ -153,17 +154,15 @@ namespace BruteForce
                 m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());
 
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            commandList->IASetVertexBuffers(0, 1, &m_cube.m_VertexBufferView);
-            commandList->IASetIndexBuffer(&m_cube.m_IndexBufferView);
+            commandList->IASetVertexBuffers(0, 1, &m_plane.m_VertexBufferView);
+            commandList->IASetIndexBuffer(&m_plane.m_IndexBufferView);
             commandList->RSSetViewports(1, render_dest.m_Viewport);
             commandList->RSSetScissorRects(1, render_dest.m_ScissorRect);
             commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, render_dest.dsv);
 
             auto offset = sizeof(BruteForce::Math::Matrix) / 4;
             commandList->SetGraphicsRoot32BitConstants(2, offset, render_dest.camera.GetCameraMatrixPointer(), 0);
-
-
-            commandList->DrawIndexedInstanced(m_cube.m_IndexesCount, 1, 0, 0, 0);
+            commandList->DrawIndexedInstanced(m_plane.m_IndexesCount, 1, 0, 0, 0);
         }
     }
 }

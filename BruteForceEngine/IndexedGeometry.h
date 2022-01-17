@@ -14,7 +14,7 @@ namespace BruteForce
     {
         BruteForce::Math::Vec3Float Position;
         BruteForce::Math::Vec3Float Normal;
-        BruteForce::Math::Vec2Float Texture;
+        //BruteForce::Math::Vec2Float Texture;
     };
 
     struct VertexPos
@@ -32,8 +32,8 @@ namespace BruteForce
         size_t m_IndexesCount;
         ~IndexedGeometry()
         {
-            m_VertexBuffer->Release();
-            m_IndexBuffer->Release();
+            if(m_VertexBuffer) m_VertexBuffer->Release();
+            if(m_IndexBuffer) m_IndexBuffer->Release();
         }
     };
 }

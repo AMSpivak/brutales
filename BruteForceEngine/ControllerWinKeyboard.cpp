@@ -1,5 +1,6 @@
 #include "ControllerWinKeyboard.h"
 #include "Windows.h"
+#include <algorithm>
 
 namespace BruteForce
 {
@@ -10,26 +11,33 @@ namespace BruteForce
 			switch (key)
 			{
 			case Keys::MoveLeft:
-				return GetKeyState(VK_LEFT) &0x80;
+				return GetKeyState('A') & 0x8000;
 				break;
 
 			case Keys::MoveRight:
-				return GetKeyState(VK_RIGHT) & 0x80;
+				return GetKeyState('D') & 0x8000;
 				break;
 			case Keys::MoveForward:
-				return GetKeyState(VK_UP) & 0x80;
+				return GetKeyState('W'/*VK_UP*/) & 0x8000;
 				break;
 
 			case Keys::MoveBack:
-				return GetKeyState(VK_DOWN) & 0x80;
+				return GetKeyState('S') & 0x8000;
+				break;
+
+			case Keys::MoveUp:
+				return GetKeyState(VK_CONTROL) & 0x8000;
+				break;
+			case Keys::MoveDown:
+				return GetKeyState(VK_SPACE) & 0x8000;
 				break;
 
 			case Keys::RotateLeft:
-				return GetKeyState(VK_NUMPAD4) & 0x80;
+				return GetKeyState(VK_NUMPAD4) & 0x8000;
 				break;
 
 			case Keys::RotateRight:
-				return GetKeyState(VK_NUMPAD6) & 0x80;
+				return GetKeyState(VK_NUMPAD6) & 0x8000;
 				break;
 
 			default:
@@ -40,7 +48,50 @@ namespace BruteForce
 
 		float ControllerWinKey::GetAxeState(Axes axe)
 		{
+			switch (axe)
+			{
+			case Axes::CameraHorizontal:
+				return CameraX;
+				break;
+			case Axes::CameraVertical:
+				return CameraY;
+				break;
+			default:
+				break;
+			}
 			return 0.0f;
+		}
+		void ControllerWinKey::Update()
+		{
+			
+
+			POINT mouse;
+			GetCursorPos(&mouse);
+
+			if (!camera_look)
+			{
+				LockX = mouse.x;
+				LockY = mouse.y;
+			}
+
+			camera_look = GetKeyState(VK_RBUTTON) & 0x8000;
+	
+			if (camera_look)
+			{
+				float val = static_cast<float>(std::clamp<int>(mouse.x - LockX, -MouseSensetivity, MouseSensetivity));
+				val /= MouseSensetivity;
+				CameraX = val;
+				val = static_cast<float>(std::clamp<int>(mouse.y - LockY, -MouseSensetivity, MouseSensetivity));
+				val /= MouseSensetivity;
+				CameraY = val;
+				SetCursorPos(LockX, LockY);
+			}
+			else
+			{
+				CameraX = 0.0f;
+				CameraY = 0.0f;
+			}
+			
 		}
 	}
 }

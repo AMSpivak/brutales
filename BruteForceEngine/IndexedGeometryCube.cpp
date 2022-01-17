@@ -30,7 +30,7 @@ namespace BruteForce
     {
         void CreateCube(Device& device, IndexedGeometry& geometry)
         {
-            BruteForce::SmartCommandQueue smart_queue(device, BruteForce::CommandListTypeDirect);
+            SmartCommandQueue smart_queue(device, BruteForce::CommandListTypeDirect);
             auto commandList = smart_queue.GetCommandList();
 
             BruteForce::pResource intermediateVertexBuffer;
