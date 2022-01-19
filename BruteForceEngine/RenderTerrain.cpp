@@ -46,7 +46,7 @@ namespace BruteForce
             {
                 SmartCommandQueue m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy);
                 auto srv_handle = m_SVRHeap->GetCPUDescriptorHandleForHeapStart();
-                const std::wstring tex_names[] = { { L"test1.png"} ,{L"test2.png"} };
+                const std::wstring tex_names[] = { { L"Desert_Rock_albedo.png"} ,{L"Desert_Sand_albedo.png"} };
                 for (int i = 0; i < 2; i++)
                 {
                     BruteForce::Textures::LoadTextureFromFile(m_textures[i], tex_names[i], device, m_CopyCommandQueue, srv_handle);
@@ -55,10 +55,10 @@ namespace BruteForce
             }
 
             BruteForce::DataBlob vertexShaderBlob;
-            ThrowIfFailed(D3DReadFileToBlob(L"BasicVertexShader.cso", &vertexShaderBlob));
+            ThrowIfFailed(D3DReadFileToBlob(L"TerrainVertexShader.cso", &vertexShaderBlob));
 
             BruteForce::DataBlob pixelShaderBlob;
-            ThrowIfFailed(D3DReadFileToBlob(L"BasicPixelShader.cso", &pixelShaderBlob));
+            ThrowIfFailed(D3DReadFileToBlob(L"TerrainPixelShader.cso", &pixelShaderBlob));
 
 
 
