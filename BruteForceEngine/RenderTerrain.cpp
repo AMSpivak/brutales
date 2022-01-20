@@ -19,14 +19,14 @@ namespace BruteForce
         {
             {
                 D3D12_DESCRIPTOR_HEAP_DESC descHeapSampler = {};
-                descHeapSampler.NumDescriptors = 1;
+                descHeapSampler.NumDescriptors = 2;
                 descHeapSampler.Type = BruteForce::DescriptorHeapSampler;
                 descHeapSampler.Flags = BruteForce::DescriptorHeapShaderVisible;
                 ThrowIfFailed(device->CreateDescriptorHeap(&descHeapSampler, __uuidof(ID3D12DescriptorHeap), (void**)&m_SamplerHeap));
 
                 BruteForce::SamplerDesc samplerDesc;
                 ZeroMemory(&samplerDesc, sizeof(samplerDesc));
-                samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+                samplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;// D3D12_FILTER_MIN_MAG_MIP_LINEAR;
                 samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
                 samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
                 samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -35,21 +35,30 @@ namespace BruteForce
                 samplerDesc.MipLODBias = 0.0f;
                 samplerDesc.MaxAnisotropy = 1;
                 samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-                device->CreateSampler(&samplerDesc, m_SamplerHeap->GetCPUDescriptorHandleForHeapStart());
+                auto sampler_handle = m_SamplerHeap->GetCPUDescriptorHandleForHeapStart();
+                device->CreateSampler(&samplerDesc, sampler_handle);
+                sampler_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapSampler);
+                samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+                device->CreateSampler(&samplerDesc, sampler_handle);
 
+                
+            }
+            {
+                const std::wstring tex_names[] = { { L"desert_map.png"} , { L"Desert_Rock_albedo.png"} ,{L"Desert_Sand_albedo.png"} };
+                size_t textures_count = 3;// _countof(tex_names);
                 BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
-                descHeapCbvSrv.NumDescriptors = 2;
+                descHeapCbvSrv.NumDescriptors = textures_count;
                 descHeapCbvSrv.Type = BruteForce::DescriptorHeapCvbSrvUav;
                 descHeapCbvSrv.Flags = BruteForce::DescriptorHeapShaderVisible;
                 ThrowIfFailed(device->CreateDescriptorHeap(&descHeapCbvSrv, __uuidof(ID3D12DescriptorHeap), (void**)&m_SVRHeap));
-            }
-            {
-                SmartCommandQueue m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy);
+
                 auto srv_handle = m_SVRHeap->GetCPUDescriptorHandleForHeapStart();
-                const std::wstring tex_names[] = { { L"Desert_Rock_albedo.png"} ,{L"Desert_Sand_albedo.png"} };
-                for (int i = 0; i < 2; i++)
+                SmartCommandQueue m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy);
+
+                for (int i = 0; i < textures_count; i++)
                 {
-                    BruteForce::Textures::LoadTextureFromFile(m_textures[i], tex_names[i], device, m_CopyCommandQueue, srv_handle);
+                    BruteForce::Textures::LoadTextureFromFile(m_textures[i], tex_names[i], device, m_CopyCommandQueue);
+                    m_textures[i].CreateSrv(device, srv_handle);
                     srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 }
             }
@@ -81,14 +90,14 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;// |
                 //D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
             CD3DX12_DESCRIPTOR_RANGE1 descRange[2];
-            descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0);
-            descRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);
+            descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 0);
+            descRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 2, 0);
             CD3DX12_ROOT_PARAMETER1 rootParameters[3];
             rootParameters[2].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
             //rootParameters[3].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
 
-            rootParameters[0].InitAsDescriptorTable(1, &descRange[0], D3D12_SHADER_VISIBILITY_PIXEL);
-            rootParameters[1].InitAsDescriptorTable(1, &descRange[1], D3D12_SHADER_VISIBILITY_PIXEL);
+            rootParameters[0].InitAsDescriptorTable(1, &descRange[0], D3D12_SHADER_VISIBILITY_ALL);
+            rootParameters[1].InitAsDescriptorTable(1, &descRange[1], D3D12_SHADER_VISIBILITY_ALL);
 
             //CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDescription;
             //rootSignatureDescription.Init(3, rootParameters);

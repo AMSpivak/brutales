@@ -22,7 +22,7 @@ namespace BruteForce
             m_descriptor_handle = descriptor_handle;
         }
 
-        void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue, DescriptorHandle& descriptor_handle)
+        void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue)
         {
             std::filesystem::path filePath(fileName);
             if (!std::filesystem::exists(filePath))
@@ -132,7 +132,6 @@ namespace BruteForce
                 }
 
                 texture.Format = metadata.format;
-                texture.CreateSrv(device, descriptor_handle);
             }
         }
     }

@@ -19,10 +19,10 @@ namespace BruteForce
 			TargetFormat Format;
 			DescriptorHandle m_descriptor_handle;
 			void CreateSrv(Device& device, DescriptorHandle& descriptor_handle);
-		friend void LoadTextureFromFile(Texture&, const std::wstring& /*, TextureUsage textureUsage */, Device&, SmartCommandQueue&, DescriptorHandle&);
+		friend void LoadTextureFromFile(Texture&, const std::wstring& /*, TextureUsage textureUsage */, Device&, SmartCommandQueue&);
 		};
 
-		void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue, DescriptorHandle& descriptor_handle);
+		void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue);
 	}
 }
 

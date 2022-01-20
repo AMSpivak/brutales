@@ -6,15 +6,15 @@ struct PixelShaderInput
     nointerpolation uint id: InstanceID;
 };
 
-Texture2D tex1[2] : register(t0);
-sampler sampl : register(s0);
+Texture2D tex[] : register(t0);
+sampler sampl[2] : register(s0);
 
 float4 main(PixelShaderInput IN) : SV_Target
 {
     int material = IN.id;
 
 //return tex1[material].Sample(sampl, IN.Color.xy);
-return tex1[NonUniformResourceIndex(material)].Sample(sampl, IN.Color.xy);
+return tex[NonUniformResourceIndex(material)].Sample(sampl[0], IN.Color.xy);
 
 //if (IN.id)
 //{

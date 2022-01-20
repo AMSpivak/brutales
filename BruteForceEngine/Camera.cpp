@@ -24,8 +24,13 @@ namespace BruteForce
 
 	void Camera::RotateView(float angle_x, float angle_y, float angle_z)
 	{
-		Math::Matrix M = Math::MatrixRotationRollPitchYaw(Math::Vector{ angle_x, angle_y, 0.0f , 0.0f });
+		Math::Matrix M = Math::MatrixRotationAxis({ 0.0f,1.0f,0.0f,0.0f }, angle_y);
 		m_FocusPoint = Math::MatrixVectorMul(M, m_FocusPoint);
+		m_RightDirection = Math::MatrixVector3Cross(m_UpDirection, m_FocusPoint);
+		M = Math::MatrixRotationAxis(m_RightDirection, angle_x);
+		m_FocusPoint = Math::MatrixVectorMul(M, m_FocusPoint);
+		/*Math::Matrix M = Math::MatrixRotationRollPitchYaw(Math::Vector{ angle_x, angle_y, 0.0f , 0.0f });
+		m_FocusPoint = Math::MatrixVectorMul(M, m_FocusPoint);*/
 
 		m_View = Math::MatrixLookAtLH(m_Position, Math::VectorAdd(m_Position, m_FocusPoint), m_UpDirection);
 		m_ViewProjection = Math::Multiply(m_View, m_Projection);

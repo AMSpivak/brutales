@@ -11,7 +11,7 @@ namespace BruteForce
         class RenderTerrain : public RenderSubsystem
         {
         private:
-            std::array<Textures::Texture, 2> m_textures;
+            std::array<Textures::Texture, 3> m_textures;
             DescriptorHeap m_SVRHeap;
             DescriptorHeap m_SamplerHeap;
             IndexedGeometry m_plane;

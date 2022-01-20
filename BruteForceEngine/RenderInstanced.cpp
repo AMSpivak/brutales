@@ -49,7 +49,8 @@ namespace BruteForce
                 const std::wstring tex_names[] = { { L"test1.png"} ,{L"test2.png"} };
                 for (int i = 0; i < 2; i++)
                 {
-                    BruteForce::Textures::LoadTextureFromFile(m_textures[i], tex_names[i], device, m_CopyCommandQueue, srv_handle);
+                    BruteForce::Textures::LoadTextureFromFile(m_textures[i], tex_names[i], device, m_CopyCommandQueue);
+                    m_textures[i].CreateSrv(device, srv_handle);
                     srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 }
             }
