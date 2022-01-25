@@ -60,7 +60,6 @@ namespace BruteForce
             geometry.m_VertexBufferView.BufferLocation = geometry.m_VertexBuffer->GetGPUVirtualAddress();
             geometry.m_VertexBufferView.SizeInBytes = sizeof(vertex_type) * num_vertex;
             geometry.m_VertexBufferView.StrideInBytes = sizeof(vertex_type);
-
             
 
             BruteForce::pResource intermediateIndexBuffer;

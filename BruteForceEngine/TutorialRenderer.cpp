@@ -38,7 +38,6 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
     {
         subsystem->LoadContent(device);
     }
-
     m_ContentLoaded = true;
 
     Resize(device);

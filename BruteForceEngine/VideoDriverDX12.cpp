@@ -365,7 +365,6 @@ namespace BruteForce
 
         ThrowIfFailed(device.As(&pDebugDevice));
         ThrowIfFailed(pDebugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL| D3D12_RLDO_IGNORE_INTERNAL));
-        pDebugDevice->Release();
 # endif
     }
 

@@ -23,6 +23,7 @@ namespace BruteForce
                 descHeapSampler.Type = BruteForce::DescriptorHeapSampler;
                 descHeapSampler.Flags = BruteForce::DescriptorHeapShaderVisible;
                 ThrowIfFailed(device->CreateDescriptorHeap(&descHeapSampler, __uuidof(ID3D12DescriptorHeap), (void**)&m_SamplerHeap));
+                m_SamplerHeap->SetName(L"Sampler heap");
 
                 BruteForce::SamplerDesc samplerDesc;
                 ZeroMemory(&samplerDesc, sizeof(samplerDesc));
@@ -40,17 +41,19 @@ namespace BruteForce
                 sampler_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapSampler);
                 samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
                 device->CreateSampler(&samplerDesc, sampler_handle);
-
+                
                 
             }
             {
                 const std::wstring tex_names[] = { { L"desert_map.png"}, { L"Desert_Rock_albedo.png"}, {L"Desert_Sand_albedo.png"} };
                 size_t textures_count = _countof(tex_names);
+
                 BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
                 descHeapCbvSrv.NumDescriptors = textures_count;
                 descHeapCbvSrv.Type = BruteForce::DescriptorHeapCvbSrvUav;
                 descHeapCbvSrv.Flags = BruteForce::DescriptorHeapShaderVisible;
                 ThrowIfFailed(device->CreateDescriptorHeap(&descHeapCbvSrv, __uuidof(ID3D12DescriptorHeap), (void**)&m_SVRHeap));
+                m_SVRHeap->SetName(L"Descriptor heap");
 
                 auto srv_handle = m_SVRHeap->GetCPUDescriptorHandleForHeapStart();
                 SmartCommandQueue m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy);
@@ -59,6 +62,7 @@ namespace BruteForce
                 {
                     auto texture = m_textures.emplace_back(std::make_shared<BruteForce::Textures::Texture>());
                     BruteForce::Textures::LoadTextureFromFile(*texture, tex_names[i], device, m_CopyCommandQueue);
+                    texture->image->SetName(L"Texture image");
                     texture->CreateSrv(device, srv_handle);
                     srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 }
@@ -66,7 +70,6 @@ namespace BruteForce
 
             BruteForce::DataBlob vertexShaderBlob;
             ThrowIfFailed(D3DReadFileToBlob(L"TerrainVertexShader.cso", &vertexShaderBlob));
-
             BruteForce::DataBlob pixelShaderBlob;
             ThrowIfFailed(D3DReadFileToBlob(L"TerrainPixelShader.cso", &pixelShaderBlob));
 
@@ -143,7 +146,7 @@ namespace BruteForce
                 sizeof(PipelineStateStream), &pipelineStateStream
             };
             ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
-
+            m_PipelineState->SetName(L"Pipeline state");
             //Geometry::CreateCube(device, m_cube);
             Geometry::CreatePlane(device, m_plane, 100, 100, 6.0f, 6.0f);
         }
@@ -151,28 +154,28 @@ namespace BruteForce
 
         SmartCommandList& RenderTerrain::PrepareRenderCommandList(SmartCommandList& smart_command_list, const RenderDestination& render_dest)
         {
-            auto& commandList = smart_command_list.command_list;
-            smart_command_list.SetPipelineState(m_PipelineState);
-            smart_command_list.SetRootSignature(m_RootSignature);
+            //auto& commandList = smart_command_list.command_list;
+            //smart_command_list.SetPipelineState(m_PipelineState);
+            //smart_command_list.SetRootSignature(m_RootSignature);
 
-            ID3D12DescriptorHeap* ppHeaps[] = { m_SVRHeap.Get(), m_SamplerHeap.Get() };
-            commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+            //ID3D12DescriptorHeap* ppHeaps[] = { m_SVRHeap.Get(), m_SamplerHeap.Get() };
+            //commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
-            commandList->SetGraphicsRootDescriptorTable(0,
-                m_SVRHeap->GetGPUDescriptorHandleForHeapStart());
-            commandList->SetGraphicsRootDescriptorTable(1,
-                m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());
+            //commandList->SetGraphicsRootDescriptorTable(0,
+            //    m_SVRHeap->GetGPUDescriptorHandleForHeapStart());
+            //commandList->SetGraphicsRootDescriptorTable(1,
+            //    m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());
 
-            commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            commandList->IASetVertexBuffers(0, 1, &m_plane.m_VertexBufferView);
-            commandList->IASetIndexBuffer(&m_plane.m_IndexBufferView);
-            commandList->RSSetViewports(1, render_dest.m_Viewport);
-            commandList->RSSetScissorRects(1, render_dest.m_ScissorRect);
-            commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, render_dest.dsv);
+            //commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            //commandList->IASetVertexBuffers(0, 1, &m_plane.m_VertexBufferView);
+            //commandList->IASetIndexBuffer(&m_plane.m_IndexBufferView);
+            //commandList->RSSetViewports(1, render_dest.m_Viewport);
+            //commandList->RSSetScissorRects(1, render_dest.m_ScissorRect);
+            //commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, render_dest.dsv);
 
-            auto offset = sizeof(BruteForce::Math::Matrix) / 4;
-            commandList->SetGraphicsRoot32BitConstants(2, offset, render_dest.camera.GetCameraMatrixPointer(), 0);
-            commandList->DrawIndexedInstanced(m_plane.m_IndexesCount, 1, 0, 0, 0);
+            //auto offset = sizeof(BruteForce::Math::Matrix) / 4;
+            //commandList->SetGraphicsRoot32BitConstants(2, offset, render_dest.camera.GetCameraMatrixPointer(), 0);
+            ////commandList->DrawIndexedInstanced(m_plane.m_IndexesCount, 1, 0, 0, 0);
             return smart_command_list;
         }
     }

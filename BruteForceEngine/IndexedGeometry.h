@@ -30,6 +30,7 @@ namespace BruteForce
         pResource m_IndexBuffer;
         IndexBufferView m_IndexBufferView;
         size_t m_IndexesCount;
+        IndexedGeometry() :m_VertexBuffer(nullptr), m_IndexBuffer(nullptr) {}
         ~IndexedGeometry()
         {
             if(m_VertexBuffer) m_VertexBuffer->Release();
