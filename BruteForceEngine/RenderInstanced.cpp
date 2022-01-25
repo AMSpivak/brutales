@@ -11,6 +11,7 @@ namespace BruteForce
         }
         RenderInstanced::~RenderInstanced()
         {
+            
         }
         void RenderInstanced::Update(float delta_time)
         {
@@ -139,7 +140,7 @@ namespace BruteForce
         }
 
 
-        void RenderInstanced::PrepareRenderCommandList(SmartCommandList& smart_command_list, const RenderDestination& render_dest)
+        SmartCommandList& RenderInstanced::PrepareRenderCommandList(SmartCommandList& smart_command_list, const RenderDestination& render_dest)
         {
             auto& commandList = smart_command_list.command_list;
             smart_command_list.SetPipelineState(m_PipelineState);
@@ -165,6 +166,7 @@ namespace BruteForce
 
 
             commandList->DrawIndexedInstanced(m_cube.m_IndexesCount, 1, 0, 0, 0);
+            return smart_command_list;
         }
     }
 }

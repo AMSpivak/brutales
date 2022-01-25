@@ -16,11 +16,6 @@ m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
 
     m_ScissorRect = BruteForce::ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
     m_Viewport = BruteForce::Viewport{ 0.0f, 0.0f, static_cast<float>(pWindow->GetWidth()), static_cast<float>(pWindow->GetHeight()) };
-    BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
-    descHeapCbvSrv.NumDescriptors = 2;
-    descHeapCbvSrv.Type = BruteForce::DescriptorHeapCvbSrvUav;
-    descHeapCbvSrv.Flags = BruteForce::DescriptorHeapShaderVisible;
-    ThrowIfFailed(device->CreateDescriptorHeap(&descHeapCbvSrv, __uuidof(ID3D12DescriptorHeap), (void**)&m_SVRHeap));
 
     BruteForce::DescriptorHeapDesc dsvHeapDesc = {};
     dsvHeapDesc.NumDescriptors = 1;
@@ -28,17 +23,21 @@ m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
     dsvHeapDesc.Flags = BruteForce::DescriptorHeapFlagsNone;
     ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_DSVHeap)));
 
-    pRenderInstanced = new BruteForce::Render::RenderInstanced{};
-    pRenderTerrain = new BruteForce::Render::RenderTerrain{};
+    //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderInstanced>());
+    m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderTerrain>());
+
     m_Camera.SetPosition({0.0f, 3.0f, -10.0f}, false);
     m_Camera.RecalculateView({ 0.0f, 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f, 0.0f });
     m_Camera.MoveView(0, 0, 0);
+
 }
 
 bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 {
-    pRenderInstanced->LoadContent(device);
-    pRenderTerrain->LoadContent(device);
+    for (auto& subsystem : m_RenderSystems)
+    {
+        subsystem->LoadContent(device);
+    }
 
     m_ContentLoaded = true;
 
@@ -103,9 +102,9 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     smart_command_list.ClearRTV(rtv, clearColor);
     smart_command_list.ClearDSV(dsv, true, false, 1.0f, 0);
     SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
+    
+    std::vector<BruteForce::SmartCommandList> command_lists;
 
-    auto smart_command_list_instanced = in_SmartCommandQueue.GetCommandList();
-    auto smart_command_list_terrain = in_SmartCommandQueue.GetCommandList();
     BruteForce::Render::RenderDestination render_dest{
         &m_Viewport,
         &m_ScissorRect,
@@ -114,13 +113,16 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         m_Camera
     };
 
-    pRenderInstanced->PrepareRenderCommandList(smart_command_list_instanced, render_dest);
-    pRenderTerrain->PrepareRenderCommandList(smart_command_list_terrain, render_dest);
+    for (auto& subsystem : m_RenderSystems)
+    {
+        auto& list = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
+        subsystem->PrepareRenderCommandList(list, render_dest);
+    }
 
-    SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list_instanced));
-    SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list_terrain));
-
-
+    for (auto& execute_list : command_lists)
+    {
+        SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(execute_list));
+    }
 }
 
 BruteForce::Camera* TutorialRenderer::GetCameraPtr()
@@ -131,6 +133,5 @@ BruteForce::Camera* TutorialRenderer::GetCameraPtr()
 TutorialRenderer::~TutorialRenderer()
 {
     Flush();
-    delete(pRenderInstanced);
 }
 

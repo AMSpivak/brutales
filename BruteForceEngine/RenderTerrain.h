@@ -3,7 +3,8 @@
 #include "RenderSubsystem.h"
 #include "Texture.h"
 #include "IndexedGeometry.h"
-#include <array>
+#include <vector>
+#include <memory>
 namespace BruteForce
 {
     namespace Render
@@ -11,7 +12,7 @@ namespace BruteForce
         class RenderTerrain : public RenderSubsystem
         {
         private:
-            std::array<Textures::Texture, 3> m_textures;
+            std::vector<std::shared_ptr<Textures::Texture>> m_textures;
             DescriptorHeap m_SVRHeap;
             DescriptorHeap m_SamplerHeap;
             IndexedGeometry m_plane;
@@ -20,7 +21,7 @@ namespace BruteForce
             virtual ~RenderTerrain();
             virtual void Update(float delta_time);
             virtual void LoadContent(Device& device);
-            virtual void PrepareRenderCommandList(SmartCommandList&, const RenderDestination&);
+            virtual SmartCommandList& PrepareRenderCommandList(SmartCommandList&, const RenderDestination&);
         };
     }
 }

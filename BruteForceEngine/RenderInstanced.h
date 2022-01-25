@@ -20,7 +20,7 @@ namespace BruteForce
             virtual ~RenderInstanced();
             virtual void Update(float delta_time);
             virtual void LoadContent(Device& device);
-            virtual void PrepareRenderCommandList(SmartCommandList&, const RenderDestination&);
+            virtual SmartCommandList& PrepareRenderCommandList(SmartCommandList&, const RenderDestination&);
         };
     }
 }

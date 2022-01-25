@@ -298,7 +298,7 @@ namespace BruteForce
         {
             pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
             pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
-            pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
+            //pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
             // Suppress whole categories of messages
             //D3D12_MESSAGE_CATEGORY Categories[] = {};
 
@@ -326,7 +326,7 @@ namespace BruteForce
             ThrowIfFailed(pInfoQueue->PushStorageFilter(&NewFilter));
         }
 #endif
-
+        d3d12Device2->SetName(L"Main device");
         return d3d12Device2;
     }
 
@@ -353,15 +353,19 @@ namespace BruteForce
         ComPtr<ID3D12Debug> debugInterface;
         ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
         debugInterface->EnableDebugLayer();
+        //debugInterface->Release();
 #endif
     }
 
-    void ReportLiveObjects()
+    void ReportLiveObjects(Device& device)
     {
 #if defined(_DEBUG)
-        IDXGIDebug* debugDev;
-        HRESULT hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debugDev));
-        debugDev->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+        ComPtr < ID3D12DebugDevice> pDebugDevice;
+        //device->Release();
+
+        ThrowIfFailed(device.As(&pDebugDevice));
+        ThrowIfFailed(pDebugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL| D3D12_RLDO_IGNORE_INTERNAL));
+        pDebugDevice->Release();
 # endif
     }
 

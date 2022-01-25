@@ -210,7 +210,7 @@ void Resize(uint32_t width, uint32_t height, BruteForce::SmartCommandQueue& in_S
             p_Renderer->m_FrameFenceValues[i] = p_Renderer->m_FrameFenceValues[p_Renderer->m_CurrentBackBufferIndex];
         }
 
-        auto refSwapChain = pWindow->GetSwapChainReference();
+        auto& refSwapChain = pWindow->GetSwapChainReference();
 
         BruteForce::SwapChainDesc swapChainDesc = {};
         ThrowIfFailed(refSwapChain->GetDesc(&swapChainDesc));
@@ -231,7 +231,8 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
     BruteForce::Adapter adapter = BruteForce::GetAdapter(g_UseWarp);
     g_Device = BruteForce::CreateDevice(adapter);
-
+    //BruteForce::ReportLiveObjects(g_Device);
+    
     BruteForce::VideoDriverDX12 m_driver;
     pWindow = m_driver.CreateWindow(L"DX12WindowClass", L"Learning DirectX 12",
         g_ClientWidth, g_ClientHeight);
@@ -240,7 +241,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     p_Renderer->LoadContent(g_Device);
     test_controller = new BruteForce::Controller::ControllerWinKey();
     test_camera = p_Renderer->GetCameraPtr();
-    pWindow->SetOnPaint([] {Update(); Render(p_Renderer->m_SmartCommandQueue, pWindow); });
+    //pWindow->SetOnPaint([] {Update(); Render(p_Renderer->m_SmartCommandQueue, pWindow); });
     pWindow->SetOnResize([](uint32_t width, uint32_t height, BruteForce::Window * pwindow) {Resize(width, height, p_Renderer->m_SmartCommandQueue, pwindow); });
     pWindow->Show();
     //pWindow->SetFullscreen(true);
@@ -252,12 +253,12 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
             ::TranslateMessage(&msg);
             ::DispatchMessage(&msg);
         }
+        Update(); 
+        Render(p_Renderer->m_SmartCommandQueue, pWindow);
     }
-
     delete(test_controller);
     delete(p_Renderer);
-#ifdef DEBUG
-    //ReportLiveObjects()
-#endif
+    delete(pWindow);
+    BruteForce::ReportLiveObjects(g_Device);
     return 0;
 }

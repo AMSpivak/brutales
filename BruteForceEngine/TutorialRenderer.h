@@ -7,6 +7,8 @@
 #include "Texture.h"
 #include "Camera.h"
 #include "RenderSubsystem.h"
+#include <vector>
+#include <memory>
 
 constexpr uint8_t RendererNumFrames = 3;
 
@@ -25,16 +27,11 @@ class TutorialRenderer :
 {
 private: 
     BruteForce::SmartCommandQueue m_CopyCommandQueue;
-    BruteForce::Textures::Texture m_texture;
-    BruteForce::Textures::Texture m_texture_2;
-    BruteForce::Render::RenderSubsystem* pRenderInstanced;
-    BruteForce::Render::RenderSubsystem* pRenderTerrain;
+    std::vector<std::shared_ptr<BruteForce::Render::RenderSubsystem>> m_RenderSystems;
 public:
 
     BruteForce::Resource m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;
-    BruteForce::DescriptorHeap m_SVRHeap;
-    BruteForce::DescriptorHeap m_SamplerHeap;
 
     float m_time;
 

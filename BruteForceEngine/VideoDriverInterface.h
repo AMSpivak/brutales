@@ -59,7 +59,7 @@ namespace BruteForce
 	DescriptorHeap CreateDescriptorHeap(Device& device, DescriptorHeapType type, uint32_t numDescriptors);
 
 	void EnableDebugLayer();
-	void ReportLiveObjects();
+	void ReportLiveObjects(Device& device);
 	void UpdateRenderTargetViews(Device& Device, SwapChain& swapChain, DescriptorHeap& descriptorHeap, Resource* BackBuffers, uint8_t NumFrames);
 
 	//void WaitForFenceValue(Fence fence, uint64_t fenceValue, FenceEvent fenceEvent, std::chrono::milliseconds duration = std::chrono::milliseconds::max());

@@ -28,7 +28,7 @@ VertexShaderOutput main(VertexPosColor IN, uint id : SV_InstanceID)
     VertexShaderOutput OUT;
     IN.Position.x += 2.0f * id;
     float4 terrain = tex[0].SampleLevel(sampl[0], IN.Position.xz, 0);
-    IN.Position.y += terrain.g * 10.0f;
+    IN.Position.y += terrain.g * 1.0f;
     OUT.Position = mul(ModelViewProjectionCB.MVP, float4(IN.Position, 1.0f));
     OUT.Color = float4(IN.Color, 1.0f);
     OUT.id = id;

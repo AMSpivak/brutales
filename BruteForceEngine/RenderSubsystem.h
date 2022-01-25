@@ -25,10 +25,14 @@ namespace BruteForce
             PipelineState m_PipelineState;
         public:
             RenderSubsystem():m_loaded(false) {};
-            virtual ~RenderSubsystem() {};
+            virtual ~RenderSubsystem()
+            {
+                //if (m_RootSignature) m_RootSignature->Release();
+                //if (m_PipelineState) m_PipelineState->Release();
+            };
             virtual void Update(float delta_time) = 0;
             virtual void LoadContent(Device& device) = 0;
-            virtual void PrepareRenderCommandList(SmartCommandList&, const RenderDestination&) = 0;
+            virtual SmartCommandList& PrepareRenderCommandList(SmartCommandList&, const RenderDestination&) = 0;
         };
     }
 

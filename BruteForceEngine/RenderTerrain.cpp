@@ -44,8 +44,8 @@ namespace BruteForce
                 
             }
             {
-                const std::wstring tex_names[] = { { L"desert_map.png"} , { L"Desert_Rock_albedo.png"} ,{L"Desert_Sand_albedo.png"} };
-                size_t textures_count = 3;// _countof(tex_names);
+                const std::wstring tex_names[] = { { L"desert_map.png"}, { L"Desert_Rock_albedo.png"}, {L"Desert_Sand_albedo.png"} };
+                size_t textures_count = _countof(tex_names);
                 BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
                 descHeapCbvSrv.NumDescriptors = textures_count;
                 descHeapCbvSrv.Type = BruteForce::DescriptorHeapCvbSrvUav;
@@ -57,8 +57,9 @@ namespace BruteForce
 
                 for (int i = 0; i < textures_count; i++)
                 {
-                    BruteForce::Textures::LoadTextureFromFile(m_textures[i], tex_names[i], device, m_CopyCommandQueue);
-                    m_textures[i].CreateSrv(device, srv_handle);
+                    auto texture = m_textures.emplace_back(std::make_shared<BruteForce::Textures::Texture>());
+                    BruteForce::Textures::LoadTextureFromFile(*texture, tex_names[i], device, m_CopyCommandQueue);
+                    texture->CreateSrv(device, srv_handle);
                     srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 }
             }
@@ -148,7 +149,7 @@ namespace BruteForce
         }
 
 
-        void RenderTerrain::PrepareRenderCommandList(SmartCommandList& smart_command_list, const RenderDestination& render_dest)
+        SmartCommandList& RenderTerrain::PrepareRenderCommandList(SmartCommandList& smart_command_list, const RenderDestination& render_dest)
         {
             auto& commandList = smart_command_list.command_list;
             smart_command_list.SetPipelineState(m_PipelineState);
@@ -172,6 +173,7 @@ namespace BruteForce
             auto offset = sizeof(BruteForce::Math::Matrix) / 4;
             commandList->SetGraphicsRoot32BitConstants(2, offset, render_dest.camera.GetCameraMatrixPointer(), 0);
             commandList->DrawIndexedInstanced(m_plane.m_IndexesCount, 1, 0, 0, 0);
+            return smart_command_list;
         }
     }
 }

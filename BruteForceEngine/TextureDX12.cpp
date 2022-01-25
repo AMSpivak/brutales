@@ -99,16 +99,16 @@ namespace BruteForce
                     break;
                 }
                 HeapProperties props(D3D12_HEAP_TYPE_DEFAULT);
-                Resource textureResource;
+                //Resource textureResource;
                 ThrowIfFailed(device->CreateCommittedResource(
                     &props,
                     HeapFlagsNone,
                     &textureDesc,
                     ResourceStateCommon,
                     nullptr,
-                    IID_PPV_ARGS(&textureResource)));
+                    IID_PPV_ARGS(&texture.image)));
 
-                texture.image = textureResource;
+                //texture.image = textureResource;
 
                 std::vector<D3D12_SUBRESOURCE_DATA> subresources(scratchImage.GetImageCount());
                 const DirectX::Image* pImages = scratchImage.GetImages();
@@ -126,7 +126,7 @@ namespace BruteForce
                     static_cast<uint32_t>(subresources.size()),
                     subresources.data(), ResourceStateCommon);
 
-                if (subresources.size() < textureResource->GetDesc().MipLevels)
+                if (subresources.size() < texture.image->GetDesc().MipLevels)
                 {
                     //GenerateMips(texture);
                 }

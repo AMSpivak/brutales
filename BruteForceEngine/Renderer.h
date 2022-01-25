@@ -38,7 +38,7 @@ namespace BruteForce
                 , m_SmartCommandQueue(m_Device, BruteForce::CommandListTypeDirect)
         {
             m_Window->CreateSwapChain(m_SmartCommandQueue, m_NumFrames);
-            auto refSwapChain = m_Window->GetSwapChainReference();
+            auto& refSwapChain = m_Window->GetSwapChainReference();
 
             m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
 
@@ -48,7 +48,10 @@ namespace BruteForce
             BruteForce::UpdateRenderTargetViews(m_Device, refSwapChain, m_BackBuffersDHeap, m_BackBuffers, m_NumFrames);
         }
         void Flush() { m_SmartCommandQueue.Flush(); }
-        //~Renderer() { Flush(); }
+        ~Renderer() 
+        {
+            //ReportLiveObjects();
+        }
 
         const uint8_t GetBuffersCount() { return m_NumFrames; }
         void SetCurrentFence(uint64_t value) { m_FrameFenceValues[m_CurrentBackBufferIndex] = value; };
