@@ -45,7 +45,7 @@ namespace BruteForce
                 
             }
             {
-                const std::wstring tex_names[] = { { L"desert_map.png"}, { L"Desert_Rock_albedo.png"}, {L"Desert_Sand_albedo.png"} };
+                const std::wstring tex_names[] = { { L"desert_map.png"}, { L"map_materials.png"}, { L"Desert_Rock_albedo.png"}, {L"Desert_Sand_albedo.png"} };
                 size_t textures_count = _countof(tex_names);
 
                 BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
