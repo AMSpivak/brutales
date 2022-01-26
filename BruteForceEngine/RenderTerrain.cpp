@@ -154,28 +154,28 @@ namespace BruteForce
 
         SmartCommandList& RenderTerrain::PrepareRenderCommandList(SmartCommandList& smart_command_list, const RenderDestination& render_dest)
         {
-            //auto& commandList = smart_command_list.command_list;
-            //smart_command_list.SetPipelineState(m_PipelineState);
-            //smart_command_list.SetRootSignature(m_RootSignature);
+            auto& commandList = smart_command_list.command_list;
+            smart_command_list.SetPipelineState(m_PipelineState);
+            smart_command_list.SetRootSignature(m_RootSignature);
 
-            //ID3D12DescriptorHeap* ppHeaps[] = { m_SVRHeap.Get(), m_SamplerHeap.Get() };
-            //commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+            ID3D12DescriptorHeap* ppHeaps[] = { m_SVRHeap.Get(), m_SamplerHeap.Get() };
+            commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
-            //commandList->SetGraphicsRootDescriptorTable(0,
-            //    m_SVRHeap->GetGPUDescriptorHandleForHeapStart());
-            //commandList->SetGraphicsRootDescriptorTable(1,
-            //    m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());
+            commandList->SetGraphicsRootDescriptorTable(0,
+                m_SVRHeap->GetGPUDescriptorHandleForHeapStart());
+            commandList->SetGraphicsRootDescriptorTable(1,
+                m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());
 
-            //commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            //commandList->IASetVertexBuffers(0, 1, &m_plane.m_VertexBufferView);
-            //commandList->IASetIndexBuffer(&m_plane.m_IndexBufferView);
-            //commandList->RSSetViewports(1, render_dest.m_Viewport);
-            //commandList->RSSetScissorRects(1, render_dest.m_ScissorRect);
-            //commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, render_dest.dsv);
+            commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            commandList->IASetVertexBuffers(0, 1, &m_plane.m_VertexBufferView);
+            commandList->IASetIndexBuffer(&m_plane.m_IndexBufferView);
+            commandList->RSSetViewports(1, render_dest.m_Viewport);
+            commandList->RSSetScissorRects(1, render_dest.m_ScissorRect);
+            commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, render_dest.dsv);
 
-            //auto offset = sizeof(BruteForce::Math::Matrix) / 4;
-            //commandList->SetGraphicsRoot32BitConstants(2, offset, render_dest.camera.GetCameraMatrixPointer(), 0);
-            ////commandList->DrawIndexedInstanced(m_plane.m_IndexesCount, 1, 0, 0, 0);
+            auto offset = sizeof(BruteForce::Math::Matrix) / 4;
+            commandList->SetGraphicsRoot32BitConstants(2, offset, render_dest.camera.GetCameraMatrixPointer(), 0);
+            commandList->DrawIndexedInstanced(m_plane.m_IndexesCount, 1, 0, 0, 0);
             return smart_command_list;
         }
     }

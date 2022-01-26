@@ -55,6 +55,8 @@ namespace BruteForce
             auto fenceValue = smart_queue.ExecuteCommandList(commandList);
             smart_queue.WaitForFenceValue(fenceValue);
             geometry.m_IndexesCount = _countof(cube_Indicies);
+            intermediateIndexBuffer->Release();
+            intermediateVertexBuffer->Release();
         }
     }
 
