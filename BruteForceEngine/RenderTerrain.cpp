@@ -63,6 +63,10 @@ namespace BruteForce
                     auto texture = m_textures.emplace_back(std::make_shared<BruteForce::Textures::Texture>());
                     BruteForce::Textures::LoadTextureFromFile(*texture, tex_names[i], device, m_CopyCommandQueue);
                     texture->image->SetName(L"Texture image");
+                    if (i == 1)
+                    {
+                        texture->Format = DXGI_FORMAT_R8G8B8A8_UINT;
+                    }
                     texture->CreateSrv(device, srv_handle);
                     srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 }
