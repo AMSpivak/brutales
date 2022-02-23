@@ -133,6 +133,8 @@ namespace BruteForce
 
                 texture.Format = metadata.format;
             }
+
+
         }
     }
 }

@@ -1,6 +1,7 @@
 #include "RenderTerrain.h"
 #include "Helpers.h"
 #include "IndexedGeometryGenerator.h"
+#include "Settings.h"
 
 namespace BruteForce
 {
@@ -17,6 +18,9 @@ namespace BruteForce
         }
         void RenderTerrain::LoadContent(Device& device)
         {
+            auto& settings = BruteForce::GetSettings();
+            std::wstring content_path{ settings.GetExecuteDirWchar() };
+
             {
                 D3D12_DESCRIPTOR_HEAP_DESC descHeapSampler = {};
                 descHeapSampler.NumDescriptors = 2;
@@ -61,8 +65,8 @@ namespace BruteForce
                 for (int i = 0; i < textures_count; i++)
                 {
                     auto texture = m_textures.emplace_back(std::make_shared<BruteForce::Textures::Texture>());
-                    BruteForce::Textures::LoadTextureFromFile(*texture, tex_names[i], device, m_CopyCommandQueue);
-                    texture->image->SetName(L"Texture image");
+                    BruteForce::Textures::LoadTextureFromFile(*texture, content_path + tex_names[i], device, m_CopyCommandQueue);
+                    texture->image->SetName((L"Texture: " + tex_names[i]).c_str());
                     if (i == 1)
                     {
                         texture->Format = DXGI_FORMAT_R8G8B8A8_UINT;
@@ -73,9 +77,9 @@ namespace BruteForce
             }
 
             BruteForce::DataBlob vertexShaderBlob;
-            ThrowIfFailed(D3DReadFileToBlob(L"TerrainVertexShader.cso", &vertexShaderBlob));
+            ThrowIfFailed(D3DReadFileToBlob((content_path + L"TerrainVertexShader.cso").c_str(), &vertexShaderBlob));
             BruteForce::DataBlob pixelShaderBlob;
-            ThrowIfFailed(D3DReadFileToBlob(L"TerrainPixelShader.cso", &pixelShaderBlob));
+            ThrowIfFailed(D3DReadFileToBlob((content_path + L"TerrainPixelShader.cso").c_str(), &pixelShaderBlob));
 
 
 

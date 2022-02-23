@@ -1,6 +1,7 @@
 #include "RenderInstanced.h"
 #include "Helpers.h"
 #include "IndexedGeometryGenerator.h"
+#include "Settings.h"
 
 namespace BruteForce
 {
@@ -18,6 +19,9 @@ namespace BruteForce
         }
         void RenderInstanced::LoadContent(Device& device)
         {
+            auto& settings = BruteForce::GetSettings();
+            std::wstring content_path { settings.GetExecuteDirWchar() };
+
             {
                 D3D12_DESCRIPTOR_HEAP_DESC descHeapSampler = {};
                 descHeapSampler.NumDescriptors = 1;
@@ -50,17 +54,17 @@ namespace BruteForce
                 const std::wstring tex_names[] = { { L"test1.png"} ,{L"test2.png"} };
                 for (int i = 0; i < 2; i++)
                 {
-                    BruteForce::Textures::LoadTextureFromFile(m_textures[i], tex_names[i], device, m_CopyCommandQueue);
+                    BruteForce::Textures::LoadTextureFromFile(m_textures[i], content_path + tex_names[i], device, m_CopyCommandQueue);
                     m_textures[i].CreateSrv(device, srv_handle);
                     srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 }
             }
 
             BruteForce::DataBlob vertexShaderBlob;
-            ThrowIfFailed(D3DReadFileToBlob(L"BasicVertexShader.cso", &vertexShaderBlob));
+            ThrowIfFailed(D3DReadFileToBlob((content_path + L"BasicVertexShader.cso").c_str(), &vertexShaderBlob));
 
             BruteForce::DataBlob pixelShaderBlob;
-            ThrowIfFailed(D3DReadFileToBlob(L"BasicPixelShader.cso", &pixelShaderBlob));
+            ThrowIfFailed(D3DReadFileToBlob((content_path + L"BasicPixelShader.cso").c_str(), &pixelShaderBlob));
 
 
 

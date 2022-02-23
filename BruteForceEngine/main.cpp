@@ -1,5 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <filesystem>
 #include <shellapi.h> // For CommandLineToArgvW
 
 // The min/max macros conflict with like-named member functions.
@@ -42,6 +43,7 @@ using namespace Microsoft::WRL;
 #include "tutorialRenderer.h"
 #include "Camera.h"
 #include "ControllerWinKeyboard.h"
+#include "Settings.h"
 
 // Use WARP adapter
 bool g_UseWarp = false;
@@ -69,8 +71,11 @@ void ParseCommandLineArguments()
 {
     int argc;
     wchar_t** argv = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
-    OutputDebugStringW(argv[0]);
+    std::filesystem::path exe_path = argv[0];
 
+    auto& settings = BruteForce::GetSettings();
+    settings.SetExecuteDir(exe_path.remove_filename());
+    OutputDebugStringW(settings.GetExecuteDirWchar());
     for (decltype(argc) i = 0; i < argc; ++i)
     {
         if (::wcscmp(argv[i], L"-w") == 0 || ::wcscmp(argv[i], L"--width") == 0)

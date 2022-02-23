@@ -180,6 +180,7 @@
     <ClCompile Include="RenderInstanced.cpp" />
     <ClCompile Include="RenderTerrain.cpp" />
     <ClCompile Include="ResourcesDX12.cpp" />
+    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="TextureDX12.cpp" />
     <ClCompile Include="TutorialRenderer.cpp" />
     <ClCompile Include="VideoDriverDX12.cpp" />
@@ -202,6 +203,7 @@
     <ClInclude Include="RenderSubsystem.h" />
     <ClInclude Include="RenderTerrain.h" />
     <ClInclude Include="Resources.h" />
+    <ClInclude Include="Settings.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TutorialRenderer.h" />
     <ClInclude Include="VideoDriverDX12.h" />
