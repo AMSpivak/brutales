@@ -12,6 +12,12 @@ namespace BruteForce
         class RenderTerrain : public RenderSubsystem
         {
         private:
+            struct TerrainCB
+            {
+                uint32_t m_PlanesCount;
+                Math::Vec4Float m_PlanesPositions[1024];
+            };
+            TerrainCB* m_TerrainBuffers;
             std::vector<std::shared_ptr<Textures::Texture>> m_textures;
             DescriptorHeap m_SVRHeap;
             DescriptorHeap m_SamplerHeap;
@@ -19,8 +25,8 @@ namespace BruteForce
         public:
             RenderTerrain();
             virtual ~RenderTerrain();
-            virtual void Update(float delta_time);
-            virtual void LoadContent(Device& device);
+            virtual void Update(float delta_time, uint8_t frame_index);
+            virtual void LoadContent(Device& device, uint8_t frames_count);
             virtual SmartCommandList& PrepareRenderCommandList(SmartCommandList&, const RenderDestination&);
         };
     }

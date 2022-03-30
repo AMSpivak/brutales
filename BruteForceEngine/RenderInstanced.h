@@ -3,7 +3,8 @@
 #include "RenderSubsystem.h"
 #include "Texture.h"
 #include "IndexedGeometry.h"
-#include <array>
+#include <memory>
+#include <vector>
 namespace BruteForce
 {
     namespace Render
@@ -11,15 +12,15 @@ namespace BruteForce
         class RenderInstanced: public RenderSubsystem
         {
         private:
-            std::array<Textures::Texture,2> m_textures;
+            std::vector<std::shared_ptr<Textures::Texture>> m_textures;
             DescriptorHeap m_SVRHeap;
             DescriptorHeap m_SamplerHeap;
             IndexedGeometry m_cube;
         public:
             RenderInstanced();
             virtual ~RenderInstanced();
-            virtual void Update(float delta_time);
-            virtual void LoadContent(Device& device);
+            virtual void Update(float delta_time, uint8_t frame_index);
+            virtual void LoadContent(Device& device, uint8_t frames_count);
             virtual SmartCommandList& PrepareRenderCommandList(SmartCommandList&, const RenderDestination&);
         };
     }

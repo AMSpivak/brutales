@@ -14,10 +14,10 @@ namespace BruteForce
         {
             
         }
-        void RenderInstanced::Update(float delta_time)
+        void RenderInstanced::Update(float delta_time, uint8_t frame_index)
         {
         }
-        void RenderInstanced::LoadContent(Device& device)
+        void RenderInstanced::LoadContent(Device& device, uint8_t frames_count)
         {
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path { settings.GetExecuteDirWchar() };
@@ -42,22 +42,21 @@ namespace BruteForce
                 samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
                 device->CreateSampler(&samplerDesc, m_SamplerHeap->GetCPUDescriptorHandleForHeapStart());
 
+
+            }
+            {
+                std::vector<std::wstring> tex_names = { { L"test1.png"} ,{L"test2.png"} };
+                size_t textures_count = tex_names.size();
+
                 BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
-                descHeapCbvSrv.NumDescriptors = 2;
+                descHeapCbvSrv.NumDescriptors = textures_count;
                 descHeapCbvSrv.Type = BruteForce::DescriptorHeapCvbSrvUav;
                 descHeapCbvSrv.Flags = BruteForce::DescriptorHeapShaderVisible;
                 ThrowIfFailed(device->CreateDescriptorHeap(&descHeapCbvSrv, __uuidof(ID3D12DescriptorHeap), (void**)&m_SVRHeap));
-            }
-            {
-                SmartCommandQueue m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy);
+
+                
                 auto srv_handle = m_SVRHeap->GetCPUDescriptorHandleForHeapStart();
-                const std::wstring tex_names[] = { { L"test1.png"} ,{L"test2.png"} };
-                for (int i = 0; i < 2; i++)
-                {
-                    BruteForce::Textures::LoadTextureFromFile(m_textures[i], content_path + tex_names[i], device, m_CopyCommandQueue);
-                    m_textures[i].CreateSrv(device, srv_handle);
-                    srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
-                }
+                BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_path, m_textures, device, srv_handle);
             }
 
             BruteForce::DataBlob vertexShaderBlob;

@@ -136,5 +136,20 @@ namespace BruteForce
 
 
         }
+
+        void AddTexture(const std::wstring& content_path, const std::wstring& filename, std::vector<std::shared_ptr<Texture>>& textures, Device& device, SmartCommandQueue& copy_queue, DescriptorHandle& p_srv_handle_start, TargetFormat format)
+        {
+            auto texture = textures.emplace_back(std::make_shared<BruteForce::Textures::Texture>());
+            LoadTextureFromFile(*texture, (content_path + filename), device, copy_queue);
+            texture->image->SetName((L"Texture: " + filename).c_str());
+
+            if (format != DXGI_FORMAT_UNKNOWN)
+            {
+                texture->Format = format;
+            }
+
+            texture->CreateSrv(device, p_srv_handle_start);
+            p_srv_handle_start.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+        }
     }
 }

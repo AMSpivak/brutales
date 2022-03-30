@@ -23,7 +23,7 @@ m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
     dsvHeapDesc.Flags = BruteForce::DescriptorHeapFlagsNone;
     ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_DSVHeap)));
 
-    m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderInstanced>());
+    //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderInstanced>());
     m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderTerrain>());
 
     m_Camera.SetPosition({0.0f, 3.0f, -10.0f}, false);
@@ -36,7 +36,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 {
     for (auto& subsystem : m_RenderSystems)
     {
-        subsystem->LoadContent(device);
+        subsystem->LoadContent(device, m_NumFrames);
     }
     m_ContentLoaded = true;
 
@@ -109,7 +109,8 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         &m_ScissorRect,
         &rtv,
         &dsv,
-        m_Camera
+        m_Camera,
+        m_CurrentBackBufferIndex
     };
 
     for (auto& subsystem : m_RenderSystems)

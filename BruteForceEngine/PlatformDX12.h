@@ -103,6 +103,7 @@ namespace BruteForce
 	{
 		constexpr float floatMax = D3D12_FLOAT32_MAX;
 		using Matrix = DirectX::XMMATRIX;
+		using Vec4Float = DirectX::XMFLOAT4;
 		using Vec3Float = DirectX::XMFLOAT3;
 		using Vec2Float = DirectX::XMFLOAT2;
 		using Vector = DirectX::XMVECTOR;

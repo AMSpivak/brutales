@@ -7,17 +7,29 @@ namespace BruteForce
 {
     namespace Render
     {
-        RenderTerrain::RenderTerrain()
+        RenderTerrain::RenderTerrain() :m_TerrainBuffers(nullptr)
         {
+
         }
         RenderTerrain::~RenderTerrain()
         {
+            if (m_TerrainBuffers)
+            {
+                delete[] m_TerrainBuffers;
+            }
         }
-        void RenderTerrain::Update(float delta_time)
+        void RenderTerrain::Update(float delta_time, uint8_t frame_index)
         {
         }
-        void RenderTerrain::LoadContent(Device& device)
+        void RenderTerrain::LoadContent(Device& device, uint8_t frames_count)
         {
+            if (m_TerrainBuffers)
+            {
+                delete[] m_TerrainBuffers;
+            }
+
+            m_TerrainBuffers = new TerrainCB[frames_count];
+
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path{ settings.GetExecuteDirWchar() };
 
@@ -36,7 +48,7 @@ namespace BruteForce
                 samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
                 samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
                 samplerDesc.MinLOD = 0;
-                samplerDesc.MaxLOD = 0;// BruteForce::Math::floatMax;
+                samplerDesc.MaxLOD = BruteForce::Math::floatMax;
                 samplerDesc.MipLODBias = 0.0f;
                 samplerDesc.MaxAnisotropy = 1;
                 samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
@@ -45,12 +57,11 @@ namespace BruteForce
                 sampler_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapSampler);
                 samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
                 device->CreateSampler(&samplerDesc, sampler_handle);
-                
-                
             }
+
             {
-                const std::wstring tex_names[] = { { L"desert_map.png"}, { L"map_materials.png"}, { L"Desert_Rock_albedo.png"}, {L"Desert_Sand_albedo.png"} };
-                size_t textures_count = _countof(tex_names);
+                std::vector<std::wstring> tex_names = {{ L"Desert_Rock_albedo.png"}, {L"Desert_Sand_albedo.png"} };
+                size_t textures_count = tex_names.size() + 2;
 
                 BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
                 descHeapCbvSrv.NumDescriptors = textures_count;
@@ -60,20 +71,12 @@ namespace BruteForce
                 m_SVRHeap->SetName(L"Descriptor heap");
 
                 auto srv_handle = m_SVRHeap->GetCPUDescriptorHandleForHeapStart();
-                SmartCommandQueue m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy);
+                
+                SmartCommandQueue copy_queue(device, BruteForce::CommandListTypeCopy);
+                BruteForce::Textures::AddTexture(content_path, { L"desert_map.png" }, m_textures, device, copy_queue, srv_handle);
+                BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, device, copy_queue, srv_handle, DXGI_FORMAT_R8G8B8A8_UINT);
 
-                for (int i = 0; i < textures_count; i++)
-                {
-                    auto texture = m_textures.emplace_back(std::make_shared<BruteForce::Textures::Texture>());
-                    BruteForce::Textures::LoadTextureFromFile(*texture, content_path + tex_names[i], device, m_CopyCommandQueue);
-                    texture->image->SetName((L"Texture: " + tex_names[i]).c_str());
-                    if (i == 1)
-                    {
-                        texture->Format = DXGI_FORMAT_R8G8B8A8_UINT;
-                    }
-                    texture->CreateSrv(device, srv_handle);
-                    srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
-                }
+                BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_path, m_textures, device, srv_handle);
             }
 
             BruteForce::DataBlob vertexShaderBlob;
