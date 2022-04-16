@@ -110,7 +110,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         &rtv,
         &dsv,
         m_Camera,
-        m_CurrentBackBufferIndex
+        static_cast<uint8_t>(m_CurrentBackBufferIndex)
     };
 
     for (auto& subsystem : m_RenderSystems)

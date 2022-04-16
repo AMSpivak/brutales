@@ -1,0 +1,1 @@
+C:\Users\amspi\Source\Repos\brutales\ThirdParty\DirectXTex\Bin\Desktop_2019_Win10\x64\Debug\DirectXTex.lib

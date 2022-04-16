@@ -49,7 +49,7 @@ namespace BruteForce
                 size_t textures_count = tex_names.size();
 
                 BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
-                descHeapCbvSrv.NumDescriptors = textures_count;
+                descHeapCbvSrv.NumDescriptors = static_cast<UINT>(textures_count);
                 descHeapCbvSrv.Type = BruteForce::DescriptorHeapCvbSrvUav;
                 descHeapCbvSrv.Flags = BruteForce::DescriptorHeapShaderVisible;
                 ThrowIfFailed(device->CreateDescriptorHeap(&descHeapCbvSrv, __uuidof(ID3D12DescriptorHeap), (void**)&m_SVRHeap));
@@ -165,10 +165,10 @@ namespace BruteForce
             commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, render_dest.dsv);
 
             auto offset = sizeof(BruteForce::Math::Matrix) / 4;
-            commandList->SetGraphicsRoot32BitConstants(2, offset, render_dest.camera.GetCameraMatrixPointer(), 0);
+            commandList->SetGraphicsRoot32BitConstants(2, static_cast<UINT>(offset), render_dest.camera.GetCameraMatrixPointer(), 0);
 
 
-            commandList->DrawIndexedInstanced(m_cube.m_IndexesCount, 1, 0, 0, 0);
+            commandList->DrawIndexedInstanced(static_cast<UINT>(m_cube.m_IndexesCount), 1, 0, 0, 0);
             return smart_command_list;
         }
     }

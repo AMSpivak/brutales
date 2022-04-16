@@ -3,6 +3,7 @@
 #include "IndexedGeometryGenerator.h"
 #include "Settings.h"
 
+
 namespace BruteForce
 {
     namespace Render
@@ -21,6 +22,7 @@ namespace BruteForce
         void RenderTerrain::Update(float delta_time, uint8_t frame_index)
         {
         }
+
         void RenderTerrain::LoadContent(Device& device, uint8_t frames_count)
         {
             if (m_TerrainBuffers)
@@ -28,14 +30,14 @@ namespace BruteForce
                 delete[] m_TerrainBuffers;
             }
 
-            m_TerrainBuffers = new TerrainCB[frames_count];
+            m_TerrainBuffers = new ConstantBuffer<TerrainCB>[frames_count];
 
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path{ settings.GetExecuteDirWchar() };
 
             {
                 D3D12_DESCRIPTOR_HEAP_DESC descHeapSampler = {};
-                descHeapSampler.NumDescriptors = 2;
+                descHeapSampler.NumDescriptors = 1;
                 descHeapSampler.Type = BruteForce::DescriptorHeapSampler;
                 descHeapSampler.Flags = BruteForce::DescriptorHeapShaderVisible;
                 ThrowIfFailed(device->CreateDescriptorHeap(&descHeapSampler, __uuidof(ID3D12DescriptorHeap), (void**)&m_SamplerHeap));
@@ -54,9 +56,6 @@ namespace BruteForce
                 samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
                 auto sampler_handle = m_SamplerHeap->GetCPUDescriptorHandleForHeapStart();
                 device->CreateSampler(&samplerDesc, sampler_handle);
-                sampler_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapSampler);
-                samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
-                device->CreateSampler(&samplerDesc, sampler_handle);
             }
 
             {
@@ -64,7 +63,7 @@ namespace BruteForce
                 size_t textures_count = tex_names.size() + 2;
 
                 BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
-                descHeapCbvSrv.NumDescriptors = textures_count;
+                descHeapCbvSrv.NumDescriptors = static_cast<UINT>(textures_count);
                 descHeapCbvSrv.Type = BruteForce::DescriptorHeapCvbSrvUav;
                 descHeapCbvSrv.Flags = BruteForce::DescriptorHeapShaderVisible;
                 ThrowIfFailed(device->CreateDescriptorHeap(&descHeapCbvSrv, __uuidof(ID3D12DescriptorHeap), (void**)&m_SVRHeap));
@@ -106,13 +105,15 @@ namespace BruteForce
                 //D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
             CD3DX12_DESCRIPTOR_RANGE1 descRange[2];
             descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 0);
-            descRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 2, 0);
+            //descRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 2, 0);
+            CD3DX12_DESCRIPTOR_RANGE1 descRangeSamp;
+            descRangeSamp.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);
             CD3DX12_ROOT_PARAMETER1 rootParameters[3];
             rootParameters[2].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
             //rootParameters[3].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
 
             rootParameters[0].InitAsDescriptorTable(1, &descRange[0], D3D12_SHADER_VISIBILITY_ALL);
-            rootParameters[1].InitAsDescriptorTable(1, &descRange[1], D3D12_SHADER_VISIBILITY_ALL);
+            rootParameters[1].InitAsDescriptorTable(1, &descRangeSamp, D3D12_SHADER_VISIBILITY_ALL);
 
             //CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDescription;
             //rootSignatureDescription.Init(3, rootParameters);
@@ -185,8 +186,8 @@ namespace BruteForce
             commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, render_dest.dsv);
 
             auto offset = sizeof(BruteForce::Math::Matrix) / 4;
-            commandList->SetGraphicsRoot32BitConstants(2, offset, render_dest.camera.GetCameraMatrixPointer(), 0);
-            commandList->DrawIndexedInstanced(m_plane.m_IndexesCount, 1, 0, 0, 0);
+            commandList->SetGraphicsRoot32BitConstants(2, static_cast<UINT>(offset), render_dest.camera.GetCameraMatrixPointer(), 0);
+            commandList->DrawIndexedInstanced(static_cast<UINT>(m_plane.m_IndexesCount), 1, 0, 0, 0);
             return smart_command_list;
         }
     }

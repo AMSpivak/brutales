@@ -144,7 +144,7 @@ namespace BruteForce
 			return DirectX::XMMatrixTranslation(OffsetX, OffsetY, OffsetZ);
 		}
 
-		inline Matrix&& Multiply(const Matrix& a, const Matrix& b)
+		inline Matrix/*&&*/ Multiply(const Matrix& a, const Matrix& b)
 		{
 			return DirectX::XMMatrixMultiply(a, b);
 		}

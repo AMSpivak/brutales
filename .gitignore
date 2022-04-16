@@ -20,3 +20,7 @@
 /BruteForceEngine/Debug
 /Debug
 /Release
+/ThirdParty/DirectXTex/Bin/Desktop_2019_Win10/Win32
+/BruteForceEngine/.editorconfig
+*.png
+*.cso

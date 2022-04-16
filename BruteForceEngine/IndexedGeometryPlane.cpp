@@ -32,17 +32,15 @@ namespace BruteForce
             }
 
             {
-                size_t offset = 0;
-                for (size_t i_z = 0; i_z < cells_z; i_z++)
+                using int_type = WORD;
+                int_type offset = 0;
+                for (int_type i_z = 0; i_z < cells_z; i_z++)
                 {
-                    size_t offset_z = i_z * (cells_x + 1);
-                    for (size_t i_x = 0; i_x < cells_x; i_x++)
+                    int_type offset_z = i_z * (static_cast<int_type>(cells_x) + 1);
+                    for (int_type i_x = 0; i_x < cells_x; i_x++)
                     {
-                        size_t offset_xz = offset_z + i_x;
+                        int_type offset_xz = offset_z + i_x;
                         plane_indexes[offset++] = offset_xz;
-                        plane_indexes[offset++] = offset_xz + cells_x + 1;
-                        plane_indexes[offset++] = offset_xz + cells_x + 2;
-                        plane_indexes[offset++] = offset_xz + cells_x + 2;
                         plane_indexes[offset++] = offset_xz + 1;
                         plane_indexes[offset++] = offset_xz;
                     }

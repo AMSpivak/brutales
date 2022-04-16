@@ -5,6 +5,7 @@
 #include "IndexedGeometry.h"
 #include <vector>
 #include <memory>
+#include "ConstantBuffer.h"
 namespace BruteForce
 {
     namespace Render
@@ -13,11 +14,12 @@ namespace BruteForce
         {
         private:
             struct TerrainCB
-            {
-                uint32_t m_PlanesCount;
+            {               
                 Math::Vec4Float m_PlanesPositions[1024];
+                Math::Vec3Float p_TerrainScaler;
+                uint32_t m_PlanesCount;
             };
-            TerrainCB* m_TerrainBuffers;
+            ConstantBuffer<TerrainCB>* m_TerrainBuffers;
             std::vector<std::shared_ptr<Textures::Texture>> m_textures;
             DescriptorHeap m_SVRHeap;
             DescriptorHeap m_SamplerHeap;
