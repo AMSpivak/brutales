@@ -160,7 +160,8 @@ namespace BruteForce
             ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
             m_PipelineState->SetName(L"Pipeline state");
             //Geometry::CreateCube(device, m_cube);
-            Geometry::CreatePlane(device, m_plane, 100, 100, 6.0f, 6.0f);
+            //Geometry::CreatePlane(device, m_plane, 100, 100, 6.0f, 6.0f);
+            Geometry::CreatePlane(device, m_plane, 3, 3, 6.0f, 6.0f);
         }
 
 

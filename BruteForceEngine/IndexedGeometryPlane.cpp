@@ -27,20 +27,22 @@ namespace BruteForce
                 for (size_t i_x = 0; i_x <= cells_x; i_x++)
                 {
                     plane_vertices[i_x + offset].Position = { -scale_x + i_x * step_x, 0.0f, -scale_z + i_z * step_z };
-                    plane_vertices[i_x + offset].Color = { -scale_x + i_x * step_x, -scale_z + i_z * step_z, 0.0f};
+                    plane_vertices[i_x + offset].Color = { -scale_x + i_x * step_x, -scale_z + i_z * step_z, 0.0f };
                 }
             }
 
             {
-                using int_type = WORD;
-                int_type offset = 0;
-                for (int_type i_z = 0; i_z < cells_z; i_z++)
+                size_t offset = 0;
+                for (size_t i_z = 0; i_z < cells_z; i_z++)
                 {
-                    int_type offset_z = i_z * (static_cast<int_type>(cells_x) + 1);
-                    for (int_type i_x = 0; i_x < cells_x; i_x++)
+                    size_t offset_z = i_z * (cells_x + 1);
+                    for (size_t i_x = 0; i_x < cells_x; i_x++)
                     {
-                        int_type offset_xz = offset_z + i_x;
+                        size_t offset_xz = offset_z + i_x;
                         plane_indexes[offset++] = offset_xz;
+                        plane_indexes[offset++] = offset_xz + cells_x + 1;
+                        plane_indexes[offset++] = offset_xz + cells_x + 2;
+                        plane_indexes[offset++] = offset_xz + cells_x + 2;
                         plane_indexes[offset++] = offset_xz + 1;
                         plane_indexes[offset++] = offset_xz;
                     }
@@ -58,7 +60,7 @@ namespace BruteForce
             geometry.m_VertexBufferView.BufferLocation = geometry.m_VertexBuffer->GetGPUVirtualAddress();
             geometry.m_VertexBufferView.SizeInBytes = sizeof(vertex_type) * num_vertex;
             geometry.m_VertexBufferView.StrideInBytes = sizeof(vertex_type);
-            
+
 
             BruteForce::pResource intermediateIndexBuffer;
             BruteForce::UpdateBufferResource(device, commandList,

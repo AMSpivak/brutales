@@ -190,9 +190,11 @@ void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Win
         auto smart_command_list = in_SmartCommandQueue.GetCommandList();
         p_Renderer->PrepareSwapFrame(smart_command_list);
         p_Renderer->SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
+        p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
+
     }
     p_Renderer->SwapFrame();
-    p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
+    //p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
 }
 
 void Resize(uint32_t width, uint32_t height, BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Window * pWindow)

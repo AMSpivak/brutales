@@ -23,8 +23,9 @@ m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
     dsvHeapDesc.Flags = BruteForce::DescriptorHeapFlagsNone;
     ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_DSVHeap)));
 
-    //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderInstanced>());
     m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderTerrain>());
+    m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderInstanced>());
+    
 
     m_Camera.SetPosition({0.0f, 3.0f, -10.0f}, false);
     m_Camera.RecalculateView({ 0.0f, 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f, 0.0f });
