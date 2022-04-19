@@ -63,13 +63,38 @@ namespace BruteForce
                 size_t textures_count = tex_names.size() + 2;
 
                 BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
-                descHeapCbvSrv.NumDescriptors = static_cast<UINT>(textures_count);
+                descHeapCbvSrv.NumDescriptors = static_cast<UINT>(textures_count) + static_cast<UINT>(frames_count);
                 descHeapCbvSrv.Type = BruteForce::DescriptorHeapCvbSrvUav;
                 descHeapCbvSrv.Flags = BruteForce::DescriptorHeapShaderVisible;
                 ThrowIfFailed(device->CreateDescriptorHeap(&descHeapCbvSrv, __uuidof(ID3D12DescriptorHeap), (void**)&m_SVRHeap));
                 m_SVRHeap->SetName(L"Descriptor heap");
 
                 auto srv_handle = m_SVRHeap->GetCPUDescriptorHandleForHeapStart();
+                
+                for (int i = 0 ; i < frames_count; i++)
+                {
+                    auto heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+                    auto res_desc = CD3DX12_RESOURCE_DESC::Buffer(m_TerrainBuffers[i].GetResourceHeapSize());
+                    ThrowIfFailed(device->CreateCommittedResource(
+                        &heap_props,
+                        HeapFlagsNone,
+                        &res_desc,
+                        ResourceStateRead,
+                        nullptr,
+                        IID_PPV_ARGS(&m_TerrainBuffers[i].m_GpuBuffer)));
+
+                    m_TerrainBuffers[i].m_GpuBuffer->SetName(L"Constant Buffer Upload Resource Heap");
+                    D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+                    cbvDesc.BufferLocation = m_TerrainBuffers[i].m_GpuBuffer->GetGPUVirtualAddress();
+                    cbvDesc.SizeInBytes = m_TerrainBuffers[i].GetBufferSize();
+                    device->CreateConstantBufferView(&cbvDesc, srv_handle);
+
+
+                    m_TerrainBuffers[i].Map();
+                    m_TerrainBuffers[i].Update();
+
+                    srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+                }
                 
                 SmartCommandQueue copy_queue(device, BruteForce::CommandListTypeCopy);
                 BruteForce::Textures::AddTexture(content_path, { L"desert_map.png" }, m_textures, device, copy_queue, srv_handle);
@@ -105,12 +130,13 @@ namespace BruteForce
                 //D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
             CD3DX12_DESCRIPTOR_RANGE1 descRange[2];
             descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 0);
+            descRange[0].OffsetInDescriptorsFromTableStart = 3;
             //descRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 2, 0);
             CD3DX12_DESCRIPTOR_RANGE1 descRangeSamp;
             descRangeSamp.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);
+
             CD3DX12_ROOT_PARAMETER1 rootParameters[3];
             rootParameters[2].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
-            //rootParameters[3].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
 
             rootParameters[0].InitAsDescriptorTable(1, &descRange[0], D3D12_SHADER_VISIBILITY_ALL);
             rootParameters[1].InitAsDescriptorTable(1, &descRangeSamp, D3D12_SHADER_VISIBILITY_ALL);
@@ -159,9 +185,7 @@ namespace BruteForce
             };
             ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
             m_PipelineState->SetName(L"Pipeline state");
-            //Geometry::CreateCube(device, m_cube);
-            //Geometry::CreatePlane(device, m_plane, 100, 100, 6.0f, 6.0f);
-            Geometry::CreatePlane(device, m_plane, 3, 3, 6.0f, 6.0f);
+            Geometry::CreatePlane(device, m_plane, 100, 100, 6.0f, 6.0f);
         }
 
 
