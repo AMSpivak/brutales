@@ -22,7 +22,7 @@ namespace BruteForce
         //void RecalculateView(const BruteForce::Math::Vector& focusPoint, const BruteForce::Math::Vector& upDirection);
         void RecalculateProjection();
     public:
-        Camera() :m_Fov{ 45.0 }, m_AspectRatio{ 1.0f }, m_Near{ 0.1f }, m_Far{ 100.0f },
+        Camera() :m_Fov{ 45.0 }, m_AspectRatio{ 1.0f }, m_Near{ 0.1f }, m_Far{ 1000.0f },
             m_Position{ 0.0f, 0.0f, -10.0f, 0.0 }, m_FocusPoint{ 0.0f, 0.0f, 1.0f, 0.0 }, m_UpDirection{ 0.0f, 1.0f, 0.0f, 0.0 }, m_RightDirection{ 1.0f, 0.0f, 0.0f, 0.0 },
             m_Angles{ 0.0f, 0.0f, 0.0f, 0.0f}
         {
