@@ -266,6 +266,6 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     delete(test_controller);
     delete(p_Renderer);
     delete(pWindow);
-    BruteForce::ReportLiveObjects(g_Device);
+    //BruteForce::ReportLiveObjects(g_Device);
     return 0;
 }

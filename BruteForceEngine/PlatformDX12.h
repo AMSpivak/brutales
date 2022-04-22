@@ -108,6 +108,12 @@ namespace BruteForce
 		using Vec3Float = DirectX::XMFLOAT3;
 		using Vec2Float = DirectX::XMFLOAT2;
 		using Vector = DirectX::XMVECTOR;
+
+		inline void Store(Vec4Float* dst, const Vector& src )
+		{
+			DirectX::XMStoreFloat4(dst, src);
+		}
+
 		inline Vector VectorAdd(const Vector& a, const Vector& b)
 		{
 			return DirectX::XMVectorAdd(a,b);
