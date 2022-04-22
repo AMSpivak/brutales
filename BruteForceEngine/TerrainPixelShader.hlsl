@@ -6,6 +6,13 @@ struct PixelShaderInput
     nointerpolation uint id: InstanceID;
 };
 
+struct AtmosphereBuffer
+{
+    float4 m_SunDirection;
+};
+
+ConstantBuffer<AtmosphereBuffer> AtmosphereCB[3] : register(b20);
+
 Texture2D<uint4> tex_material_id : register(t1);
 Texture2D tex[] : register(t2);
 sampler sampl : register(s0);

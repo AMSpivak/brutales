@@ -47,7 +47,85 @@ namespace BruteForce
                         plane_indexes[offset++] = offset_xz;
                     }
                 }
+                {
+                    size_t low_offset = low_point_index;
+                    for (size_t i_x = 0; i_x < cells_x; i_x++)
+                    {
+                        plane_indexes[offset++] = i_x;
+                        plane_indexes[offset++] = i_x + 1;
+                        plane_indexes[offset++] = i_x + low_offset;
+                        plane_indexes[offset++] = i_x + low_offset + 1;
+                        plane_indexes[offset++] = i_x + low_offset;
+                        plane_indexes[offset++] = i_x + 1;
+                    }
+                    low_offset = low_point_index + (cells_x + 1);
+
+                    size_t offs = low_point_index - cells_x - 1;
+                    for (size_t i_x = 0; i_x < cells_x; i_x++)
+                    {
+
+                        plane_indexes[offset++] = i_x + offs;
+                        plane_indexes[offset++] = i_x + low_offset;
+                        plane_indexes[offset++] = i_x + 1 + offs;
+                        plane_indexes[offset++] = i_x + low_offset + 1;
+                        plane_indexes[offset++] = i_x + 1 + offs;
+                        plane_indexes[offset++] = i_x + low_offset;
+                    }
+
+                    
+                    size_t zd = cells_x + 1;
+                    offs = zd * 2 + low_point_index;
+                    size_t i_z = 0;
+
+                    plane_indexes[offset++] = 0 + cells_x;
+                    
+                    plane_indexes[offset++] = zd + cells_x;
+                    plane_indexes[offset++] = offs + 1;
+
+
+                    for (i_z = 1; i_z < cells_z - 1; i_z++)
+                    {
+                        plane_indexes[offset++] = i_z * zd + cells_x;
+                        plane_indexes[offset++] = (i_z + 1) * zd + cells_x;
+                        plane_indexes[offset++] = (i_z - 1) * 2 + offs + 1;
+                        
+
+                        plane_indexes[offset++] = (i_z - 1) * 2 + offs + 1;
+                        plane_indexes[offset++] = (i_z + 1) * zd + cells_x;
+                        plane_indexes[offset++] = i_z * 2 + offs + 1;
+                    }
+
+                    i_z = cells_z - 1;
+                    plane_indexes[offset++] = i_z * zd + cells_x;
+                    plane_indexes[offset++] = (i_z + 1) * zd + cells_x;
+                    plane_indexes[offset++] = (i_z - 1) * 2 + offs + 1;
+
+
+                   
+
+                    plane_indexes[offset++] = 0;
+                    plane_indexes[offset++] = offs;
+                    plane_indexes[offset++] = zd;
+
+                    for (i_z = 1; i_z < cells_z - 1; i_z++)
+                    {
+                        plane_indexes[offset++] = i_z * zd;
+                        plane_indexes[offset++] = (i_z - 1) * 2 + offs;
+                        plane_indexes[offset++] = (i_z + 1) * zd;
+
+                        plane_indexes[offset++] = (i_z - 1) * 2 + offs;
+                        plane_indexes[offset++] = i_z * 2 + offs;
+                        plane_indexes[offset++] = (i_z + 1) * zd;
+                    }
+                    i_z = cells_z - 1;
+                    plane_indexes[offset++] = i_z * zd;
+                    plane_indexes[offset++] = (i_z - 1) * 2 + offs;
+                    plane_indexes[offset++] = (i_z + 1) * zd;
+
+                }
             }
+
+
 
             SmartCommandQueue smart_queue(device, BruteForce::CommandListTypeDirect);
             auto commandList = smart_queue.GetCommandList();

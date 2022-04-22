@@ -8,7 +8,7 @@ namespace BruteForce
 {
     namespace Render
     {
-        RenderTerrain::RenderTerrain() :m_TerrainBuffers(nullptr)
+        RenderTerrain::RenderTerrain() :m_TerrainBuffers(nullptr), m_AtmosphereBuffers(nullptr)
         {
 
         }
@@ -17,6 +17,10 @@ namespace BruteForce
             if (m_TerrainBuffers)
             {
                 delete[] m_TerrainBuffers;
+            }
+            if (m_AtmosphereBuffers)
+            {
+                delete[] m_AtmosphereBuffers;
             }
         }
         void RenderTerrain::Update(float delta_time, uint8_t frame_index)
@@ -31,6 +35,7 @@ namespace BruteForce
             }
 
             m_TerrainBuffers = new ConstantBuffer<TerrainCB>[frames_count];
+            m_AtmosphereBuffers = new ConstantBuffer<Atmosphere::AtmosphereCB>[frames_count];
 
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path{ settings.GetExecuteDirWchar() };
@@ -63,7 +68,7 @@ namespace BruteForce
                 size_t textures_count = tex_names.size() + 2;
 
                 BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
-                descHeapCbvSrv.NumDescriptors = static_cast<UINT>(textures_count) + static_cast<UINT>(frames_count);
+                descHeapCbvSrv.NumDescriptors = static_cast<UINT>(textures_count) + 2 * static_cast<UINT>(frames_count);
                 descHeapCbvSrv.Type = BruteForce::DescriptorHeapCvbSrvUav;
                 descHeapCbvSrv.Flags = BruteForce::DescriptorHeapShaderVisible;
                 ThrowIfFailed(device->CreateDescriptorHeap(&descHeapCbvSrv, __uuidof(ID3D12DescriptorHeap), (void**)&m_SVRHeap));
@@ -83,17 +88,39 @@ namespace BruteForce
                         nullptr,
                         IID_PPV_ARGS(&m_TerrainBuffers[i].m_GpuBuffer)));
 
-                    m_TerrainBuffers[i].m_GpuBuffer->SetName(L"Constant Buffer Upload Resource Heap");
+                    m_TerrainBuffers[i].m_GpuBuffer->SetName(L"CB Upload Resource Heap");
                     D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
                     cbvDesc.BufferLocation = m_TerrainBuffers[i].m_GpuBuffer->GetGPUVirtualAddress();
                     cbvDesc.SizeInBytes = static_cast<UINT>(m_TerrainBuffers[i].GetBufferSize());
                     device->CreateConstantBufferView(&cbvDesc, srv_handle);
-
+                    srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
 
                     m_TerrainBuffers[i].Map();
                     m_TerrainBuffers[i].Update();
+                }
+
+                for (int i = 0; i < frames_count; i++)
+                {
+                    auto heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+                    auto res_desc = CD3DX12_RESOURCE_DESC::Buffer(m_AtmosphereBuffers[i].GetResourceHeapSize());
+                    ThrowIfFailed(device->CreateCommittedResource(
+                        &heap_props,
+                        HeapFlagsNone,
+                        &res_desc,
+                        ResourceStateRead,
+                        nullptr,
+                        IID_PPV_ARGS(&m_AtmosphereBuffers[i].m_GpuBuffer)));
+
+                    m_AtmosphereBuffers[i].m_GpuBuffer->SetName(L"Constant Buffer Upload Resource Heap");
+                    D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+                    cbvDesc.BufferLocation = m_AtmosphereBuffers[i].m_GpuBuffer->GetGPUVirtualAddress();
+                    cbvDesc.SizeInBytes = static_cast<UINT>(m_AtmosphereBuffers[i].GetBufferSize());
+                    device->CreateConstantBufferView(&cbvDesc, srv_handle);
 
                     srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+
+                    m_AtmosphereBuffers[i].Map();
+                    m_AtmosphereBuffers[i].Update();   
                 }
                 
                 SmartCommandQueue copy_queue(device, BruteForce::CommandListTypeCopy);
@@ -128,18 +155,20 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;// |
                 //D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
-            CD3DX12_DESCRIPTOR_RANGE1 descRange[2];
+            CD3DX12_DESCRIPTOR_RANGE1 descRange[3];
             descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 0);
-            descRange[0].OffsetInDescriptorsFromTableStart = 3;
+            descRange[0].OffsetInDescriptorsFromTableStart = 6;
             descRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 3, 17);
             descRange[1].OffsetInDescriptorsFromTableStart = 0;
+            descRange[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 3, 20);
+            descRange[2].OffsetInDescriptorsFromTableStart = 3;
 
             CD3DX12_DESCRIPTOR_RANGE1 descRangeSamp;
             descRangeSamp.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);
 
-            CD3DX12_ROOT_PARAMETER1 rootParameters[3];
-            rootParameters[2].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
-
+            CD3DX12_ROOT_PARAMETER1 rootParameters[4];
+            rootParameters[3].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 2, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+            rootParameters[2].InitAsConstants(1, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
             rootParameters[0].InitAsDescriptorTable(2, &descRange[0], D3D12_SHADER_VISIBILITY_ALL);
             rootParameters[1].InitAsDescriptorTable(1, &descRangeSamp, D3D12_SHADER_VISIBILITY_ALL);
 
@@ -196,11 +225,11 @@ namespace BruteForce
             //m_TerrainBuffers[0].m_CpuBuffer->m_TerrainScaler = Math::Vec3Float{ 1.0f,1.0f, };
             Math::Vec4Float cam;
             Math::Store(&cam, render_dest.camera.GetPosition());
-
-            m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[0] = Math::Vec4Float{ cam.x + 1.0f, cam.z + 1.0f,1.0f, 1.0f };
-            m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[1] = Math::Vec4Float{ cam.x + -1.0f, cam.z + 1.0f,1.0f, 1.0f };
-            m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[2] = Math::Vec4Float{ cam.x + 1.0f, cam.z + -1.0f,1.0f, 1.0f };
-            m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[3] = Math::Vec4Float{ cam.x + -1.0f, cam.z + -1.0f,1.0f, 1.0f };
+            uint32_t buff_index = render_dest.frame_index;
+            m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[0] = Math::Vec4Float{ cam.x + 1.0f, cam.z + 1.0f,1.0f, 1.0f };
+            m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[1] = Math::Vec4Float{ cam.x + -1.0f, cam.z + 1.0f,1.0f, 1.0f };
+            m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[2] = Math::Vec4Float{ cam.x + 1.0f, cam.z + -1.0f,1.0f, 1.0f };
+            m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[3] = Math::Vec4Float{ cam.x + -1.0f, cam.z + -1.0f,1.0f, 1.0f };
 
             UINT counter = 4;
             float s_offset = 1.0f;
@@ -213,30 +242,30 @@ namespace BruteForce
             while (counter < buffer_size)
             {
 
-                m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + s_offset, cam.z + h_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z + s_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z + h_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + s_offset, cam.z + h_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z + s_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z + h_offset, plate_half_widht, 1.0f };
 
-                m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - s_offset, cam.z - h_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z - s_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z - h_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - s_offset, cam.z - h_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z - s_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z - h_offset, plate_half_widht, 1.0f };
 
-                m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + s_offset, cam.z - h_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z - s_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z - h_offset, plate_half_widht, 1.0f };
-
-                m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - s_offset, cam.z + h_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z + s_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z + h_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + s_offset, cam.z - h_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z - s_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z - h_offset, plate_half_widht, 1.0f };
+                
+                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - s_offset, cam.z + h_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z + s_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z + h_offset, plate_half_widht, 1.0f };
 
                 s_offset *= 2.0f;
                 h_offset *= 2.0f;
                 plate_half_widht *= 2.0f;
             }
 
-            m_TerrainBuffers[0].m_CpuBuffer->m_TerrainScaler = Math::Vec3Float{ 0.001f,100.0f, 0.001f };
+            m_TerrainBuffers[buff_index].m_CpuBuffer->m_TerrainScaler = Math::Vec4Float{ 0.0002f,100.0f, 0.0002f,  plane_mesh_step };
 
-            m_TerrainBuffers[0].Update();
+            m_TerrainBuffers[buff_index].Update();
 
             auto& commandList = smart_command_list.command_list;
             smart_command_list.SetPipelineState(m_PipelineState);
@@ -258,7 +287,8 @@ namespace BruteForce
             commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, render_dest.dsv);
 
             auto offset = sizeof(BruteForce::Math::Matrix) / 4;
-            commandList->SetGraphicsRoot32BitConstants(2, static_cast<UINT>(offset), render_dest.camera.GetCameraMatrixPointer(), 0);
+            commandList->SetGraphicsRoot32BitConstants(3, static_cast<UINT>(offset), render_dest.camera.GetCameraMatrixPointer(), 0);
+            commandList->SetGraphicsRoot32BitConstants(2, 1, &buff_index, 0);
             commandList->DrawIndexedInstanced(static_cast<UINT>(m_plane.m_IndexesCount), counter, 0, 0, 0);
             return smart_command_list;
         }

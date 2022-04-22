@@ -169,7 +169,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ControllerWinKeyboard.cpp" />
-    <ClCompile Include="EngineGpuCommands.cpp" />
+    <ClCompile Include="DepthBufferDX12.cpp" />
     <ClCompile Include="EngineGpuCommandsDX12.cpp" />
     <ClCompile Include="EngineGpuFenceDX12.cpp" />
     <ClCompile Include="EngineGpuSwapChainDX12.cpp" />
@@ -178,6 +178,7 @@
     <ClCompile Include="IndexedGeometryPlane.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RenderInstanced.cpp" />
+    <ClCompile Include="RenderTargetTextureDX12.cpp" />
     <ClCompile Include="RenderTerrain.cpp" />
     <ClCompile Include="ResourcesDX12.cpp" />
     <ClCompile Include="Settings.cpp" />
@@ -191,9 +192,11 @@
     <ClInclude Include="Controller.h" />
     <ClInclude Include="ControllerWinKeyboard.h" />
     <ClInclude Include="d3dx12.h" />
+    <ClInclude Include="DepthBuffer.h" />
     <ClInclude Include="EngineGpuCommands.h" />
     <ClInclude Include="EngineGpuFence.h" />
     <ClInclude Include="EngineGpuSwapChain.h" />
+    <ClInclude Include="GameEnvironment.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="IndexedGeometry.h" />
     <ClInclude Include="IndexedGeometryGenerator.h" />
@@ -202,6 +205,7 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderInstanced.h" />
     <ClInclude Include="RenderSubsystem.h" />
+    <ClInclude Include="RenderTargetTexture.h" />
     <ClInclude Include="RenderTerrain.h" />
     <ClInclude Include="Resources.h" />
     <ClInclude Include="Settings.h" />

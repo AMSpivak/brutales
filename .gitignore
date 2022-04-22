@@ -24,3 +24,5 @@
 /BruteForceEngine/.editorconfig
 *.png
 *.cso
+*.obj
+BruteForceEngine.zip
