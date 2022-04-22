@@ -122,7 +122,8 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
 
     for (auto& execute_list : command_lists)
     {
-        SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(execute_list));
+        //SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(execute_list));
+        in_SmartCommandQueue.ExecuteCommandList(execute_list);
     }
 }
 
