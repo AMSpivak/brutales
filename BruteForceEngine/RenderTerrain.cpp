@@ -236,13 +236,6 @@ namespace BruteForce
 
             m_TerrainBuffers[0].m_CpuBuffer->m_TerrainScaler = Math::Vec3Float{ 0.001f,100.0f, 0.001f };
 
-            //m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[4] = Math::Vec4Float{ 5.0f,1.0f,2.0f, 1.0f };
-            //m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[5] = Math::Vec4Float{ 1.0f,5.0f,2.0f, 1.0f };
-            //m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[6] = Math::Vec4Float{ 5.0f,5.0f,2.0f, 1.0f};
-            //m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[7] = Math::Vec4Float{ 11.0f,3.0f,4.0f, 1.0f };
-            //m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[8] = Math::Vec4Float{ 3.0f,11.0f,4.0f, 1.0f };
-            //m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[9] = Math::Vec4Float{ 11.0f,11.0f,4.0f, 1.0f };
-
             m_TerrainBuffers[0].Update();
 
             auto& commandList = smart_command_list.command_list;

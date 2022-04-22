@@ -93,7 +93,9 @@ void TutorialRenderer::Resize(BruteForce::Device& device)
 
 void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue)
 {
-    auto smart_command_list = in_SmartCommandQueue.GetCommandList();
+    std::vector<BruteForce::SmartCommandList> command_lists;
+
+    auto& smart_command_list = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());;
     auto& commandList = smart_command_list.command_list;
     FLOAT clearColor[] = { 1.0f, 0.6f, 0.1f, 1.0f };
 
@@ -101,9 +103,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     BruteForce::DescriptorHandle dsv = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
     smart_command_list.ClearRTV(rtv, clearColor);
     smart_command_list.ClearDSV(dsv, true, false, 1.0f, 0);
-    SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
     
-    std::vector<BruteForce::SmartCommandList> command_lists;
 
     BruteForce::Render::RenderDestination render_dest{
         &m_Viewport,
