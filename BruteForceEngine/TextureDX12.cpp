@@ -15,7 +15,7 @@ namespace BruteForce
             shaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
             shaderResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
             shaderResourceViewDesc.Format = Format;
-            shaderResourceViewDesc.Texture2D.MipLevels = 1;
+            shaderResourceViewDesc.Texture2D.MipLevels = m_Mips;
             shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
             shaderResourceViewDesc.Texture2D.ResourceMinLODClamp = 0.0f;
             device->CreateShaderResourceView(image.Get(), &shaderResourceViewDesc, descriptor_handle);
@@ -119,6 +119,7 @@ namespace BruteForce
                     subresource.SlicePitch = pImages[i].slicePitch;
                     subresource.pData = pImages[i].pixels;
                 }
+                texture.m_Mips = scratchImage.GetImageCount();
 
                 smart_queue.CopyTextureSubresource(
                     texture.image,
@@ -132,6 +133,7 @@ namespace BruteForce
                 }
 
                 texture.Format = metadata.format;
+                
             }
 
 

@@ -59,7 +59,7 @@ namespace BruteForce
             }
 
             {
-                std::vector<std::wstring> tex_names = {{ L"Desert_Rock_albedo.png"}, {L"Desert_Sand_albedo.png"} };
+                std::vector<std::wstring> tex_names = {{ L"Desert_Rock_albedo.dds"}, {L"Desert_Sand_albedo.dds"} };
                 size_t textures_count = tex_names.size() + 2;
 
                 BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
@@ -233,15 +233,9 @@ namespace BruteForce
                 h_offset *= 2.0f;
                 plate_half_widht *= 2.0f;
             }
+            float plane_mesh_step = 1.0f / 100;
 
-            m_TerrainBuffers[0].m_CpuBuffer->m_TerrainScaler = Math::Vec3Float{ 0.001f,100.0f, 0.001f };
-
-            //m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[4] = Math::Vec4Float{ 5.0f,1.0f,2.0f, 1.0f };
-            //m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[5] = Math::Vec4Float{ 1.0f,5.0f,2.0f, 1.0f };
-            //m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[6] = Math::Vec4Float{ 5.0f,5.0f,2.0f, 1.0f};
-            //m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[7] = Math::Vec4Float{ 11.0f,3.0f,4.0f, 1.0f };
-            //m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[8] = Math::Vec4Float{ 3.0f,11.0f,4.0f, 1.0f };
-            //m_TerrainBuffers[0].m_CpuBuffer->m_PlanesPositions[9] = Math::Vec4Float{ 11.0f,11.0f,4.0f, 1.0f };
+            m_TerrainBuffers[0].m_CpuBuffer->m_TerrainScaler = Math::Vec4Float{ 0.0002f,100.0f, 0.0002f,  plane_mesh_step };
 
             m_TerrainBuffers[0].Update();
 

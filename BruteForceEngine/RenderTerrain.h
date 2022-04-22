@@ -16,7 +16,7 @@ namespace BruteForce
             struct TerrainCB
             {               
                 Math::Vec4Float m_PlanesPositions[1024];
-                Math::Vec3Float m_TerrainScaler;
+                Math::Vec4Float m_TerrainScaler;
                 //uint32_t m_PlanesCount;
             };
             ConstantBuffer<TerrainCB>* m_TerrainBuffers;

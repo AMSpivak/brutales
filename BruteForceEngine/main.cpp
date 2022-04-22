@@ -176,6 +176,8 @@ void Update()
 
 void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Window* pWindow)
 {
+
+    p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
     //auto smart_command_list = in_SmartCommandQueue.GetCommandList();
     //auto& backBuffer = p_Renderer->GetCurrentBackBufferRef();
     {
@@ -190,7 +192,7 @@ void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Win
         auto smart_command_list = in_SmartCommandQueue.GetCommandList();
         p_Renderer->PrepareSwapFrame(smart_command_list);
         p_Renderer->SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
-        p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
+        //p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
 
     }
     p_Renderer->SwapFrame();
