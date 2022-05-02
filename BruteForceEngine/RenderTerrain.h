@@ -6,7 +6,6 @@
 #include <vector>
 #include <memory>
 #include "ConstantBuffer.h"
-#include "GameEnvironment.h"
 namespace BruteForce
 {
     namespace Render
@@ -17,12 +16,10 @@ namespace BruteForce
             struct TerrainCB
             {               
                 Math::Vec4Float m_PlanesPositions[1024];
-                Math::Vec3Float m_TerrainScaler;
+                Math::Vec4Float m_TerrainScaler;
                 //uint32_t m_PlanesCount;
             };
             ConstantBuffer<TerrainCB>* m_TerrainBuffers;
-            ConstantBuffer<Atmosphere::AtmosphereCB>* m_AtmosphereBuffers;
-
             std::vector<std::shared_ptr<Textures::Texture>> m_textures;
             DescriptorHeap m_SVRHeap;
             DescriptorHeap m_SamplerHeap;

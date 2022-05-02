@@ -13,6 +13,7 @@ namespace BruteForce
 		{
 		private:
 			std::mutex m_mutex;
+			size_t m_Mips;
 		public:
 			Texture() = default;
 			Texture(const Texture &) = default;

@@ -30,6 +30,7 @@ struct VertexShaderOutput
 {
     float4 WorldPosition    : WORLD_POSITION;
     float4 Position : SV_Position;
+    float3 Normal : NORMAL;
 
     nointerpolation uint id : InstanceID;
 };
@@ -67,6 +68,7 @@ VertexShaderOutput main(VertexPosColor IN, uint id : SV_InstanceID)
     IN.Position.y += PlanesCB[FrameInfoCB.frame_index].m_TerrainScaler.y * terrain.r;
     OUT.Position = mul(ModelViewProjectionCB.MVP, float4(IN.Position, 1.0f));
     OUT.WorldPosition = float4(IN.Position, 1.0f);
+    OUT.Normal = normalize(cross(terrain_z, terrain_x));
     OUT.id = id;
     return OUT;
 }

@@ -262,15 +262,8 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
             ::TranslateMessage(&msg);
             ::DispatchMessage(&msg);
         }
-
-        if (msg.message == WM_KEYDOWN || msg.message == WM_KEYUP || msg.message == WM_CHAR)
-        {
-        }
-        else 
-        {
-            Update();
-            Render(p_Renderer->m_SmartCommandQueue, pWindow);
-        }
+        Update(); 
+        Render(p_Renderer->m_SmartCommandQueue, pWindow);
     }
     delete(test_controller);
     delete(p_Renderer);

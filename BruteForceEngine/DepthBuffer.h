@@ -17,7 +17,7 @@ namespace BruteForce
 			TargetFormat m_format;
 			DescriptorHandle m_descriptor_handle;
 			void CreateSrv(Device& device, DescriptorHandle& descriptor_handle);
-			void Assign(int width, int height, TargetFormat format, )
+			//void Assign(int width, int height, TargetFormat format, )
 		};
 	}
 }

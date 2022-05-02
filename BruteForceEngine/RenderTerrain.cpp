@@ -8,7 +8,7 @@ namespace BruteForce
 {
     namespace Render
     {
-        RenderTerrain::RenderTerrain() :m_TerrainBuffers(nullptr), m_AtmosphereBuffers(nullptr)
+        RenderTerrain::RenderTerrain() :m_TerrainBuffers(nullptr)
         {
 
         }
@@ -17,10 +17,6 @@ namespace BruteForce
             if (m_TerrainBuffers)
             {
                 delete[] m_TerrainBuffers;
-            }
-            if (m_AtmosphereBuffers)
-            {
-                delete[] m_AtmosphereBuffers;
             }
         }
         void RenderTerrain::Update(float delta_time, uint8_t frame_index)
@@ -35,7 +31,6 @@ namespace BruteForce
             }
 
             m_TerrainBuffers = new ConstantBuffer<TerrainCB>[frames_count];
-            m_AtmosphereBuffers = new ConstantBuffer<Atmosphere::AtmosphereCB>[frames_count];
 
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path{ settings.GetExecuteDirWchar() };
@@ -64,11 +59,11 @@ namespace BruteForce
             }
 
             {
-                std::vector<std::wstring> tex_names = {{ L"Desert_Rock_albedo.png"}, {L"Desert_Sand_albedo.png"} };
+                std::vector<std::wstring> tex_names = {{ L"Desert_Rock_albedo.dds"}, {L"Desert_Sand_albedo.dds"} };
                 size_t textures_count = tex_names.size() + 2;
 
                 BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
-                descHeapCbvSrv.NumDescriptors = static_cast<UINT>(textures_count) + 2 * static_cast<UINT>(frames_count);
+                descHeapCbvSrv.NumDescriptors = static_cast<UINT>(textures_count) + static_cast<UINT>(frames_count);
                 descHeapCbvSrv.Type = BruteForce::DescriptorHeapCvbSrvUav;
                 descHeapCbvSrv.Flags = BruteForce::DescriptorHeapShaderVisible;
                 ThrowIfFailed(device->CreateDescriptorHeap(&descHeapCbvSrv, __uuidof(ID3D12DescriptorHeap), (void**)&m_SVRHeap));
@@ -88,39 +83,17 @@ namespace BruteForce
                         nullptr,
                         IID_PPV_ARGS(&m_TerrainBuffers[i].m_GpuBuffer)));
 
-                    m_TerrainBuffers[i].m_GpuBuffer->SetName(L"CB Upload Resource Heap");
+                    m_TerrainBuffers[i].m_GpuBuffer->SetName(L"Constant Buffer Upload Resource Heap");
                     D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
                     cbvDesc.BufferLocation = m_TerrainBuffers[i].m_GpuBuffer->GetGPUVirtualAddress();
                     cbvDesc.SizeInBytes = static_cast<UINT>(m_TerrainBuffers[i].GetBufferSize());
                     device->CreateConstantBufferView(&cbvDesc, srv_handle);
-                    srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+
 
                     m_TerrainBuffers[i].Map();
                     m_TerrainBuffers[i].Update();
-                }
-
-                for (int i = 0; i < frames_count; i++)
-                {
-                    auto heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-                    auto res_desc = CD3DX12_RESOURCE_DESC::Buffer(m_AtmosphereBuffers[i].GetResourceHeapSize());
-                    ThrowIfFailed(device->CreateCommittedResource(
-                        &heap_props,
-                        HeapFlagsNone,
-                        &res_desc,
-                        ResourceStateRead,
-                        nullptr,
-                        IID_PPV_ARGS(&m_AtmosphereBuffers[i].m_GpuBuffer)));
-
-                    m_AtmosphereBuffers[i].m_GpuBuffer->SetName(L"Constant Buffer Upload Resource Heap");
-                    D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
-                    cbvDesc.BufferLocation = m_AtmosphereBuffers[i].m_GpuBuffer->GetGPUVirtualAddress();
-                    cbvDesc.SizeInBytes = static_cast<UINT>(m_AtmosphereBuffers[i].GetBufferSize());
-                    device->CreateConstantBufferView(&cbvDesc, srv_handle);
 
                     srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
-
-                    m_AtmosphereBuffers[i].Map();
-                    m_AtmosphereBuffers[i].Update();   
                 }
                 
                 SmartCommandQueue copy_queue(device, BruteForce::CommandListTypeCopy);
@@ -155,13 +128,11 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;// |
                 //D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
-            CD3DX12_DESCRIPTOR_RANGE1 descRange[3];
+            CD3DX12_DESCRIPTOR_RANGE1 descRange[2];
             descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 0);
-            descRange[0].OffsetInDescriptorsFromTableStart = 6;
+            descRange[0].OffsetInDescriptorsFromTableStart = 3;
             descRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 3, 17);
             descRange[1].OffsetInDescriptorsFromTableStart = 0;
-            descRange[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 3, 20);
-            descRange[2].OffsetInDescriptorsFromTableStart = 3;
 
             CD3DX12_DESCRIPTOR_RANGE1 descRangeSamp;
             descRangeSamp.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);
@@ -262,6 +233,7 @@ namespace BruteForce
                 h_offset *= 2.0f;
                 plate_half_widht *= 2.0f;
             }
+            float plane_mesh_step = 1.0f / 100;
 
             m_TerrainBuffers[buff_index].m_CpuBuffer->m_TerrainScaler = Math::Vec4Float{ 0.0002f,100.0f, 0.0002f,  plane_mesh_step };
 
