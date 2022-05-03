@@ -122,10 +122,13 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         smart_command_list.ClearDSV(dsv, true, false, 1.0f, 0);
     }
     
+    //auto& SetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
+    //m_RTTextures[m_CurrentBackBufferIndex].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
 
     BruteForce::Render::RenderDestination render_dest{
         &m_Viewport,
         &m_ScissorRect,
+        //m_RTTextures[m_CurrentBackBufferIndex].GetRTPointer(),
         &rtv,
         &dsv,
         m_Camera,
@@ -137,6 +140,9 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         auto& list = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
         subsystem->PrepareRenderCommandList(list, render_dest);
     }
+
+    //auto& ResetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
+    //m_RTTextures[m_CurrentBackBufferIndex].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
 
     for (auto& execute_list : command_lists)
     {
