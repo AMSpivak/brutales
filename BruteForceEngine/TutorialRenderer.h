@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "RenderSubsystem.h"
 #include "DepthBuffer.h"
+#include "RenderTargetTexture.h"
 #include <vector>
 #include <memory>
 
@@ -31,8 +32,10 @@ private:
     std::vector<std::shared_ptr<BruteForce::Render::RenderSubsystem>> m_RenderSystems;
 public:
     BruteForce::Textures::DepthBuffer m_DepthBuffer;
-    //BruteForce::Resource m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;
+    BruteForce::Textures::RenderTargetTexture m_RTTextures[RendererNumFrames];
+    BruteForce::DescriptorHeap m_RTHeap;
+    BruteForce::DescriptorHeap m_RTSrvHeap;
 
     float m_time;
 

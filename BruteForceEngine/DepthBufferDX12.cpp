@@ -1,5 +1,4 @@
 #include "DepthBuffer.h"
-#include "PlatformDefine.h"
 #include "Helpers.h"
 
 namespace BruteForce
@@ -42,6 +41,7 @@ namespace BruteForce
 				IID_PPV_ARGS(&m_buffer)
 			));
 			m_format = format;
+			m_buffer->SetName(L"Depth buffer");
 		}
 	}
 }

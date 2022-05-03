@@ -16,12 +16,30 @@ m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
 
     m_ScissorRect = BruteForce::ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
     m_Viewport = BruteForce::Viewport{ 0.0f, 0.0f, static_cast<float>(pWindow->GetWidth()), static_cast<float>(pWindow->GetHeight()) };
+    
+    {
+        BruteForce::DescriptorHeapDesc dsvHeapDesc = {};
+        dsvHeapDesc.NumDescriptors = 1;
+        dsvHeapDesc.Type = BruteForce::DescriptorHeapDSV;
+        dsvHeapDesc.Flags = BruteForce::DescriptorHeapFlagsNone;
+        ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_DSVHeap)));
+    }
 
-    BruteForce::DescriptorHeapDesc dsvHeapDesc = {};
-    dsvHeapDesc.NumDescriptors = 1;
-    dsvHeapDesc.Type = BruteForce::DescriptorHeapDSV;
-    dsvHeapDesc.Flags = BruteForce::DescriptorHeapFlagsNone;
-    ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_DSVHeap)));
+    {
+        BruteForce::DescriptorHeapDesc HeapDesc = {};
+        HeapDesc.NumDescriptors = RendererNumFrames;
+        HeapDesc.Type = BruteForce::DescriptorHeapRTV;
+        HeapDesc.Flags = BruteForce::DescriptorHeapFlagsNone;
+        ThrowIfFailed(device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&m_RTHeap)));
+    }
+
+    {
+        BruteForce::DescriptorHeapDesc HeapDesc = {};
+        HeapDesc.NumDescriptors = RendererNumFrames;
+        HeapDesc.Type = BruteForce::DescriptorHeapCvbSrvUav;
+        HeapDesc.Flags = BruteForce::DescriptorHeapShaderVisible;
+        ThrowIfFailed(device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&m_RTSrvHeap)));
+    }
 
     m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderTerrain>());
     //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderInstanced>());
@@ -73,6 +91,18 @@ void TutorialRenderer::Resize(BruteForce::Device& device)
         m_DepthBuffer.Assign(device, width, height, BruteForce::TargetFormat_D32_Float);
         BruteForce::DescriptorHandle d_handle = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
         m_DepthBuffer.CreateSrv(device, d_handle);
+
+        BruteForce::DescriptorHandle rt_handle = m_RTHeap->GetCPUDescriptorHandleForHeapStart();
+        BruteForce::DescriptorHandle srv_handle = m_RTSrvHeap->GetCPUDescriptorHandleForHeapStart();
+
+        for (uint8_t i = 0; i < RendererNumFrames; i++)
+        {
+            m_RTTextures[i].Assign(device, width, height, BruteForce::TargetFormat_R8G8B8A8_Unorm);
+            m_RTTextures[i].CreateViews(device, srv_handle, rt_handle);
+
+            rt_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
+            srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+        }
     }
 }
 
