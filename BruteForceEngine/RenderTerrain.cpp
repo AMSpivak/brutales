@@ -8,6 +8,52 @@ namespace BruteForce
 {
     namespace Render
     {
+        UINT RenderTerrain::PreparePlanesCB(const Math::Vec4Float& cam, uint32_t index)
+        {
+            m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[0] = Math::Vec4Float{ cam.x + 1.0f, cam.z + 1.0f,1.0f, 1.0f };
+            m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[1] = Math::Vec4Float{ cam.x + -1.0f, cam.z + 1.0f,1.0f, 1.0f };
+            m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[2] = Math::Vec4Float{ cam.x + 1.0f, cam.z + -1.0f,1.0f, 1.0f };
+            m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[3] = Math::Vec4Float{ cam.x + -1.0f, cam.z + -1.0f,1.0f, 1.0f };
+
+            UINT counter = 4;
+            float s_offset = 1.0f;
+            float h_offset = 3.0f;
+            float plate_half_widht = 1.0f;
+
+
+            constexpr UINT buffer_size = 1024 - 12;
+
+            while (counter < buffer_size)
+            {
+
+                m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + s_offset, cam.z + h_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z + s_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z + h_offset, plate_half_widht, 1.0f };
+
+                m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - s_offset, cam.z - h_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z - s_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z - h_offset, plate_half_widht, 1.0f };
+
+                m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + s_offset, cam.z - h_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z - s_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z - h_offset, plate_half_widht, 1.0f };
+
+                m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - s_offset, cam.z + h_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z + s_offset, plate_half_widht, 1.0f };
+                m_TerrainBuffers[index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z + h_offset, plate_half_widht, 1.0f };
+
+                s_offset *= 2.0f;
+                h_offset *= 2.0f;
+                plate_half_widht *= 2.0f;
+            }
+            float plane_mesh_step = 1.0f / 100;
+
+            m_TerrainBuffers[index].m_CpuBuffer->m_TerrainScaler = Math::Vec4Float{ 0.0002f,100.0f, 0.0002f,  plane_mesh_step };
+
+            m_TerrainBuffers[index].Update();
+
+            return counter;
+        }
         RenderTerrain::RenderTerrain() :m_TerrainBuffers(nullptr)
         {
 
@@ -23,7 +69,7 @@ namespace BruteForce
         {
         }
 
-        void RenderTerrain::LoadContent(Device& device, uint8_t frames_count)
+        void RenderTerrain::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc)
         {
             if (m_TerrainBuffers)
             {
@@ -172,14 +218,14 @@ namespace BruteForce
 
             D3D12_RT_FORMAT_ARRAY rtvFormats = {};
             rtvFormats.NumRenderTargets = 1;
-            rtvFormats.RTFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+            rtvFormats.RTFormats[0] = desc.RTFormat;
 
             pipelineStateStream.pRootSignature = m_RootSignature.Get();
             pipelineStateStream.InputLayout = { inputLayout, _countof(inputLayout) };
             pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
             pipelineStateStream.VS = CD3DX12_SHADER_BYTECODE(vertexShaderBlob.Get());
             pipelineStateStream.PS = CD3DX12_SHADER_BYTECODE(pixelShaderBlob.Get());
-            pipelineStateStream.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+            pipelineStateStream.DSVFormat = desc.DepthFormat;
             pipelineStateStream.RTVFormats = rtvFormats;
 
             D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
@@ -197,48 +243,8 @@ namespace BruteForce
             Math::Vec4Float cam;
             Math::Store(&cam, render_dest.camera.GetPosition());
             uint32_t buff_index = render_dest.frame_index;
-            m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[0] = Math::Vec4Float{ cam.x + 1.0f, cam.z + 1.0f,1.0f, 1.0f };
-            m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[1] = Math::Vec4Float{ cam.x + -1.0f, cam.z + 1.0f,1.0f, 1.0f };
-            m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[2] = Math::Vec4Float{ cam.x + 1.0f, cam.z + -1.0f,1.0f, 1.0f };
-            m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[3] = Math::Vec4Float{ cam.x + -1.0f, cam.z + -1.0f,1.0f, 1.0f };
 
-            UINT counter = 4;
-            float s_offset = 1.0f;
-            float h_offset = 3.0f;
-            float plate_half_widht = 1.0f;
-
-
-            constexpr UINT buffer_size = 1024 - 12;
-
-            while (counter < buffer_size)
-            {
-
-                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + s_offset, cam.z + h_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z + s_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z + h_offset, plate_half_widht, 1.0f };
-
-                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - s_offset, cam.z - h_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z - s_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z - h_offset, plate_half_widht, 1.0f };
-
-                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + s_offset, cam.z - h_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z - s_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x + h_offset, cam.z - h_offset, plate_half_widht, 1.0f };
-                
-                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - s_offset, cam.z + h_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z + s_offset, plate_half_widht, 1.0f };
-                m_TerrainBuffers[buff_index].m_CpuBuffer->m_PlanesPositions[counter++] = Math::Vec4Float{ cam.x - h_offset, cam.z + h_offset, plate_half_widht, 1.0f };
-
-                s_offset *= 2.0f;
-                h_offset *= 2.0f;
-                plate_half_widht *= 2.0f;
-            }
-            float plane_mesh_step = 1.0f / 100;
-
-            m_TerrainBuffers[buff_index].m_CpuBuffer->m_TerrainScaler = Math::Vec4Float{ 0.0002f,100.0f, 0.0002f,  plane_mesh_step };
-
-            m_TerrainBuffers[buff_index].Update();
-
+            UINT counter = PreparePlanesCB(cam, buff_index);
             auto& commandList = smart_command_list.command_list;
             smart_command_list.SetPipelineState(m_PipelineState);
             smart_command_list.SetRootSignature(m_RootSignature);

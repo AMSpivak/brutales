@@ -35,9 +35,14 @@ m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
 
 bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 {
+    BruteForce::Render::RenderSubsystemInitDesc desc = {
+                                                            BruteForce::TargetFormat_R8G8B8A8_Unorm,
+                                                            BruteForce::TargetFormat_D32_Float
+                                                        };
+
     for (auto& subsystem : m_RenderSystems)
     {
-        subsystem->LoadContent(device, m_NumFrames);
+        subsystem->LoadContent(device, m_NumFrames, desc);
     }
     m_ContentLoaded = true;
 
@@ -76,14 +81,16 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
 {
     std::vector<BruteForce::SmartCommandList> command_lists;
 
-    auto& smart_command_list = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());;
-    auto& commandList = smart_command_list.command_list;
-    FLOAT clearColor[] = { 1.0f, 0.6f, 0.1f, 1.0f };
-
     BruteForce::CDescriptorHandle rtv(m_BackBuffersDHeap->GetCPUDescriptorHandleForHeapStart(), m_CurrentBackBufferIndex, m_RTVDescriptorSize);
     BruteForce::DescriptorHandle dsv = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
-    smart_command_list.ClearRTV(rtv, clearColor);
-    smart_command_list.ClearDSV(dsv, true, false, 1.0f, 0);
+
+    auto& smart_command_list = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
+    {
+        auto& commandList = smart_command_list.command_list;
+        FLOAT clearColor[] = { 1.0f, 0.6f, 0.1f, 1.0f };
+        smart_command_list.ClearRTV(rtv, clearColor);
+        smart_command_list.ClearDSV(dsv, true, false, 1.0f, 0);
+    }
     
 
     BruteForce::Render::RenderDestination render_dest{

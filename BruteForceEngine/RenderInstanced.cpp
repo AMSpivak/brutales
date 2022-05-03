@@ -17,7 +17,7 @@ namespace BruteForce
         void RenderInstanced::Update(float delta_time, uint8_t frame_index)
         {
         }
-        void RenderInstanced::LoadContent(Device& device, uint8_t frames_count)
+        void RenderInstanced::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc)
         {
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path { settings.GetExecuteDirWchar() };
