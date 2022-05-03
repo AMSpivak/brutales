@@ -7,6 +7,7 @@
 #include "Texture.h"
 #include "Camera.h"
 #include "RenderSubsystem.h"
+#include "DepthBuffer.h"
 #include <vector>
 #include <memory>
 
@@ -29,8 +30,8 @@ private:
     BruteForce::SmartCommandQueue m_CopyCommandQueue;
     std::vector<std::shared_ptr<BruteForce::Render::RenderSubsystem>> m_RenderSystems;
 public:
-
-    BruteForce::Resource m_DepthBuffer;
+    BruteForce::Textures::DepthBuffer m_DepthBuffer;
+    //BruteForce::Resource m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;
 
     float m_time;

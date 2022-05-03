@@ -64,29 +64,10 @@ void TutorialRenderer::Resize(BruteForce::Device& device)
         width = std::max(1, width);
         height = std::max(1, height);
         m_Camera.SetAspectRatio(m_Window->GetWidth() / static_cast<float>(m_Window->GetHeight()), true);
-        D3D12_CLEAR_VALUE optimizedClearValue = {};
-        optimizedClearValue.Format = BruteForce::TargetFormat_D32_Float;
-        optimizedClearValue.DepthStencil = { 1.0f, 0 };
-        BruteForce::HeapProperties hp{ BruteForce::HeapTypeDefault };
-        BruteForce::CResourceDesc rd = BruteForce::CResourceDesc::Tex2D(optimizedClearValue.Format, width, height,
-                                        1, 0, 1, 0, BruteForce::ResourceFlagsDepthStencil);
-        ThrowIfFailed(device->CreateCommittedResource(
-            &hp,
-            BruteForce::HeapFlagsNone,
-            &rd,
-            BruteForce::ResourceStateDepthWrite,
-            &optimizedClearValue,
-            IID_PPV_ARGS(&m_DepthBuffer)
-        ));
 
-        D3D12_DEPTH_STENCIL_VIEW_DESC dsv = {};
-        dsv.Format = DXGI_FORMAT_D32_FLOAT;
-        dsv.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-        dsv.Texture2D.MipSlice = 0;
-        dsv.Flags = D3D12_DSV_FLAG_NONE;
-
-        device->CreateDepthStencilView(m_DepthBuffer.Get(), &dsv,
-            m_DSVHeap->GetCPUDescriptorHandleForHeapStart());
+        m_DepthBuffer.Assign(device, width, height, BruteForce::TargetFormat_D32_Float);
+        BruteForce::DescriptorHandle d_handle = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
+        m_DepthBuffer.CreateSrv(device, d_handle);
     }
 }
 
