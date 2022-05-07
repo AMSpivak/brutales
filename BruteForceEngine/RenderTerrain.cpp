@@ -158,8 +158,7 @@ namespace BruteForce
 
             D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
                 { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-                { "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-            };
+             };
 
             D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
             featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
@@ -172,8 +171,8 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-                D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;// |
-                //D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+                D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
+
             CD3DX12_DESCRIPTOR_RANGE1 descRange[2];
             descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 0);
             descRange[0].OffsetInDescriptorsFromTableStart = 3;
@@ -233,7 +232,7 @@ namespace BruteForce
             };
             ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
             m_PipelineState->SetName(L"Pipeline state");
-            Geometry::CreatePlane(device, m_plane, 100, 100, 1.0f, 1.0f);
+            Geometry::CreatePlane<VertexPos>(device, m_plane, 100, 100, 1.0f, 1.0f);
         }
 
 

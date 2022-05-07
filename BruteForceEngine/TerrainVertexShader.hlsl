@@ -23,7 +23,6 @@ ConstantBuffer<PlanesBuffer> PlanesCB[3] : register(b17);
 struct VertexPosColor
 {
     float3 Position : POSITION;
-    float3 Color    : COLOR;
 };
 
 struct VertexShaderOutput

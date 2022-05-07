@@ -175,7 +175,6 @@
     <ClCompile Include="EngineGpuSwapChainDX12.cpp" />
     <ClCompile Include="IndexedGeometry.cpp" />
     <ClCompile Include="IndexedGeometryCube.cpp" />
-    <ClCompile Include="IndexedGeometryPlane.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RenderInstanced.cpp" />
     <ClCompile Include="RenderTargetTextureDX12.cpp" />
@@ -200,6 +199,7 @@
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="IndexedGeometry.h" />
     <ClInclude Include="IndexedGeometryGenerator.h" />
+    <ClInclude Include="PipelineState.h" />
     <ClInclude Include="PlatformDefine.h" />
     <ClInclude Include="PlatformDX12.h" />
     <ClInclude Include="Renderer.h" />
