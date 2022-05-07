@@ -95,24 +95,24 @@ namespace BruteForce
                     for (size_t i_x = 0; i_x < cells_x; i_x++)
                     {
                         size_t offset_xz = offset_z + i_x;
-                        plane_indexes[offset++] = offset_xz;
-                        plane_indexes[offset++] = offset_xz + cells_x + 1;
-                        plane_indexes[offset++] = offset_xz + cells_x + 2;
-                        plane_indexes[offset++] = offset_xz + cells_x + 2;
-                        plane_indexes[offset++] = offset_xz + 1;
-                        plane_indexes[offset++] = offset_xz;
+                        plane_indexes[offset++] = static_cast<WORD>(offset_xz);
+                        plane_indexes[offset++] = static_cast<WORD>(offset_xz + cells_x + 1);
+                        plane_indexes[offset++] = static_cast<WORD>(offset_xz + cells_x + 2);
+                        plane_indexes[offset++] = static_cast<WORD>(offset_xz + cells_x + 2);
+                        plane_indexes[offset++] = static_cast<WORD>(offset_xz + 1);
+                        plane_indexes[offset++] = static_cast<WORD>(offset_xz);
                     }
                 }
                 {
                     size_t low_offset = low_point_index;
                     for (size_t i_x = 0; i_x < cells_x; i_x++)
                     {
-                        plane_indexes[offset++] = i_x;
-                        plane_indexes[offset++] = i_x + 1;
-                        plane_indexes[offset++] = i_x + low_offset;
-                        plane_indexes[offset++] = i_x + low_offset + 1;
-                        plane_indexes[offset++] = i_x + low_offset;
-                        plane_indexes[offset++] = i_x + 1;
+                        plane_indexes[offset++] = static_cast<WORD>(i_x);
+                        plane_indexes[offset++] = static_cast<WORD>(i_x + 1);
+                        plane_indexes[offset++] = static_cast<WORD>(i_x + low_offset);
+                        plane_indexes[offset++] = static_cast<WORD>(i_x + low_offset + 1);
+                        plane_indexes[offset++] = static_cast<WORD>(i_x + low_offset);
+                        plane_indexes[offset++] = static_cast<WORD>(i_x + 1);
                     }
                     low_offset = low_point_index + (cells_x + 1);
 
@@ -120,12 +120,12 @@ namespace BruteForce
                     for (size_t i_x = 0; i_x < cells_x; i_x++)
                     {
 
-                        plane_indexes[offset++] = i_x + offs;
-                        plane_indexes[offset++] = i_x + low_offset;
-                        plane_indexes[offset++] = i_x + 1 + offs;
-                        plane_indexes[offset++] = i_x + low_offset + 1;
-                        plane_indexes[offset++] = i_x + 1 + offs;
-                        plane_indexes[offset++] = i_x + low_offset;
+                        plane_indexes[offset++] = static_cast<WORD>(i_x + offs);
+                        plane_indexes[offset++] = static_cast<WORD>(i_x + low_offset);
+                        plane_indexes[offset++] = static_cast<WORD>(i_x + 1 + offs);
+                        plane_indexes[offset++] = static_cast<WORD>(i_x + low_offset + 1);
+                        plane_indexes[offset++] = static_cast<WORD>(i_x + 1 + offs);
+                        plane_indexes[offset++] = static_cast<WORD>(i_x + low_offset);
                     }
 
 
@@ -133,50 +133,50 @@ namespace BruteForce
                     offs = zd * 2 + low_point_index;
                     size_t i_z = 0;
 
-                    plane_indexes[offset++] = 0 + cells_x;
-                    plane_indexes[offset++] = offs + 1;
-                    plane_indexes[offset++] = zd + cells_x;
+                    plane_indexes[offset++] = static_cast<WORD>(0 + cells_x);
+                    plane_indexes[offset++] = static_cast<WORD>(offs + 1);
+                    plane_indexes[offset++] = static_cast<WORD>(zd + cells_x);
 
 
 
                     for (i_z = 1; i_z < cells_z - 1; i_z++)
                     {
-                        plane_indexes[offset++] = i_z * zd + cells_x;
-                        plane_indexes[offset++] = (i_z + 1) * zd + cells_x;
-                        plane_indexes[offset++] = (i_z - 1) * 2 + offs + 1;
+                        plane_indexes[offset++] = static_cast<WORD>(i_z * zd + cells_x);
+                        plane_indexes[offset++] = static_cast<WORD>((i_z + 1) * zd + cells_x);
+                        plane_indexes[offset++] = static_cast<WORD>((i_z - 1) * 2 + offs + 1);
 
 
-                        plane_indexes[offset++] = (i_z - 1) * 2 + offs + 1;
-                        plane_indexes[offset++] = (i_z + 1) * zd + cells_x;
-                        plane_indexes[offset++] = i_z * 2 + offs + 1;
+                        plane_indexes[offset++] = static_cast<WORD>((i_z - 1) * 2 + offs + 1);
+                        plane_indexes[offset++] = static_cast<WORD>((i_z + 1) * zd + cells_x);
+                        plane_indexes[offset++] = static_cast<WORD>(i_z * 2 + offs + 1);
                     }
 
                     i_z = cells_z - 1;
-                    plane_indexes[offset++] = i_z * zd + cells_x;
-                    plane_indexes[offset++] = (i_z + 1) * zd + cells_x;
-                    plane_indexes[offset++] = (i_z - 1) * 2 + offs + 1;
+                    plane_indexes[offset++] = static_cast<WORD>(i_z * zd + cells_x);
+                    plane_indexes[offset++] = static_cast<WORD>((i_z + 1) * zd + cells_x);
+                    plane_indexes[offset++] = static_cast<WORD>((i_z - 1) * 2 + offs + 1);
 
 
 
 
                     plane_indexes[offset++] = 0;
-                    plane_indexes[offset++] = offs;
-                    plane_indexes[offset++] = zd;
+                    plane_indexes[offset++] = static_cast<WORD>(offs);
+                    plane_indexes[offset++] = static_cast<WORD>(zd);
 
                     for (i_z = 1; i_z < cells_z - 1; i_z++)
                     {
-                        plane_indexes[offset++] = i_z * zd;
-                        plane_indexes[offset++] = (i_z - 1) * 2 + offs;
-                        plane_indexes[offset++] = (i_z + 1) * zd;
+                        plane_indexes[offset++] = static_cast<WORD>(i_z * zd);
+                        plane_indexes[offset++] = static_cast<WORD>((i_z - 1) * 2 + offs);
+                        plane_indexes[offset++] = static_cast<WORD>((i_z + 1) * zd);
 
-                        plane_indexes[offset++] = (i_z - 1) * 2 + offs;
-                        plane_indexes[offset++] = i_z * 2 + offs;
-                        plane_indexes[offset++] = (i_z + 1) * zd;
+                        plane_indexes[offset++] = static_cast<WORD>((i_z - 1) * 2 + offs);
+                        plane_indexes[offset++] = static_cast<WORD>(i_z * 2 + offs);
+                        plane_indexes[offset++] = static_cast<WORD>((i_z + 1) * zd);
                     }
                     i_z = cells_z - 1;
-                    plane_indexes[offset++] = i_z * zd;
-                    plane_indexes[offset++] = (i_z - 1) * 2 + offs;
-                    plane_indexes[offset++] = (i_z + 1) * zd;
+                    plane_indexes[offset++] = static_cast<WORD>(i_z * zd);
+                    plane_indexes[offset++] = static_cast<WORD>((i_z - 1) * 2 + offs);
+                    plane_indexes[offset++] = static_cast<WORD>((i_z + 1) * zd);
 
                 }
             }
@@ -192,8 +192,8 @@ namespace BruteForce
                 num_vertex, sizeof(vertex_type), plane_vertices);
 
             geometry.m_VertexBufferView.BufferLocation = geometry.m_VertexBuffer->GetGPUVirtualAddress();
-            geometry.m_VertexBufferView.SizeInBytes = sizeof(vertex_type) * num_vertex;
-            geometry.m_VertexBufferView.StrideInBytes = sizeof(vertex_type);
+            geometry.m_VertexBufferView.SizeInBytes = static_cast<UINT>(sizeof(vertex_type) * num_vertex);
+            geometry.m_VertexBufferView.StrideInBytes = static_cast<UINT>(sizeof(vertex_type));
 
 
             BruteForce::pResource intermediateIndexBuffer;
@@ -203,7 +203,7 @@ namespace BruteForce
 
             geometry.m_IndexBufferView.BufferLocation = geometry.m_IndexBuffer->GetGPUVirtualAddress();
             geometry.m_IndexBufferView.Format = DXGI_FORMAT_R16_UINT;
-            geometry.m_IndexBufferView.SizeInBytes = sizeof(WORD) * num_indexes;
+            geometry.m_IndexBufferView.SizeInBytes = static_cast<UINT>(sizeof(WORD) * num_indexes);
 
 
             auto fenceValue = smart_queue.ExecuteCommandList(commandList);
