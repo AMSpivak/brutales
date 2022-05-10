@@ -7,6 +7,7 @@
 #include "Texture.h"
 #include "Camera.h"
 #include "RenderSubsystem.h"
+#include "ScreenSpaceToRt.h"
 #include "DepthBuffer.h"
 #include "RenderTargetTexture.h"
 #include <vector>
@@ -30,6 +31,7 @@ class TutorialRenderer :
 private: 
     BruteForce::SmartCommandQueue m_CopyCommandQueue;
     std::vector<std::shared_ptr<BruteForce::Render::RenderSubsystem>> m_RenderSystems;
+    BruteForce::Render::ScreenSpaceToRt m_ToneMapper;
 public:
     BruteForce::Textures::DepthBuffer m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;

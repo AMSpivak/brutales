@@ -38,6 +38,7 @@ namespace BruteForce
 	using DescriptorHeap = Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>;
 	using CDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE;
 	using DescriptorHandle = D3D12_CPU_DESCRIPTOR_HANDLE;
+	using DescriptorHandleGpu = D3D12_GPU_DESCRIPTOR_HANDLE;
 	using Fence = Microsoft::WRL::ComPtr<ID3D12Fence>;
 	using EventHandle = HANDLE;
 

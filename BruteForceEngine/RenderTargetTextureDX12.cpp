@@ -60,9 +60,9 @@ namespace BruteForce
 
 			m_state = dst;
 		}
-		DescriptorHandle* RenderTargetTexture::GetRTPointer()
+		DescriptorHandle& RenderTargetTexture::GetRT()
 		{
-			return &m_rtvDescriptor;
+			return m_rtvDescriptor;
 		}
 		DescriptorHandle* RenderTargetTexture::GetSrvPointer()
 		{

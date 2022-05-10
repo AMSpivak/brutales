@@ -62,6 +62,14 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
     {
         subsystem->LoadContent(device, m_NumFrames, desc);
     }
+
+
+    BruteForce::Render::RenderSubsystemInitDesc desc_rt = {
+                                                            BruteForce::TargetFormat_R8G8B8A8_Unorm,
+                                                            BruteForce::TargetFormat_D32_Float
+    };
+
+    m_ToneMapper.LoadContent(device, m_NumFrames, desc_rt);
     m_ContentLoaded = true;
 
     Resize(device);
@@ -114,22 +122,24 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     BruteForce::CDescriptorHandle rtv(m_BackBuffersDHeap->GetCPUDescriptorHandleForHeapStart(), m_CurrentBackBufferIndex, m_RTVDescriptorSize);
     BruteForce::DescriptorHandle dsv = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
 
+    FLOAT clearColor[] = { 1.0f, 0.6f, 0.1f, 1.0f };
+
     auto& smart_command_list = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
     {
         auto& commandList = smart_command_list.command_list;
-        FLOAT clearColor[] = { 1.0f, 0.6f, 0.1f, 1.0f };
         smart_command_list.ClearRTV(rtv, clearColor);
         smart_command_list.ClearDSV(dsv, true, false, 1.0f, 0);
     }
     
-    //auto& SetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
-    //m_RTTextures[m_CurrentBackBufferIndex].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
+    auto& SetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
+    m_RTTextures[m_CurrentBackBufferIndex].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
+    SetRT_cl.ClearRTV(m_RTTextures[0].GetRT(), clearColor);
 
     BruteForce::Render::RenderDestination render_dest{
         &m_Viewport,
         &m_ScissorRect,
-        //m_RTTextures[m_CurrentBackBufferIndex].GetRTPointer(),
-        &rtv,
+        &m_RTTextures[0].GetRT(),
+        //&rtv,
         &dsv,
         m_Camera,
         static_cast<uint8_t>(m_CurrentBackBufferIndex)
@@ -141,8 +151,21 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         subsystem->PrepareRenderCommandList(list, render_dest);
     }
 
-    //auto& ResetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
-    //m_RTTextures[m_CurrentBackBufferIndex].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
+    auto& ResetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
+    m_RTTextures[0].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
+
+    BruteForce::Render::RenderDestination render_dest_rt{
+        &m_Viewport,
+        &m_ScissorRect,
+        &rtv,
+        &dsv,
+        m_Camera,
+        static_cast<uint8_t>(m_CurrentBackBufferIndex)
+    };
+
+    auto& ToneMap_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
+    m_ToneMapper.SetRenderParameter(m_RTSrvHeap);
+    m_ToneMapper.PrepareRenderCommandList(ToneMap_cl, render_dest_rt);
 
     for (auto& execute_list : command_lists)
     {

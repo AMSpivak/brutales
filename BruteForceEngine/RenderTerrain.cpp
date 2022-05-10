@@ -211,6 +211,7 @@ namespace BruteForce
                 CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;
                 CD3DX12_PIPELINE_STATE_STREAM_VS VS;
                 CD3DX12_PIPELINE_STATE_STREAM_PS PS;
+                CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL DepthStencilState;
                 CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormat;
                 CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
             } pipelineStateStream;
@@ -218,6 +219,8 @@ namespace BruteForce
             D3D12_RT_FORMAT_ARRAY rtvFormats = {};
             rtvFormats.NumRenderTargets = 1;
             rtvFormats.RTFormats[0] = desc.RTFormat;
+
+            pipelineStateStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 
             pipelineStateStream.pRootSignature = m_RootSignature.Get();
             pipelineStateStream.InputLayout = { inputLayout, _countof(inputLayout) };

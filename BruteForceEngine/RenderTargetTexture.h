@@ -31,7 +31,7 @@ namespace BruteForce
 			//bool BeginRender();
 			//bool EndRender();
 			void TransitionTo(SmartCommandList& commandlist, ResourceStates dst);
-			DescriptorHandle* GetRTPointer();
+			DescriptorHandle& GetRT();
 			DescriptorHandle* GetSrvPointer();
 
 		};

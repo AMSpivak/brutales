@@ -180,6 +180,7 @@
     <ClCompile Include="RenderTargetTextureDX12.cpp" />
     <ClCompile Include="RenderTerrain.cpp" />
     <ClCompile Include="ResourcesDX12.cpp" />
+    <ClCompile Include="ScreenSpaceToRt.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="TextureDX12.cpp" />
     <ClCompile Include="TutorialRenderer.cpp" />
@@ -208,6 +209,7 @@
     <ClInclude Include="RenderTargetTexture.h" />
     <ClInclude Include="RenderTerrain.h" />
     <ClInclude Include="Resources.h" />
+    <ClInclude Include="ScreenSpaceToRT.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TutorialRenderer.h" />
@@ -261,6 +263,12 @@
       </AdditionalOptions>
       <EnableUnboundedDescriptorTables Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</EnableUnboundedDescriptorTables>
       <EnableUnboundedDescriptorTables Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</EnableUnboundedDescriptorTables>
+    </FxCompile>
+    <FxCompile Include="ToneMapPixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
