@@ -173,7 +173,6 @@
     <ClCompile Include="EngineGpuCommandsDX12.cpp" />
     <ClCompile Include="EngineGpuFenceDX12.cpp" />
     <ClCompile Include="EngineGpuSwapChainDX12.cpp" />
-    <ClCompile Include="IndexedGeometry.cpp" />
     <ClCompile Include="IndexedGeometryCube.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RenderInstanced.cpp" />

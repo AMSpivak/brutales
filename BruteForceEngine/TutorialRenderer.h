@@ -32,6 +32,7 @@ private:
     BruteForce::SmartCommandQueue m_CopyCommandQueue;
     std::vector<std::shared_ptr<BruteForce::Render::RenderSubsystem>> m_RenderSystems;
     BruteForce::Render::ScreenSpaceToRt m_ToneMapper;
+    BruteForce::TargetFormat m_OutputFormat;
 public:
     BruteForce::Textures::DepthBuffer m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;

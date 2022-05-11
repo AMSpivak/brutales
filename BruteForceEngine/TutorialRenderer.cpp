@@ -4,6 +4,8 @@
 #include "RenderInstanced.h"
 #include "RenderTerrain.h"
 #include <DirectXMath.h>
+constexpr BruteForce::TargetFormat render_format = BruteForce::TargetFormat_R16G16B16A16_Float;
+constexpr BruteForce::TargetFormat output_format = BruteForce::TargetFormat_R8G8B8A8_Unorm;
 
 TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp) :MyRenderer(device, pWindow, UseWarp),
 //, m_ScissorRect(ScissorRect(0, 0, LONG_MAX, LONG_MAX))
@@ -11,6 +13,7 @@ TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Windo
 m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
 , m_time(0.0f)
 , m_ContentLoaded(false)
+, m_OutputFormat(output_format)
 {
     //BruteForce::ReportLiveObjects();
 
@@ -54,7 +57,7 @@ m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
 bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 {
     BruteForce::Render::RenderSubsystemInitDesc desc = {
-                                                            BruteForce::TargetFormat_R8G8B8A8_Unorm,
+                                                            render_format,
                                                             BruteForce::TargetFormat_D32_Float
                                                         };
 
@@ -65,7 +68,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 
 
     BruteForce::Render::RenderSubsystemInitDesc desc_rt = {
-                                                            BruteForce::TargetFormat_R8G8B8A8_Unorm,
+                                                            m_OutputFormat,
                                                             BruteForce::TargetFormat_D32_Float
     };
 
@@ -103,14 +106,14 @@ void TutorialRenderer::Resize(BruteForce::Device& device)
         BruteForce::DescriptorHandle rt_handle = m_RTHeap->GetCPUDescriptorHandleForHeapStart();
         BruteForce::DescriptorHandle srv_handle = m_RTSrvHeap->GetCPUDescriptorHandleForHeapStart();
 
-        for (uint8_t i = 0; i < RendererNumFrames; i++)
-        {
-            m_RTTextures[i].Assign(device, width, height, BruteForce::TargetFormat_R8G8B8A8_Unorm);
-            m_RTTextures[i].CreateViews(device, srv_handle, rt_handle);
+        /*for (uint8_t i = 0; i < RendererNumFrames; i++)
+        {*/
+            m_RTTextures[0].Assign(device, width, height, render_format);
+            m_RTTextures[0].CreateViews(device, srv_handle, rt_handle);
 
-            rt_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
+        /*    rt_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
             srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
-        }
+        }*/
     }
 }
 
@@ -132,14 +135,13 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     }
     
     auto& SetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
-    m_RTTextures[m_CurrentBackBufferIndex].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
+    m_RTTextures[0].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
     SetRT_cl.ClearRTV(m_RTTextures[0].GetRT(), clearColor);
 
     BruteForce::Render::RenderDestination render_dest{
         &m_Viewport,
         &m_ScissorRect,
         &m_RTTextures[0].GetRT(),
-        //&rtv,
         &dsv,
         m_Camera,
         static_cast<uint8_t>(m_CurrentBackBufferIndex)

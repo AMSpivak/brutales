@@ -51,9 +51,6 @@
     <ClCompile Include="ControllerWinKeyboard.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="IndexedGeometry.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="RenderInstanced.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>

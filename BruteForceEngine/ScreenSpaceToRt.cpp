@@ -12,6 +12,7 @@ namespace BruteForce
         }
         ScreenSpaceToRt::~ScreenSpaceToRt()
         {
+            m_IndexBuffer->Release();
         }
         void ScreenSpaceToRt::Update(float delta_time, uint8_t frame_index)
         {
