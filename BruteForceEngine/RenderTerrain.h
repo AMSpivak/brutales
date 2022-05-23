@@ -17,7 +17,6 @@ namespace BruteForce
             {               
                 Math::Vec4Float m_PlanesPositions[1024];
                 Math::Vec4Float m_TerrainScaler;
-                //uint32_t m_PlanesCount;
             };
             ConstantBuffer<TerrainCB>* m_TerrainBuffers;
             std::vector<std::shared_ptr<Textures::Texture>> m_textures;

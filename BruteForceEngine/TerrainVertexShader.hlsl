@@ -42,8 +42,8 @@ VertexShaderOutput main(VertexPosColor IN, uint id : SV_InstanceID)
     VertexShaderOutput OUT;
     //IN.Position.x += 2.0f * id;
     float2 pos_p = (IN.Position.xz) * PlanesCB[FrameInfoCB.frame_index].m_PlanesPositions[id].z + PlanesCB[FrameInfoCB.frame_index].m_PlanesPositions[id].xy;
-    IN.Position.x = pos.x;
-    IN.Position.z = pos.y;
+    IN.Position.x = pos_p.x;
+    IN.Position.z = pos_p.y;
     uint t_width;
     uint t_height;
     

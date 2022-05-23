@@ -54,10 +54,12 @@ namespace BruteForce
 
             return counter;
         }
+
         RenderTerrain::RenderTerrain() :m_TerrainBuffers(nullptr)
         {
 
         }
+
         RenderTerrain::~RenderTerrain()
         {
             if (m_TerrainBuffers)

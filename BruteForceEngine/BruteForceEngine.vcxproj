@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -167,6 +167,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CalcTerrainShadow.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ControllerWinKeyboard.cpp" />
     <ClCompile Include="DepthBufferDX12.cpp" />
@@ -186,6 +187,10 @@
     <ClCompile Include="VideoDriverDX12.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AAVasiliev\PlatformPoint.h" />
+    <ClInclude Include="Atlas.h" />
+    <ClInclude Include="CalcSubsystem.h" />
+    <ClInclude Include="CalcTerrainShadow.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="Controller.h" />
@@ -210,6 +215,8 @@
     <ClInclude Include="Resources.h" />
     <ClInclude Include="ScreenSpaceToRT.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="ShaderCommon.h" />
+    <ClInclude Include="TerrainShadowCB.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TutorialRenderer.h" />
     <ClInclude Include="VideoDriverDX12.h" />
@@ -234,6 +241,16 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="ComputeTerrainShadow.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="ScreenSpaceVertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
