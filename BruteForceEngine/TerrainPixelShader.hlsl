@@ -25,7 +25,7 @@ float4 main(PixelShaderInput IN) : SV_Target
     //uint4 materials = tex_material_id.Sample(sampl[1], (IN.WorldPosition.xz * map_scale + float2(0.5f,0.5f)));
     //return tex[materials.r].Sample(sampl[0], IN.WorldPosition.xz);
     float light_force = 100.0f;
-    float diff = 0.3f;
+    float diff = 0.03f;
     float light = (IN.Normal.y * (1.0f - diff) + diff) * light_force;
     return float4(light * tex[materials.r].Sample(sampl, IN.WorldPosition.xz).xyz, 1.0f);
     //return float4(0.5f * IN.Normal + float3(0.5f,0.5f,0.5f), 1.0f);

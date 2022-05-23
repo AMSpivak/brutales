@@ -48,7 +48,7 @@ namespace BruteForce
             }
             float plane_mesh_step = 1.0f / 100;
 
-            m_TerrainBuffers[index].m_CpuBuffer->m_TerrainScaler = Math::Vec4Float{ 0.0002f,100.0f, 0.0002f,  plane_mesh_step };
+            m_TerrainBuffers[index].m_CpuBuffer->m_TerrainScaler = Math::Vec4Float{ 0.0002f,500.0f, 0.0002f,  plane_mesh_step };
 
             m_TerrainBuffers[index].Update();
 
@@ -143,7 +143,7 @@ namespace BruteForce
                 }
                 
                 SmartCommandQueue copy_queue(device, BruteForce::CommandListTypeCopy);
-                BruteForce::Textures::AddTexture(content_path, { L"desert_map.png" }, m_textures, device, copy_queue, srv_handle);
+                BruteForce::Textures::AddTexture(content_path, { L"desert_map_16.png" }, m_textures, device, copy_queue, srv_handle);
                 BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, device, copy_queue, srv_handle, DXGI_FORMAT_R8G8B8A8_UINT);
 
                 BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_path, m_textures, device, srv_handle);

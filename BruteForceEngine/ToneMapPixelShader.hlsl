@@ -19,6 +19,26 @@ float3 reinhard_extended_luminance(float3 v, float max_white_l)
     return change_luminance(v, 1.0f);
 }
 
+float3 uncharted2_tonemap_partial(float3 x)
+{
+    float A = 0.15f;
+    float B = 0.50f;
+    float C = 0.10f;
+    float D = 0.20f;
+    float E = 0.02f;
+    float F = 0.30f;
+    return ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F;
+}
+
+float3 uncharted2_filmic(float3 v, float exposure_bias)
+{
+    float3 curr = uncharted2_tonemap_partial(v * exposure_bias);
+
+    float3 W = float3(11.2f,11.2f,11.2f);
+    float3 white_scale = float3(1.0f, 1.0f, 1.0f) / uncharted2_tonemap_partial(W);
+    return curr * white_scale;
+}
+
 struct PixelShaderInput
 {
     float4 Position : SV_Position;
@@ -32,5 +52,6 @@ float4 main(PixelShaderInput IN) : SV_Target
 {
     float max_white = luminance(float3(100.0f,100.0f,100.0f));
     float3 color = texture0.Sample(sampl, IN.Tex).xyz;
-    return float4(reinhard_extended_luminance(color, max_white), 1.0f);
+    float exposure_bias = 0.05f;
+    return float4(uncharted2_filmic(color, exposure_bias), 1.0f);
 }

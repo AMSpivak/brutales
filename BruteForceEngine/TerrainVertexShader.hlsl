@@ -41,7 +41,7 @@ VertexShaderOutput main(VertexPosColor IN, uint id : SV_InstanceID)
 {
     VertexShaderOutput OUT;
     //IN.Position.x += 2.0f * id;
-    float2 pos = (IN.Position.xz) * PlanesCB[FrameInfoCB.frame_index].m_PlanesPositions[id].z + PlanesCB[FrameInfoCB.frame_index].m_PlanesPositions[id].xy;
+    float2 pos_p = (IN.Position.xz) * PlanesCB[FrameInfoCB.frame_index].m_PlanesPositions[id].z + PlanesCB[FrameInfoCB.frame_index].m_PlanesPositions[id].xy;
     IN.Position.x = pos.x;
     IN.Position.z = pos.y;
     uint t_width;
@@ -50,7 +50,8 @@ VertexShaderOutput main(VertexPosColor IN, uint id : SV_InstanceID)
     tex_height.GetDimensions(t_width, t_height);
     float2 offset = float2(1.0f/ t_width, 1.0f/ t_height);
     //float2 offset = PlanesCB.m_TerrainScaler.xz * PlanesCB.m_PlanesPositions[id].z * PlanesCB.m_TerrainScaler.w;
-    pos = pos * PlanesCB[FrameInfoCB.frame_index].m_TerrainScaler.xz + float2(0.5f, 0.5f);
+
+    float2 pos = pos_p * PlanesCB[FrameInfoCB.frame_index].m_TerrainScaler.xz + float2(0.5f, 0.5f);
     float4 terrain = tex_height.SampleLevel(sampl, pos, 0);
 
     float3 terrain_x = PlanesCB[FrameInfoCB.frame_index].m_TerrainScaler.y * tex_height.SampleLevel(sampl, pos + float2(offset.x, 0.f), 0).xyz;
