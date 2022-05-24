@@ -7,6 +7,7 @@ namespace BruteForce
         CalcTerrainShadow::CalcTerrainShadow() :m_TerrainShadowBuffers(nullptr)
         {
         }
+
         CalcTerrainShadow::~CalcTerrainShadow()
         {
             if (m_TerrainShadowBuffers)
@@ -56,11 +57,6 @@ namespace BruteForce
                 D3D12_TEXTURE_ADDRESS_MODE_CLAMP
             );
 
-            CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc(
-                3,
-                rootParameters, 1, &linearClampSampler
-            );
-
             D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
                 D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
@@ -69,7 +65,7 @@ namespace BruteForce
 
             CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
 
-            rootSignatureDescription.Init_1_1(_countof(rootParameters), rootParameters, 0, nullptr, rootSignatureFlags);
+            rootSignatureDescription.Init_1_1(_countof(rootParameters), rootParameters, 1, &linearClampSampler, rootSignatureFlags);
 
             BruteForce::DataBlob rootSignatureBlob;
             BruteForce::DataBlob errorBlob;
@@ -85,6 +81,9 @@ namespace BruteForce
                 CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
                 CD3DX12_PIPELINE_STATE_STREAM_CS CS;
             } pipelineStateStream;
+
+            pipelineStateStream.pRootSignature = m_RootSignature.Get();
+            pipelineStateStream.CS = CD3DX12_SHADER_BYTECODE(ComputeShaderBlob.Get());
 
             D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
             sizeof(PipelineStateStream), &pipelineStateStream

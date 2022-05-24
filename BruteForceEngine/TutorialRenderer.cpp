@@ -3,6 +3,7 @@
 #include "IndexedGeometryGenerator.h"
 #include "RenderInstanced.h"
 #include "RenderTerrain.h"
+#include "CalcTerrainShadow.h"
 #include <DirectXMath.h>
 constexpr BruteForce::TargetFormat render_format = BruteForce::TargetFormat_R16G16B16A16_Float;
 constexpr BruteForce::TargetFormat output_format = BruteForce::TargetFormat_R8G8B8A8_Unorm;
@@ -46,7 +47,7 @@ m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
 
     m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderTerrain>());
     //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderInstanced>());
-    
+    m_CalcSystems.push_back(std::make_shared<BruteForce::Render::CalcTerrainShadow>());
 
     m_Camera.SetPosition({0.0f, 3.0f, -10.0f}, false);
     m_Camera.RecalculateView({ 0.0f, 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f, 0.0f });
@@ -66,6 +67,10 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
         subsystem->LoadContent(device, m_NumFrames, desc);
     }
 
+    for (auto& subsystem : m_CalcSystems)
+    {
+        subsystem->LoadContent(device, m_NumFrames);
+    }
 
     BruteForce::Render::RenderSubsystemInitDesc desc_rt = {
                                                             m_OutputFormat,

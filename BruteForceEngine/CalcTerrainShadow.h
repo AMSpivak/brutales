@@ -22,9 +22,9 @@ namespace BruteForce
         public:
             CalcTerrainShadow();
             virtual ~CalcTerrainShadow();
-            virtual void Update(float delta_time, uint8_t frame_index) = 0;
-            virtual void LoadContent(Device& device, uint8_t frames_count) = 0;
-            virtual SmartCommandList& PrepareRenderCommandList(SmartCommandList&) = 0;
+            virtual void Update(float delta_time, uint8_t frame_index);
+            virtual void LoadContent(Device& device, uint8_t frames_count);
+            virtual SmartCommandList& PrepareRenderCommandList(SmartCommandList&);
         };
     }
 

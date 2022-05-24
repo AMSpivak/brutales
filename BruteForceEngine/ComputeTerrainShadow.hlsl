@@ -10,7 +10,7 @@
         "addressW = TEXTURE_ADDRESS_CLAMP," \
         "filter = FILTER_MIN_MAG_MIP_LINEAR)"
 
-#include "TerrainShadow.h"
+#include "TerrainShadowCB.h"
 
 // Source mip map.
 Texture2D<float4> SrcTerrain : register(t0);
