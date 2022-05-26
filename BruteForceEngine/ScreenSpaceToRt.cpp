@@ -17,7 +17,7 @@ namespace BruteForce
         void ScreenSpaceToRt::Update(float delta_time, uint8_t frame_index)
         {
         }
-        void ScreenSpaceToRt::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc)
+        void ScreenSpaceToRt::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue)
         {
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path{ settings.GetExecuteDirWchar() };

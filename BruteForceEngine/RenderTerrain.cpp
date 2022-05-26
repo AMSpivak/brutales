@@ -71,7 +71,7 @@ namespace BruteForce
         {
         }
 
-        void RenderTerrain::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc)
+        void RenderTerrain::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue)
         {
             if (m_TerrainBuffers)
             {
@@ -144,11 +144,11 @@ namespace BruteForce
                     srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 }
                 
-                SmartCommandQueue copy_queue(device, BruteForce::CommandListTypeCopy);
+                //SmartCommandQueue copy_queue(device, BruteForce::CommandListTypeCopy);
                 BruteForce::Textures::AddTexture(content_path, { L"desert_map_16.png" }, m_textures, device, copy_queue, srv_handle);
                 BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, device, copy_queue, srv_handle, DXGI_FORMAT_R8G8B8A8_UINT);
 
-                BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_path, m_textures, device, srv_handle);
+                BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_path, m_textures, device, copy_queue, srv_handle);
             }
 
             BruteForce::DataBlob vertexShaderBlob;
@@ -238,6 +238,7 @@ namespace BruteForce
             ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
             m_PipelineState->SetName(L"Pipeline state");
             Geometry::CreatePlane<VertexPos>(device, m_plane, 100, 100, 1.0f, 1.0f);
+            //Geometry::CreatePlane<VertexPos>(device, m_plane, 3, 3, 1.0f, 1.0f);
         }
 
 

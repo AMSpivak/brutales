@@ -64,7 +64,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 
     for (auto& subsystem : m_RenderSystems)
     {
-        subsystem->LoadContent(device, m_NumFrames, desc);
+        subsystem->LoadContent(device, m_NumFrames, desc, m_CopyCommandQueue);
     }
 
     for (auto& subsystem : m_CalcSystems)
@@ -77,7 +77,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
                                                             BruteForce::TargetFormat_D32_Float
     };
 
-    m_ToneMapper.LoadContent(device, m_NumFrames, desc_rt);
+    m_ToneMapper.LoadContent(device, m_NumFrames, desc_rt, m_CopyCommandQueue);
     m_ContentLoaded = true;
 
     Resize(device);

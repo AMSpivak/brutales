@@ -93,7 +93,10 @@ namespace BruteForce
         }
         SmartCommandList& CalcTerrainShadow::PrepareRenderCommandList(SmartCommandList& smart_command_list)
         {
+            auto& command_list = smart_command_list.command_list;
 
+
+            command_list
             // TODO: insert return statement here
             return smart_command_list;
         }

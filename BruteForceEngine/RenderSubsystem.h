@@ -40,7 +40,7 @@ namespace BruteForce
                 //if (m_PipelineState) m_PipelineState->Release();
             };
             virtual void Update(float delta_time, uint8_t frame_index) = 0;
-            virtual void LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc&) = 0;
+            virtual void LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc&, SmartCommandQueue& copy_queue) = 0;
             virtual SmartCommandList& PrepareRenderCommandList(SmartCommandList&, const RenderDestination&) = 0;
         };
     }

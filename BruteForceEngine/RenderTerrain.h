@@ -28,7 +28,7 @@ namespace BruteForce
             RenderTerrain();
             virtual ~RenderTerrain();
             virtual void Update(float delta_time, uint8_t frame_index);
-            virtual void LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc&);
+            virtual void LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc&, SmartCommandQueue& copy_queue);
             virtual SmartCommandList& PrepareRenderCommandList(SmartCommandList&, const RenderDestination&);
         };
     }
