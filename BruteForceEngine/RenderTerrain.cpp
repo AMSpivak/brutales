@@ -184,7 +184,7 @@ namespace BruteForce
             CD3DX12_ROOT_PARAMETER1 rootParameters[4];
             rootParameters[3].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 2, 0, D3D12_SHADER_VISIBILITY_VERTEX);
             rootParameters[2].InitAsConstants(1, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
-            rootParameters[0].InitAsDescriptorTable(2, &descRange[0], D3D12_SHADER_VISIBILITY_ALL);
+            rootParameters[0].InitAsDescriptorTable(_countof(descRange), descRange, D3D12_SHADER_VISIBILITY_ALL);
             rootParameters[1].InitAsDescriptorTable(1, &descRangeSamp, D3D12_SHADER_VISIBILITY_ALL);
 
             //CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDescription;
