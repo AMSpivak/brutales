@@ -106,13 +106,13 @@ namespace BruteForce
                 device->CreateSampler(&samplerDesc, sampler_handle);
             }
 
+            DescriptorHeapRange TexturesRange{ DescriptorRangeTypeSrv,"Textures"};
+            DescriptorHeapRange CbvRange{ DescriptorRangeTypeCvb,"CBVs"};
+
             {
-                std::vector<std::wstring> tex_names = {{ L"Desert_Rock_albedo.dds"}, {L"Desert_Sand_albedo.dds"} };
-                size_t textures_count = tex_names.size() + 2;
-                auto srv_handle = descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(textures_count) + static_cast<UINT>(frames_count), "TestHeapRange");
-                
-                
-                for (int i = 0 ; i < frames_count; i++)
+                auto srv_handle = descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(frames_count), CbvRange);
+
+                for (int i = 0; i < frames_count; i++)
                 {
                     auto heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
                     auto res_desc = CD3DX12_RESOURCE_DESC::Buffer(m_TerrainBuffers[i].GetResourceHeapSize());
@@ -136,8 +136,13 @@ namespace BruteForce
 
                     srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 }
-                
-                //SmartCommandQueue copy_queue(device, BruteForce::CommandListTypeCopy);
+            }
+
+            {
+                std::vector<std::wstring> tex_names = { { L"Desert_Rock_albedo.dds"}, {L"Desert_Sand_albedo.dds"} };
+                size_t textures_count = tex_names.size() + 2;
+
+                auto srv_handle = descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(textures_count), TexturesRange);
                 BruteForce::Textures::AddTexture(content_path, { L"desert_map_16.png" }, m_textures, device, copy_queue, srv_handle);
                 BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, device, copy_queue, srv_handle, DXGI_FORMAT_R8G8B8A8_UINT);
 
@@ -168,11 +173,10 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-            CD3DX12_DESCRIPTOR_RANGE1 descRange[2];
-            descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 0);
-            descRange[0].OffsetInDescriptorsFromTableStart = 3;
-            descRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 3, 17);
-            descRange[1].OffsetInDescriptorsFromTableStart = 0;
+            DescriptorRange descRange[2];
+            TexturesRange.Fill(&descRange[0], 0);
+            CbvRange.Fill(&descRange[1], 17);
+
 
             CD3DX12_DESCRIPTOR_RANGE1 descRangeSamp;
             descRangeSamp.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);

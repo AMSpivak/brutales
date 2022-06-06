@@ -13,14 +13,15 @@ namespace BruteForce
 		m_size = size;
 	}
 
-	DescriptorHandle DescriptorHeapManager::AllocateRange(Device& device, size_t size, const std::string& name)
+	DescriptorHandle DescriptorHeapManager::AllocateRange(Device& device, size_t size, DescriptorHeapRange& range)
 	{
 		assert(size + m_index < m_size);
 
 		auto handle = m_Heap->GetCPUDescriptorHandleForHeapStart();
 		handle.ptr += device->GetDescriptorHandleIncrementSize(m_HeapType) * static_cast<UINT>(m_index);
+		range.m_Start = m_index;
+		range.m_Size = size;
 		m_index += size;
-
 		return handle;
 	}
 
@@ -34,5 +35,11 @@ namespace BruteForce
 		return m_Heap.Get();
 	}
 
+
+	void DescriptorHeapRange::Fill(DescriptorRange* range, size_t reg)
+	{
+		range->Init(m_Type, m_Size, static_cast<UINT>(reg));
+		range->OffsetInDescriptorsFromTableStart = m_Start;
+	}
 
 }

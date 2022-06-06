@@ -63,6 +63,13 @@ namespace BruteForce
 	constexpr DescriptorHeapFlags DescriptorHeapFlagsNone = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	constexpr DescriptorHeapFlags DescriptorHeapShaderVisible = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
+	using DescriptorRange = CD3DX12_DESCRIPTOR_RANGE1;
+	using DescriptorRangeType = D3D12_DESCRIPTOR_RANGE_TYPE;
+	constexpr DescriptorRangeType DescriptorRangeTypeSrv = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	constexpr DescriptorRangeType DescriptorRangeTypeUav = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+	constexpr DescriptorRangeType DescriptorRangeTypeCvb = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+	constexpr DescriptorRangeType DescriptorRangeTypeSampler = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+
 	using VertexBufferView = D3D12_VERTEX_BUFFER_VIEW;
 	using IndexBufferView = D3D12_INDEX_BUFFER_VIEW;
 
