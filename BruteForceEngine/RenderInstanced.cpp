@@ -17,7 +17,7 @@ namespace BruteForce
         void RenderInstanced::Update(float delta_time, uint8_t frame_index)
         {
         }
-        void RenderInstanced::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue)
+        void RenderInstanced::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue, DescriptorHeapManager& descriptor_heap_manager)
         {
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path { settings.GetExecuteDirWchar() };
@@ -143,7 +143,7 @@ namespace BruteForce
         }
 
 
-        SmartCommandList& RenderInstanced::PrepareRenderCommandList(SmartCommandList& smart_command_list, const RenderDestination& render_dest)
+        SmartCommandList& RenderInstanced::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)
         {
             auto& commandList = smart_command_list.command_list;
             smart_command_list.SetPipelineState(m_PipelineState);

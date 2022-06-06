@@ -10,10 +10,29 @@ namespace BruteForce
 		descHeap.Flags = DescriptorHeapShaderVisible;
 		ThrowIfFailed(device->CreateDescriptorHeap(&descHeap, __uuidof(ID3D12DescriptorHeap), (void**)&m_Heap));
 		m_Heap->SetName(L"Managed descriptor heap");
+		m_size = size;
 	}
 
-	DescriptorHandle DescriptorHeapManager::AllocateRange(size_t size)
+	DescriptorHandle DescriptorHeapManager::AllocateRange(Device& device, size_t size, const std::string& name)
 	{
-		return DescriptorHandle();
+		assert(size + m_index < m_size);
+
+		auto handle = m_Heap->GetCPUDescriptorHandleForHeapStart();
+		handle.ptr += device->GetDescriptorHandleIncrementSize(m_HeapType) * static_cast<UINT>(m_index);
+		m_index += size;
+
+		return handle;
 	}
+
+	DescriptorHandleGpu DescriptorHeapManager::GetGpuDescriptorHandle()
+	{
+		return m_Heap->GetGPUDescriptorHandleForHeapStart();
+	}
+
+	pDescriptorHeap DescriptorHeapManager::GetDescriptorHeapPointer()
+	{
+		return m_Heap.Get();
+	}
+
+
 }

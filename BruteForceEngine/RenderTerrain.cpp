@@ -71,7 +71,7 @@ namespace BruteForce
         {
         }
 
-        void RenderTerrain::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue)
+        void RenderTerrain::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue, DescriptorHeapManager& descriptor_heap_manager)
         {
             if (m_TerrainBuffers)
             {
@@ -109,15 +109,8 @@ namespace BruteForce
             {
                 std::vector<std::wstring> tex_names = {{ L"Desert_Rock_albedo.dds"}, {L"Desert_Sand_albedo.dds"} };
                 size_t textures_count = tex_names.size() + 2;
-
-                BruteForce::DescriptorHeapDesc descHeapCbvSrv = {};
-                descHeapCbvSrv.NumDescriptors = static_cast<UINT>(textures_count) + static_cast<UINT>(frames_count);
-                descHeapCbvSrv.Type = BruteForce::DescriptorHeapCvbSrvUav;
-                descHeapCbvSrv.Flags = BruteForce::DescriptorHeapShaderVisible;
-                ThrowIfFailed(device->CreateDescriptorHeap(&descHeapCbvSrv, __uuidof(ID3D12DescriptorHeap), (void**)&m_SVRHeap));
-                m_SVRHeap->SetName(L"Descriptor heap");
-
-                auto srv_handle = m_SVRHeap->GetCPUDescriptorHandleForHeapStart();
+                auto srv_handle = descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(textures_count) + static_cast<UINT>(frames_count), "TestHeapRange");
+                
                 
                 for (int i = 0 ; i < frames_count; i++)
                 {
@@ -176,7 +169,7 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
             CD3DX12_DESCRIPTOR_RANGE1 descRange[2];
-            descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 0);
+            descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 0);
             descRange[0].OffsetInDescriptorsFromTableStart = 3;
             descRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 3, 17);
             descRange[1].OffsetInDescriptorsFromTableStart = 0;
@@ -242,7 +235,7 @@ namespace BruteForce
         }
 
 
-        SmartCommandList& RenderTerrain::PrepareRenderCommandList(SmartCommandList& smart_command_list, const RenderDestination& render_dest)
+        SmartCommandList& RenderTerrain::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)
         {
             //m_TerrainBuffers[0].m_CpuBuffer->m_TerrainScaler = Math::Vec3Float{ 1.0f,1.0f, };
             Math::Vec4Float cam;
@@ -254,11 +247,10 @@ namespace BruteForce
             smart_command_list.SetPipelineState(m_PipelineState);
             smart_command_list.SetRootSignature(m_RootSignature);
 
-            ID3D12DescriptorHeap* ppHeaps[] = { m_SVRHeap.Get(), m_SamplerHeap.Get() };
+            ID3D12DescriptorHeap* const ppHeaps[] = { render_dest.HeapManager.GetDescriptorHeapPointer(), m_SamplerHeap.Get()};
             commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
-            commandList->SetGraphicsRootDescriptorTable(0,
-                m_SVRHeap->GetGPUDescriptorHandleForHeapStart());
+            commandList->SetGraphicsRootDescriptorTable(0, render_dest.HeapManager.GetGpuDescriptorHandle());
             commandList->SetGraphicsRootDescriptorTable(1,
                 m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());
 

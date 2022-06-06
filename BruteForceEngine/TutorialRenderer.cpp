@@ -67,7 +67,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 
     for (auto& subsystem : m_RenderSystems)
     {
-        subsystem->LoadContent(device, m_NumFrames, desc, m_CopyCommandQueue);
+        subsystem->LoadContent(device, m_NumFrames, desc, m_CopyCommandQueue, m_SRV_Heap);
     }
 
     for (auto& subsystem : m_CalcSystems)
@@ -80,7 +80,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
                                                             BruteForce::TargetFormat_D32_Float
     };
 
-    m_ToneMapper.LoadContent(device, m_NumFrames, desc_rt, m_CopyCommandQueue);
+    m_ToneMapper.LoadContent(device, m_NumFrames, desc_rt, m_CopyCommandQueue, m_SRV_Heap);
     m_ContentLoaded = true;
 
     Resize(device);
@@ -146,13 +146,14 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     m_RTTextures[0].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
     SetRT_cl.ClearRTV(m_RTTextures[0].GetRT(), clearColor);
 
-    BruteForce::Render::RenderDestination render_dest{
+    BruteForce::Render::PrepareRenderHelper render_dest{
         &m_Viewport,
         &m_ScissorRect,
         &m_RTTextures[0].GetRT(),
         &dsv,
         m_Camera,
-        static_cast<uint8_t>(m_CurrentBackBufferIndex)
+        static_cast<uint8_t>(m_CurrentBackBufferIndex),
+        m_SRV_Heap
     };
 
     for (auto& subsystem : m_RenderSystems)
@@ -164,13 +165,14 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     auto& ResetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
     m_RTTextures[0].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
 
-    BruteForce::Render::RenderDestination render_dest_rt{
+    BruteForce::Render::PrepareRenderHelper render_dest_rt{
         &m_Viewport,
         &m_ScissorRect,
         &rtv,
         &dsv,
         m_Camera,
-        static_cast<uint8_t>(m_CurrentBackBufferIndex)
+        static_cast<uint8_t>(m_CurrentBackBufferIndex),
+        m_SRV_Heap
     };
 
     auto& ToneMap_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());

@@ -12,6 +12,7 @@ namespace BruteForce
 		size_t m_Start;
 		size_t m_End;
 		std::string m_Name;
+		//DescriptorHandle m_CpuHandle;
 		DescriptorHeapRange() :m_Start(0), m_End(0), m_Name("Unnamed") {}
 		DescriptorHeapRange(size_t start, size_t end, const std::string &name):m_Start(start), m_End(end), m_Name(name) {}
 	};
@@ -27,7 +28,9 @@ namespace BruteForce
 
 		DescriptorHeapManager() :m_HeapType(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV), m_size(0) , m_index(0){}
 		void Create(Device& device, size_t size, DescriptorHeapType HeapType);
-		DescriptorHandle AllocateRange(size_t size);
+		DescriptorHandle AllocateRange(Device& device, size_t size, const std::string& name);
+		DescriptorHandleGpu GetGpuDescriptorHandle();
+		pDescriptorHeap GetDescriptorHeapPointer();
 	};
 
 }

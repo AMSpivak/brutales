@@ -3,12 +3,13 @@
 #include "PlatformDefine.h"
 #include "EngineGpuCommands.h"
 #include "Camera.h"
+#include "DescriptorHeapManager.h"
 
 namespace BruteForce
 {
     namespace Render
     {
-        struct RenderDestination
+        struct PrepareRenderHelper
         {
             const Viewport* m_Viewport;
             const ScissorRect* m_ScissorRect;
@@ -16,7 +17,8 @@ namespace BruteForce
             const BruteForce::DescriptorHandle* dsv;
             const Camera& camera;
             const uint8_t frame_index;
-        };
+            DescriptorHeapManager& HeapManager;
+       };
 
         struct RenderSubsystemInitDesc
         {
@@ -40,8 +42,8 @@ namespace BruteForce
                 //if (m_PipelineState) m_PipelineState->Release();
             };
             virtual void Update(float delta_time, uint8_t frame_index) = 0;
-            virtual void LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc&, SmartCommandQueue& copy_queue) = 0;
-            virtual SmartCommandList& PrepareRenderCommandList(SmartCommandList&, const RenderDestination&) = 0;
+            virtual void LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc&, SmartCommandQueue& copy_queue, DescriptorHeapManager &descriptor_heap_manager) = 0;
+            virtual SmartCommandList& PrepareRenderCommandList(SmartCommandList&, const PrepareRenderHelper&) = 0;
         };
     }
 

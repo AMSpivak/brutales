@@ -37,6 +37,7 @@ namespace BruteForce
 	constexpr CommandListType CommandListTypeCopy = D3D12_COMMAND_LIST_TYPE_COPY;
 	constexpr CommandListType CommandListTypeCompute = D3D12_COMMAND_LIST_TYPE_COMPUTE;
 	using DescriptorHeap = Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>;
+	using pDescriptorHeap = ID3D12DescriptorHeap*;
 	using CDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE;
 	using DescriptorHandle = D3D12_CPU_DESCRIPTOR_HANDLE;
 	using DescriptorHandleGpu = D3D12_GPU_DESCRIPTOR_HANDLE;

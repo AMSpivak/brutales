@@ -17,7 +17,7 @@ namespace BruteForce
         void ScreenSpaceToRt::Update(float delta_time, uint8_t frame_index)
         {
         }
-        void ScreenSpaceToRt::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue)
+        void ScreenSpaceToRt::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue, DescriptorHeapManager& descriptor_heap_manager)
         {
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path{ settings.GetExecuteDirWchar() };
@@ -149,7 +149,7 @@ namespace BruteForce
             intermediateIndexBuffer->Release();
         }
 
-        SmartCommandList& ScreenSpaceToRt::PrepareRenderCommandList(SmartCommandList& smart_command_list, const RenderDestination& render_dest)
+        SmartCommandList& ScreenSpaceToRt::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)
         {
             // TODO: вставьте здесь оператор return
             //uint32_t buff_index = render_dest.frame_index;
