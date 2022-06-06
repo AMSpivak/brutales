@@ -171,6 +171,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ControllerWinKeyboard.cpp" />
     <ClCompile Include="DepthBufferDX12.cpp" />
+    <ClCompile Include="DescriptorHeapManager.cpp" />
     <ClCompile Include="EngineGpuCommandsDX12.cpp" />
     <ClCompile Include="EngineGpuFenceDX12.cpp" />
     <ClCompile Include="EngineGpuSwapChainDX12.cpp" />
@@ -197,6 +198,7 @@
     <ClInclude Include="ControllerWinKeyboard.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DepthBuffer.h" />
+    <ClInclude Include="DescriptorHeapManager.h" />
     <ClInclude Include="EngineGpuCommands.h" />
     <ClInclude Include="EngineGpuFence.h" />
     <ClInclude Include="EngineGpuSwapChain.h" />

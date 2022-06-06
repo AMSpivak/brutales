@@ -11,6 +11,7 @@
 #include "CalcSubsystem.h"
 #include "DepthBuffer.h"
 #include "RenderTargetTexture.h"
+#include "DescriptorHeapManager.h"
 #include <vector>
 #include <memory>
 
@@ -35,12 +36,14 @@ private:
     std::vector<std::shared_ptr<BruteForce::Render::CalcSubsystem>> m_CalcSystems;
     BruteForce::Render::ScreenSpaceToRt m_ToneMapper;
     BruteForce::TargetFormat m_OutputFormat;
+    BruteForce::DescriptorHeapManager m_SRV_Heap;
 public:
     BruteForce::Textures::DepthBuffer m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;
     BruteForce::Textures::RenderTargetTexture m_RTTextures[RendererNumFrames];
     BruteForce::DescriptorHeap m_RTHeap;
     BruteForce::DescriptorHeap m_RTSrvHeap;
+
 
     float m_time;
 

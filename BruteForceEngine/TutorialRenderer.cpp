@@ -4,6 +4,7 @@
 #include "RenderInstanced.h"
 #include "RenderTerrain.h"
 #include "CalcTerrainShadow.h"
+
 #include <DirectXMath.h>
 constexpr BruteForce::TargetFormat render_format = BruteForce::TargetFormat_R16G16B16A16_Float;
 constexpr BruteForce::TargetFormat output_format = BruteForce::TargetFormat_R8G8B8A8_Unorm;
@@ -57,6 +58,8 @@ m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
 
 bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 {
+    m_SRV_Heap.Create(device, 1000, BruteForce::DescriptorHeapCvbSrvUav);
+
     BruteForce::Render::RenderSubsystemInitDesc desc = {
                                                             render_format,
                                                             BruteForce::TargetFormat_D32_Float
