@@ -2,6 +2,7 @@
 #define DESCRIPTOR_HEAP_MANAGER
 #include "PlatformDefine.h"
 #include "Helpers.h"
+#include "Atlas.h"
 #include <string>
 #include <vector>
 
@@ -30,9 +31,10 @@ namespace BruteForce
 		size_t m_size;
 		size_t m_index;
 		DescriptorHeap m_Heap;
+		HashAtlas<DescriptorHeapRange> m_Atlas;
 	public:
 
-		DescriptorHeapManager() :m_HeapType(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV), m_size(0) , m_index(0){}
+		DescriptorHeapManager() :m_HeapType(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV), m_size(0) , m_index(0), m_Atlas("") {}
 		void Create(Device& device, size_t size, DescriptorHeapType HeapType);
 		DescriptorHandle AllocateRange(Device& device, size_t size, DescriptorHeapRange& range);
 		DescriptorHandleGpu GetGpuDescriptorHandle();

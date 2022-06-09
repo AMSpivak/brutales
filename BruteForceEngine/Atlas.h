@@ -87,8 +87,8 @@ namespace BruteForce
 
         ~HashAtlas()
         {}
-
-        std::shared_ptr<T> Assign(const std::string& filename)
+        template <typename... Params>
+        std::shared_ptr<T> Assign(const std::string& filename, Params... params)
         {
             size_t hash = m_hasher(filename);
             auto it = m_map.find(hash);
@@ -97,11 +97,23 @@ namespace BruteForce
                 std::cout << "Reuse element: " << filename << "\n";
                 return it->second.lock();
             }
-            auto resource = std::shared_ptr<T>(new T(m_resourse_folder + filename), Deleter(this, hash));
+            auto resource = std::shared_ptr<T>(new T(m_resourse_folder + filename, params), Deleter(this, hash));
             m_map.insert(std::pair<const size_t, std::weak_ptr<T>>(hash, resource));
             std::cout << "New element: " << filename << "\n";
             return resource;
 
+        }
+
+        std::shared_ptr<T> Find(const std::string& filename)
+        {
+            size_t hash = m_hasher(filename);
+            auto it = m_map.find(hash);
+            if (it != m_map.end())
+            {
+                std::cout << "Found element: " << filename << "\n";
+                return it->second.lock();
+            }
+            return std::shared_ptr<T>(nullptr);
         }
 
         void Clean()

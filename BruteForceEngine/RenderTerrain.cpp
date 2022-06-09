@@ -106,8 +106,8 @@ namespace BruteForce
                 device->CreateSampler(&samplerDesc, sampler_handle);
             }
 
-            DescriptorHeapRange TexturesRange{ DescriptorRangeTypeSrv,"Textures"};
-            DescriptorHeapRange CbvRange{ DescriptorRangeTypeCvb,"CBVs"};
+            DescriptorHeapRange TexturesRange{ DescriptorRangeTypeSrv,"TerrainTextures"};
+            DescriptorHeapRange CbvRange{ DescriptorRangeTypeCvb,"TerrainCBVs"};
 
             {
                 auto srv_handle = descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(frames_count), CbvRange);
