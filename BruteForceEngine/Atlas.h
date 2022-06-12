@@ -23,9 +23,11 @@ namespace BruteForce
 
 
         ~Atlas()
-        {}
-
-        std::shared_ptr<T> Assign(const std::string& filename)
+        {
+            m_map.clear();
+        }
+        template <typename... Params>
+        std::shared_ptr<T> Assign(const std::string& filename, Params... params)
         {
             auto it = m_map.find(filename);
             if (it != m_map.end())
@@ -33,7 +35,7 @@ namespace BruteForce
                 std::cout << "Reuse element: " << filename << "\n";
                 return it->second.lock();
             }
-            auto resource = std::shared_ptr<T>(new T(m_resourse_folder + filename), Deleter(this, filename));
+            auto resource = std::shared_ptr<T>(new T(m_resourse_folder + filename, params...), Deleter(this, filename));
             m_map.insert(std::pair<const std::string, std::weak_ptr<T>>(filename, resource));
             std::cout << "New element: " << filename << "\n";
             return resource;
@@ -62,7 +64,10 @@ namespace BruteForce
 
             void operator()(T* item)
             {
-                m_atlas->m_map.erase(m_filename);
+                if (!m_atlas->m_map.empty())
+                {
+                    m_atlas->m_map.erase(m_filename);
+                }
                 delete item;
             }
 
@@ -86,7 +91,9 @@ namespace BruteForce
 
 
         ~HashAtlas()
-        {}
+        {
+            m_map.clear();
+        }
         template <typename... Params>
         std::shared_ptr<T> Assign(const std::string& filename, Params... params)
         {
@@ -138,7 +145,10 @@ namespace BruteForce
 
             void operator()(T* item)
             {
-                m_atlas->m_map.erase(m_filename_hash);
+                if (!m_atlas->m_map.empty())
+                {
+                    m_atlas->m_map.erase(m_filename_hash);
+                }
                 delete item;
             }
 

@@ -38,14 +38,9 @@ m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
         ThrowIfFailed(device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&m_RTHeap)));
     }
 
-    {
-        BruteForce::DescriptorHeapDesc HeapDesc = {};
-        HeapDesc.NumDescriptors = RendererNumFrames;
-        HeapDesc.Type = BruteForce::DescriptorHeapCvbSrvUav;
-        HeapDesc.Flags = BruteForce::DescriptorHeapShaderVisible;
-        ThrowIfFailed(device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&m_RTSrvHeap)));
-    }
+    m_SRV_Heap.Create(device, 1000, BruteForce::DescriptorHeapCvbSrvUav);
 
+    RTSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RendererNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsSrvs");
     m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderTerrain>());
     //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderInstanced>());
     m_CalcSystems.push_back(std::make_shared<BruteForce::Render::CalcTerrainShadow>());
@@ -58,7 +53,7 @@ m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
 
 bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 {
-    m_SRV_Heap.Create(device, 1000, BruteForce::DescriptorHeapCvbSrvUav);
+    
 
     BruteForce::Render::RenderSubsystemInitDesc desc = {
                                                             render_format,
@@ -80,6 +75,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
                                                             BruteForce::TargetFormat_D32_Float
     };
 
+    m_ToneMapper.SetRenderParameter(RTSrvDescriptors);
     m_ToneMapper.LoadContent(device, m_NumFrames, desc_rt, m_CopyCommandQueue, m_SRV_Heap);
     m_ContentLoaded = true;
 
@@ -112,7 +108,7 @@ void TutorialRenderer::Resize(BruteForce::Device& device)
         m_DepthBuffer.CreateSrv(device, d_handle);
 
         BruteForce::DescriptorHandle rt_handle = m_RTHeap->GetCPUDescriptorHandleForHeapStart();
-        BruteForce::DescriptorHandle srv_handle = m_RTSrvHeap->GetCPUDescriptorHandleForHeapStart();
+        BruteForce::DescriptorHandle srv_handle = RTSrvDescriptors->m_CpuHandle;
 
         /*for (uint8_t i = 0; i < RendererNumFrames; i++)
         {*/
@@ -176,7 +172,6 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     };
 
     auto& ToneMap_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
-    m_ToneMapper.SetRenderParameter(m_RTSrvHeap);
     m_ToneMapper.PrepareRenderCommandList(ToneMap_cl, render_dest_rt);
 
     for (auto& execute_list : command_lists)
@@ -193,5 +188,6 @@ BruteForce::Camera* TutorialRenderer::GetCameraPtr()
 TutorialRenderer::~TutorialRenderer()
 {
     Flush();
+
 }
 

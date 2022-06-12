@@ -37,13 +37,13 @@ private:
     BruteForce::Render::ScreenSpaceToRt m_ToneMapper;
     BruteForce::TargetFormat m_OutputFormat;
     BruteForce::DescriptorHeapManager m_SRV_Heap;
+    std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvDescriptors;
 public:
     BruteForce::Textures::DepthBuffer m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;
     BruteForce::Textures::RenderTargetTexture m_RTTextures[RendererNumFrames];
     BruteForce::DescriptorHeap m_RTHeap;
-    BruteForce::DescriptorHeap m_RTSrvHeap;
-
+    //BruteForce::DescriptorHeap m_RTSrvHeap;
 
     float m_time;
 

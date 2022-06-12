@@ -68,8 +68,13 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
             CD3DX12_DESCRIPTOR_RANGE1 descRange;
-            descRange.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
-            //descRange.OffsetInDescriptorsFromTableStart = 0;
+
+            /*if (!RTSrvDescriptors)
+            {
+                RTSrvDescriptors = descriptor_heap_manager.
+            }*/
+            RTSrvDescriptors->Fill(&descRange, 0);
+            descRange.NumDescriptors = 1;
 
             CD3DX12_DESCRIPTOR_RANGE1 descRangeSamp;
             descRangeSamp.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);
@@ -158,11 +163,11 @@ namespace BruteForce
             smart_command_list.SetPipelineState(m_PipelineState);
             smart_command_list.SetRootSignature(m_RootSignature);
 
-            ID3D12DescriptorHeap* ppHeaps[] = { m_SrvHeapPtr.Get(), m_SamplerHeap.Get()};
+            ID3D12DescriptorHeap* ppHeaps[] = { render_dest.HeapManager.GetDescriptorHeapPointer(), m_SamplerHeap.Get()};
             commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
             commandList->SetGraphicsRootDescriptorTable(0,
-                m_SrvHeapPtr->GetGPUDescriptorHandleForHeapStart());
+                render_dest.HeapManager.GetGpuDescriptorHandle());
             commandList->SetGraphicsRootDescriptorTable(1,
                 m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());
 
@@ -177,9 +182,9 @@ namespace BruteForce
             return smart_command_list;
         }
 
-        void ScreenSpaceToRt::SetRenderParameter(DescriptorHeap SrvPtr)
+        void ScreenSpaceToRt::SetRenderParameter(decltype(RTSrvDescriptors) SrvPtr)
         {
-            m_SrvHeapPtr = SrvPtr;
+            RTSrvDescriptors = SrvPtr;
         }
     }
 }
