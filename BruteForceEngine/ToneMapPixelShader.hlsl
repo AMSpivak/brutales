@@ -50,8 +50,11 @@ sampler sampl : register(s0);
 
 float4 main(PixelShaderInput IN) : SV_Target
 {
-    float max_white = luminance(float3(100.0f,100.0f,100.0f));
-    float3 color = texture0.Sample(sampl, IN.Tex).xyz;
+    const float3 c_night = float3(0.077f, 0.73f, 3.3f);
+    const float3 c_day = float3(1.f, 1.f, 1.f);
+    float p = 1.0f;
+    float3 color = lerp(c_night, c_day, p) * texture0.Sample(sampl, IN.Tex).xyz;
+
     float exposure_bias = 0.05f;
     return float4(uncharted2_filmic(color, exposure_bias), 1.0f);
 }
