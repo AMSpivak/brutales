@@ -22,7 +22,22 @@ namespace BruteForce
 		range.m_Start = m_index;
 		range.m_Size = size;
 		m_index += size;
+		range.m_CpuHandle = handle;
 		return handle;
+	}
+
+	std::shared_ptr<DescriptorHeapRange> DescriptorHeapManager::AllocateManagedRange(Device& device, size_t size, DescriptorRangeType type, const std::string & name)
+	{
+		auto managed_range = m_Atlas.Assign(name, type);
+		assert(size + m_index < m_size);
+
+		auto handle = m_Heap->GetCPUDescriptorHandleForHeapStart();
+		handle.ptr += device->GetDescriptorHandleIncrementSize(m_HeapType) * static_cast<UINT>(m_index);
+		managed_range->m_Start = m_index;
+		managed_range->m_Size = size;
+		m_index += size;
+		managed_range->m_CpuHandle = handle;
+		return managed_range;
 	}
 
 	DescriptorHandleGpu DescriptorHeapManager::GetGpuDescriptorHandle()

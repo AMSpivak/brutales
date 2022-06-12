@@ -106,11 +106,12 @@ namespace BruteForce
                 device->CreateSampler(&samplerDesc, sampler_handle);
             }
 
-            DescriptorHeapRange TexturesRange{ DescriptorRangeTypeSrv,"TerrainTextures"};
-            DescriptorHeapRange CbvRange{ DescriptorRangeTypeCvb,"TerrainCBVs"};
+            //DescriptorHeapRange TexturesRange{ DescriptorRangeTypeSrv,"TerrainTextures"};
+            //DescriptorHeapRange CbvRange{ DescriptorRangeTypeCvb,"TerrainCBVs"};
 
             {
-                auto srv_handle = descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(frames_count), CbvRange);
+                CbvRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(frames_count), BruteForce::DescriptorRangeTypeCvb, "TerrainCBVs");
+                auto& srv_handle = CbvRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(frames_count), CbvRange);
 
                 for (int i = 0; i < frames_count; i++)
                 {
@@ -142,7 +143,10 @@ namespace BruteForce
                 std::vector<std::wstring> tex_names = { { L"Desert_Rock_albedo.dds"}, {L"Desert_Sand_albedo.dds"} };
                 size_t textures_count = tex_names.size() + 2;
 
-                auto srv_handle = descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(textures_count), TexturesRange);
+
+                TexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(frames_count), BruteForce::DescriptorRangeTypeSrv, "TerrainTextures");
+
+                auto& srv_handle = TexturesRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(textures_count), TexturesRange);
                 BruteForce::Textures::AddTexture(content_path, { L"desert_map_16.png" }, m_textures, device, copy_queue, srv_handle);
                 BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, device, copy_queue, srv_handle, DXGI_FORMAT_R8G8B8A8_UINT);
 
@@ -174,8 +178,8 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
             DescriptorRange descRange[2];
-            TexturesRange.Fill(&descRange[0], 0);
-            CbvRange.Fill(&descRange[1], 17);
+            TexturesRange->Fill(&descRange[0], 0);
+            CbvRange->Fill(&descRange[1], 17);
 
 
             CD3DX12_DESCRIPTOR_RANGE1 descRangeSamp;

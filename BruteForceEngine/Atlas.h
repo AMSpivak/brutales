@@ -97,7 +97,7 @@ namespace BruteForce
                 std::cout << "Reuse element: " << filename << "\n";
                 return it->second.lock();
             }
-            auto resource = std::shared_ptr<T>(new T(m_resourse_folder + filename, params), Deleter(this, hash));
+            auto resource = std::shared_ptr<T>(new T(m_resourse_folder + filename, params...), Deleter(this, hash));
             m_map.insert(std::pair<const size_t, std::weak_ptr<T>>(hash, resource));
             std::cout << "New element: " << filename << "\n";
             return resource;
@@ -143,7 +143,7 @@ namespace BruteForce
             }
 
             HashAtlas* m_atlas;
-            std::string m_filename_hash;
+            size_t m_filename_hash;
         };
 
 

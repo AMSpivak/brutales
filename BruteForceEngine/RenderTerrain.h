@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include "ConstantBuffer.h"
+#include <memory>
 namespace BruteForce
 {
     namespace Render
@@ -24,6 +25,8 @@ namespace BruteForce
             DescriptorHeap m_SamplerHeap;
             IndexedGeometry m_plane;
             UINT PreparePlanesCB(const Math::Vec4Float &cam, uint32_t index);
+            std::shared_ptr<DescriptorHeapRange> TexturesRange;
+            std::shared_ptr <DescriptorHeapRange> CbvRange;
         public:
             RenderTerrain();
             virtual ~RenderTerrain();
