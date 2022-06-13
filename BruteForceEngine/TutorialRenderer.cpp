@@ -9,13 +9,17 @@
 constexpr BruteForce::TargetFormat render_format = BruteForce::TargetFormat_R16G16B16A16_Float;
 constexpr BruteForce::TargetFormat output_format = BruteForce::TargetFormat_R8G8B8A8_Unorm;
 
-TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp) :MyRenderer(device, pWindow, UseWarp),
-//, m_ScissorRect(ScissorRect(0, 0, LONG_MAX, LONG_MAX))
-//, m_Viewport(Viewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)))
-m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
-, m_time(0.0f)
-, m_ContentLoaded(false)
-, m_OutputFormat(output_format)
+TutorialRenderer::TutorialRenderer(BruteForce::Device& device,
+    BruteForce::Window* pWindow,
+    bool UseWarp,
+    BruteForce::DescriptorHeapManager& SRV_Heap
+)
+    :MyRenderer(device, pWindow, UseWarp)
+    , m_SRV_Heap(SRV_Heap)
+    , m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
+    , m_time(0.0f)
+    , m_ContentLoaded(false)
+    , m_OutputFormat(output_format)
 {
     //BruteForce::ReportLiveObjects();
 
@@ -188,6 +192,5 @@ BruteForce::Camera* TutorialRenderer::GetCameraPtr()
 TutorialRenderer::~TutorialRenderer()
 {
     Flush();
-
 }
 

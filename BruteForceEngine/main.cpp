@@ -41,6 +41,7 @@ using namespace Microsoft::WRL;
 // Helper functions
 #include "Helpers.h"
 #include "tutorialRenderer.h"
+#include "DescriptorHeapManager.h"
 #include "Camera.h"
 #include "ControllerWinKeyboard.h"
 #include "Settings.h"
@@ -61,6 +62,7 @@ BruteForce::Window * pWindow;
 
 BruteForce::Device g_Device;
 BruteForce::Controller::Controller* test_controller;
+BruteForce::DescriptorHeapManager* p_HeapManager = nullptr;
 TutorialRenderer* p_Renderer = nullptr;
 BruteForce::Camera* test_camera = nullptr;
 // By default, use windowed mode.
@@ -246,7 +248,9 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     pWindow = m_driver.CreateWindow(L"DX12WindowClass", L"Learning DirectX 12",
         g_ClientWidth, g_ClientHeight);
     
-    p_Renderer = new TutorialRenderer(g_Device, pWindow, false);
+    p_HeapManager = new BruteForce::DescriptorHeapManager();
+    p_Renderer = new TutorialRenderer(g_Device, pWindow, false, *p_HeapManager);
+
     p_Renderer->LoadContent(g_Device);
     test_controller = new BruteForce::Controller::ControllerWinKey();
     test_camera = p_Renderer->GetCameraPtr();
@@ -267,7 +271,9 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     }
     delete(test_controller);
     delete(p_Renderer);
+    delete(p_HeapManager);
     delete(pWindow);
+
     //BruteForce::ReportLiveObjects(g_Device);
     return 0;
 }

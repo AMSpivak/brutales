@@ -36,8 +36,8 @@ private:
     std::vector<std::shared_ptr<BruteForce::Render::CalcSubsystem>> m_CalcSystems;
     BruteForce::Render::ScreenSpaceToRt m_ToneMapper;
     BruteForce::TargetFormat m_OutputFormat;
-    BruteForce::DescriptorHeapManager m_SRV_Heap;
     std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvDescriptors;
+    BruteForce::DescriptorHeapManager& m_SRV_Heap;
 public:
     BruteForce::Textures::DepthBuffer m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;
@@ -51,7 +51,10 @@ public:
 
     bool m_ContentLoaded;
 
-    TutorialRenderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp);
+    TutorialRenderer(BruteForce::Device& device,
+        BruteForce::Window* pWindow,
+        bool UseWarp,
+        BruteForce::DescriptorHeapManager& SRV_Heap);
 
     ~TutorialRenderer();
 

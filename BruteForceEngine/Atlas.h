@@ -24,7 +24,7 @@ namespace BruteForce
 
         ~Atlas()
         {
-            m_map.clear();
+            assert(m_map.empty());
         }
         template <typename... Params>
         std::shared_ptr<T> Assign(const std::string& filename, Params... params)
@@ -64,10 +64,8 @@ namespace BruteForce
 
             void operator()(T* item)
             {
-                if (!m_atlas->m_map.empty())
-                {
-                    m_atlas->m_map.erase(m_filename);
-                }
+                m_atlas->m_map.erase(m_filename);
+
                 delete item;
             }
 
@@ -92,7 +90,7 @@ namespace BruteForce
 
         ~HashAtlas()
         {
-            m_map.clear();
+            assert (m_map.empty());
         }
         template <typename... Params>
         std::shared_ptr<T> Assign(const std::string& filename, Params... params)
@@ -145,10 +143,8 @@ namespace BruteForce
 
             void operator()(T* item)
             {
-                if (!m_atlas->m_map.empty())
-                {
-                    m_atlas->m_map.erase(m_filename_hash);
-                }
+                m_atlas->m_map.erase(m_filename_hash);
+
                 delete item;
             }
 
