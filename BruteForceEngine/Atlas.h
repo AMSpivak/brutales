@@ -42,6 +42,17 @@ namespace BruteForce
 
         }
 
+        std::shared_ptr<T> Find(const std::string& filename)
+        {
+            auto it = m_map.find(filename);
+            if (it != m_map.end())
+            {
+                std::cout << "Found element: " << filename << "\n";
+                return it->second.lock();
+            }
+            return std::shared_ptr<T>(nullptr);
+        }
+
         void Clean()
         {
         }
