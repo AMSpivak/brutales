@@ -32,12 +32,8 @@ namespace BruteForce
 		size_t m_size;
 		size_t m_index;
 		DescriptorHeap m_Heap;
-
-#ifdef _DEBUG
 		Atlas<DescriptorHeapRange> m_Atlas;
-#else
-		HashAtlas<DescriptorHeapRange> m_Atlas;
-#endif
+
 	public:
 
 		DescriptorHeapManager() :m_HeapType(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV), m_size(0) , m_index(0), m_Atlas("") {}

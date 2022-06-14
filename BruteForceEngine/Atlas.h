@@ -12,17 +12,17 @@ namespace BruteForce
 {
 
     template <typename T>
-    class Atlas
+    class StringAtlas
     {
 
     public:
-        Atlas(const std::string& ResourseFolder)
+        StringAtlas(const std::string& ResourseFolder)
         {
             m_resourse_folder = ResourseFolder;
         }
 
 
-        ~Atlas()
+        ~StringAtlas()
         {
             assert(m_map.empty());
         }
@@ -68,7 +68,7 @@ namespace BruteForce
 
         struct Deleter
         {
-            Deleter(Atlas* atlas, const std::string& filename)
+            Deleter(StringAtlas* atlas, const std::string& filename)
                 : m_atlas(atlas)
                 , m_filename(filename)
             {}
@@ -80,12 +80,9 @@ namespace BruteForce
                 delete item;
             }
 
-            Atlas* m_atlas;
+            StringAtlas* m_atlas;
             std::string m_filename;
         };
-
-
-
     };
 
     template <typename T>
@@ -162,10 +159,13 @@ namespace BruteForce
             HashAtlas* m_atlas;
             size_t m_filename_hash;
         };
-
-
-
     };
+
+#ifdef _DEBUG
+#define  Atlas StringAtlas
+#else
+#define  Atlas HashAtlas
+#endif
 }
 
 
