@@ -140,16 +140,21 @@ namespace BruteForce
             }
 
             {
+                
+
+                
+                
+                {
+                    HeightmapTexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(2), BruteForce::DescriptorRangeTypeSrv, "TerrainHeightmapTextures");
+                    auto& srv_handle = HeightmapTexturesRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(textures_count), TexturesRange);
+                    BruteForce::Textures::AddTexture(content_path, { L"desert_map_16.png" }, m_textures, device, copy_queue, srv_handle);
+                    BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, device, copy_queue, srv_handle, DXGI_FORMAT_R8G8B8A8_UINT);
+                }
+
                 std::vector<std::wstring> tex_names = { { L"Desert_Rock_albedo.dds"}, {L"Desert_Sand_albedo.dds"} };
-                size_t textures_count = tex_names.size() + 2;
-
-
-                TexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(frames_count), BruteForce::DescriptorRangeTypeSrv, "TerrainTextures");
-
-                auto& srv_handle = TexturesRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(textures_count), TexturesRange);
-                BruteForce::Textures::AddTexture(content_path, { L"desert_map_16.png" }, m_textures, device, copy_queue, srv_handle);
-                BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, device, copy_queue, srv_handle, DXGI_FORMAT_R8G8B8A8_UINT);
-
+                size_t textures_count = tex_names.size();
+                TexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(textures_count), BruteForce::DescriptorRangeTypeSrv, "TerrainMaterialTextures");
+                auto& srv_handle = TexturesRange->m_CpuHandle;
                 BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_path, m_textures, device, copy_queue, srv_handle);
             }
 
@@ -177,9 +182,10 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-            DescriptorRange descRange[2];
-            TexturesRange->Fill(&descRange[0], 0);
-            CbvRange->Fill(&descRange[1], 17);
+            DescriptorRange descRange[3];
+            TexturesRange->Fill(&descRange[0], 2);
+            HeightmapTexturesRange->Fill(&descRange[1], 0);
+            CbvRange->Fill(&descRange[2], 17);
 
 
             CD3DX12_DESCRIPTOR_RANGE1 descRangeSamp;

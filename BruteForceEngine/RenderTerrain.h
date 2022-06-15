@@ -26,6 +26,7 @@ namespace BruteForce
             IndexedGeometry m_plane;
             UINT PreparePlanesCB(const Math::Vec4Float &cam, uint32_t index);
             std::shared_ptr<DescriptorHeapRange> TexturesRange;
+            std::shared_ptr<DescriptorHeapRange> HeightmapTexturesRange;
             std::shared_ptr <DescriptorHeapRange> CbvRange;
         public:
             RenderTerrain();
