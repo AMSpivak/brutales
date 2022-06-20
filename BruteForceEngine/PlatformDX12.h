@@ -53,6 +53,8 @@ namespace BruteForce
 	constexpr HeapType HeapTypeDefault = D3D12_HEAP_TYPE_DEFAULT;
 
 
+
+
 	using DescriptorHeapType = D3D12_DESCRIPTOR_HEAP_TYPE;
 	constexpr DescriptorHeapType DescriptorHeapRTV = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 	constexpr DescriptorHeapType DescriptorHeapDSV = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
@@ -69,6 +71,9 @@ namespace BruteForce
 	constexpr DescriptorRangeType DescriptorRangeTypeUav = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 	constexpr DescriptorRangeType DescriptorRangeTypeCvb = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
 	constexpr DescriptorRangeType DescriptorRangeTypeSampler = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+
+	using DescriptorUAV = D3D12_UNORDERED_ACCESS_VIEW_DESC;
+
 
 	using VertexBufferView = D3D12_VERTEX_BUFFER_VIEW;
 	using IndexBufferView = D3D12_INDEX_BUFFER_VIEW;

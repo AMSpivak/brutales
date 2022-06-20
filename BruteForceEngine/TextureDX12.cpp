@@ -19,7 +19,17 @@ namespace BruteForce
             shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
             shaderResourceViewDesc.Texture2D.ResourceMinLODClamp = 0.0f;
             device->CreateShaderResourceView(image.Get(), &shaderResourceViewDesc, descriptor_handle);
-            m_descriptor_handle = descriptor_handle;
+            //m_descriptor_handle = descriptor_handle;
+        }
+
+        void Texture::CreateUav(Device& device, DescriptorHandle& descriptor_handle)
+        {
+            D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+            uavDesc.Format = Format;
+            uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+            uavDesc.Texture2D.MipSlice = 0;
+            uavDesc.Texture2D.PlaneSlice = 0;
+            device->CreateUnorderedAccessView(image.Get(), nullptr, &uavDesc, descriptor_handle);
         }
 
         void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue)

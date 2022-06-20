@@ -140,10 +140,6 @@ namespace BruteForce
             }
 
             {
-                
-
-                
-                
                 {
                     HeightmapTexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(2), BruteForce::DescriptorRangeTypeSrv, "TerrainHeightmapTextures");
                     auto& srv_handle = HeightmapTexturesRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(textures_count), TexturesRange);

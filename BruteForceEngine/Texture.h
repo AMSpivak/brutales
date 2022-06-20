@@ -14,15 +14,17 @@ namespace BruteForce
 		private:
 			std::mutex m_mutex;
 			size_t m_Mips;
-			size_t heap_range_index;
+			size_t heap_range_srv_index;
+			size_t heap_range_uav_index;
 		public:
 			Texture() = default;
 			Texture(const Texture &) = default;
 			~Texture() {};
 			Resource image;
 			TargetFormat Format;
-			DescriptorHandle m_descriptor_handle;
+			//DescriptorHandle m_descriptor_handle;
 			void CreateSrv(Device& device, DescriptorHandle& descriptor_handle);
+			void CreateUav(Device& device, DescriptorHandle& descriptor_handle);
 		friend void LoadTextureFromFile(Texture&, const std::wstring& /*, TextureUsage textureUsage */, Device&, SmartCommandQueue&);
 		};
 
