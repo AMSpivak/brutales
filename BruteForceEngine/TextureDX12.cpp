@@ -30,6 +30,16 @@ namespace BruteForce
             uavDesc.Texture2D.MipSlice = 0;
             uavDesc.Texture2D.PlaneSlice = 0;
             device->CreateUnorderedAccessView(image.Get(), nullptr, &uavDesc, descriptor_handle);
+            //m_descriptor_handle = descriptor_handle;
+        }
+
+        void Texture::CreateSrv(Device& device, DescriptorHeapRange& descriptor_range, size_t index)
+        {
+            assert(index < descriptor_range.m_Size);
+            m_srv_index = index;
+            auto descriptor_handle = descriptor_range.m_CpuHandle;
+            descriptor_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav) * m_srv_index;
+            CreateSrv(device, descriptor_handle);
         }
 
         void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue)
