@@ -22,6 +22,15 @@ namespace BruteForce
             //m_descriptor_handle = descriptor_handle;
         }
 
+        void Texture::CreateSrv(Device& device, DescriptorHeapRange& descriptor_range, size_t index)
+        {
+            assert(index < descriptor_range.m_Size);
+            heap_range_srv_index = index;
+            auto descriptor_handle = descriptor_range.m_CpuHandle;
+            descriptor_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav) * heap_range_srv_index;
+            CreateSrv(device, descriptor_handle);
+        }
+
         void Texture::CreateUav(Device& device, DescriptorHandle& descriptor_handle)
         {
             D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
@@ -33,14 +42,16 @@ namespace BruteForce
             //m_descriptor_handle = descriptor_handle;
         }
 
-        void Texture::CreateSrv(Device& device, DescriptorHeapRange& descriptor_range, size_t index)
+        void Texture::CreateUav(Device& device, DescriptorHeapRange& descriptor_range, size_t index)
         {
             assert(index < descriptor_range.m_Size);
-            m_srv_index = index;
+            heap_range_uav_index = index;
             auto descriptor_handle = descriptor_range.m_CpuHandle;
-            descriptor_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav) * m_srv_index;
-            CreateSrv(device, descriptor_handle);
+            descriptor_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav) * heap_range_uav_index;
+            CreateUav(device, descriptor_handle);
         }
+
+
 
         void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue)
         {

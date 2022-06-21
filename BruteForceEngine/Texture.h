@@ -23,11 +23,12 @@ namespace BruteForce
 			~Texture() {};
 			Resource image;
 			TargetFormat Format;
-			size_t m_srv_index;
+			
 			//DescriptorHandle m_descriptor_handle;
 			void CreateSrv(Device& device, DescriptorHandle& descriptor_handle);
 			void CreateSrv(Device& device, DescriptorHeapRange& descriptor_range, size_t index);
 			void CreateUav(Device& device, DescriptorHandle& descriptor_handle);
+			void CreateUav(Device& device, DescriptorHeapRange& descriptor_range, size_t index);
 		friend void LoadTextureFromFile(Texture&, const std::wstring& /*, TextureUsage textureUsage */, Device&, SmartCommandQueue&);
 		};
 
