@@ -50,10 +50,6 @@ namespace BruteForce
             BruteForce::DataBlob pixelShaderBlob;
             ThrowIfFailed(D3DReadFileToBlob((content_path + L"ToneMapPixelShader.cso").c_str(), &pixelShaderBlob));
 
-            D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
-                { "POSITION", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-            };
-
             D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
             featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
             if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
@@ -103,12 +99,10 @@ namespace BruteForce
             struct PipelineStateStream
             {
                 CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
-                CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT InputLayout;
                 CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;
                 CD3DX12_PIPELINE_STATE_STREAM_VS VS;
                 CD3DX12_PIPELINE_STATE_STREAM_PS PS;
                 CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL DepthStencilState;
-                //CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormat;
                 CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
             } pipelineStateStream;
 
@@ -120,11 +114,9 @@ namespace BruteForce
             depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
             pipelineStateStream.DepthStencilState = depthStencilDesc;
             pipelineStateStream.pRootSignature = m_RootSignature.Get();
-            pipelineStateStream.InputLayout = { inputLayout, _countof(inputLayout) };
             pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
             pipelineStateStream.VS = CD3DX12_SHADER_BYTECODE(vertexShaderBlob.Get());
             pipelineStateStream.PS = CD3DX12_SHADER_BYTECODE(pixelShaderBlob.Get());
-            //pipelineStateStream.DSVFormat = desc.DepthFormat;
             pipelineStateStream.RTVFormats = rtvFormats;
 
             D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
