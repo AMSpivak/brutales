@@ -62,7 +62,7 @@ namespace BruteForce
         Device& m_device;
         CommandListType m_list_type;
 
-        friend SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount, int Width, int Height, bool tearing, WindowHandle mhWnd);
+        friend SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount, int Width, int Height, bool tearing, TargetFormat format,  WindowHandle mhWnd);
     };
 }
 #endif

@@ -16,8 +16,8 @@ namespace BruteForce
 		WindowDX12(HWND hWnd) : mhWnd(hWnd), m_IsFullscreen(false){};
 		virtual void Show();
 		virtual ~WindowDX12() {};
-		virtual SwapChain CreateSwapChain(CommandQueue& commandQueue, uint32_t bufferCount);
-		virtual SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount);
+		virtual SwapChain CreateSwapChain(CommandQueue& commandQueue, uint32_t bufferCount, TargetFormat format );
+		virtual SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount, TargetFormat format);
 		virtual void SetFullscreen(bool value);
 	};
 

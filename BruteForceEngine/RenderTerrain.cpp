@@ -144,7 +144,7 @@ namespace BruteForce
                     HeightmapTexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(2), BruteForce::DescriptorRangeTypeSrv, "TerrainHeightmapTextures");
                     auto& srv_handle = HeightmapTexturesRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(textures_count), TexturesRange);
                     BruteForce::Textures::AddTexture(content_path, { L"desert_map_16.png" }, m_textures, device, copy_queue, srv_handle);
-                    BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, device, copy_queue, srv_handle, DXGI_FORMAT_R8G8B8A8_UINT);
+                    BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, device, copy_queue, srv_handle, TargetFormat_R8G8B8A8_UInt);
                 }
 
                 std::vector<std::wstring> tex_names = { { L"Desert_Rock_albedo.dds"}, {L"Desert_Sand_albedo.dds"} };
@@ -162,7 +162,7 @@ namespace BruteForce
 
 
             D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
-                { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                { "POSITION", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
              };
 
             D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};

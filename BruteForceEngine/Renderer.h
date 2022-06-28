@@ -37,7 +37,7 @@ namespace BruteForce
         Renderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp) : m_Window(pWindow), m_NumFrames(t_NumFrames), m_Device(device)
                 , m_SmartCommandQueue(m_Device, BruteForce::CommandListTypeDirect)
         {
-            m_Window->CreateSwapChain(m_SmartCommandQueue, m_NumFrames);
+            m_Window->CreateSwapChain(m_SmartCommandQueue, m_NumFrames, TargetFormat_R8G8B8A8_Unorm);
             auto& refSwapChain = m_Window->GetSwapChainReference();
 
             m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();

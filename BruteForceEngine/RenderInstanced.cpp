@@ -68,8 +68,8 @@ namespace BruteForce
 
 
             D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
-                { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-                { "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                { "POSITION", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                { "COLOR", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
             };
 
             D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
@@ -124,14 +124,14 @@ namespace BruteForce
 
             D3D12_RT_FORMAT_ARRAY rtvFormats = {};
             rtvFormats.NumRenderTargets = 1;
-            rtvFormats.RTFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+            rtvFormats.RTFormats[0] = TargetFormat_R8G8B8A8_Unorm;
 
             pipelineStateStream.pRootSignature = m_RootSignature.Get();
             pipelineStateStream.InputLayout = { inputLayout, _countof(inputLayout) };
             pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
             pipelineStateStream.VS = CD3DX12_SHADER_BYTECODE(vertexShaderBlob.Get());
             pipelineStateStream.PS = CD3DX12_SHADER_BYTECODE(pixelShaderBlob.Get());
-            pipelineStateStream.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+            pipelineStateStream.DSVFormat = TargetFormat_D32_Float;
             pipelineStateStream.RTVFormats = rtvFormats;
 
             D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {

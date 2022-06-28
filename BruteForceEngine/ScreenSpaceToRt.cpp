@@ -51,7 +51,7 @@ namespace BruteForce
             ThrowIfFailed(D3DReadFileToBlob((content_path + L"ToneMapPixelShader.cso").c_str(), &pixelShaderBlob));
 
             D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
-                { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                { "POSITION", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
             };
 
             D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
@@ -145,7 +145,7 @@ namespace BruteForce
                 num_indexes, sizeof(WORD), indexes);
 
             m_IndexBufferView.BufferLocation = m_IndexBuffer->GetGPUVirtualAddress();
-            m_IndexBufferView.Format = DXGI_FORMAT_R16_UINT;
+            m_IndexBufferView.Format = TargetFormat_R16_UInt;
             m_IndexBufferView.SizeInBytes = static_cast<UINT>(sizeof(WORD) * num_indexes);
 
 

@@ -51,7 +51,53 @@ namespace BruteForce
             CreateUav(device, descriptor_handle);
         }
 
+        bool FillTextureDescriptor(const DirectX::TexMetadata& metadata, ResourceDesc& textureDesc)
+        {
+            switch (metadata.dimension)
+            {
+            case DirectX::TEX_DIMENSION_TEXTURE1D:
+                textureDesc = CD3DX12_RESOURCE_DESC::Tex1D(
+                    metadata.format,
+                    static_cast<UINT64>(metadata.width),
+                    static_cast<UINT16>(metadata.arraySize));
+                break;
+            case DirectX::TEX_DIMENSION_TEXTURE2D:
+                textureDesc = CD3DX12_RESOURCE_DESC::Tex2D(
+                    metadata.format,
+                    static_cast<UINT64>(metadata.width),
+                    static_cast<UINT>(metadata.height),
+                    static_cast<UINT16>(metadata.arraySize));
+                break;
+            case DirectX::TEX_DIMENSION_TEXTURE3D:
+                textureDesc = CD3DX12_RESOURCE_DESC::Tex3D(
+                    metadata.format,
+                    static_cast<UINT64>(metadata.width),
+                    static_cast<UINT>(metadata.height),
+                    static_cast<UINT16>(metadata.depth));
+                break;
+            default:
+                    //throw std::exception("Invalid texture dimension.");
+                    return false;
+                break;
+            }
+            return true;
+        }
 
+        void CreateTexture(Texture& texture, const DirectX::TexMetadata& metadata, Device& device)
+        {
+            ResourceDesc textureDesc = {};
+            FillTextureDescriptor(metadata, textureDesc);
+
+            HeapProperties props(D3D12_HEAP_TYPE_DEFAULT);
+            //Resource textureResource;
+            ThrowIfFailed(device->CreateCommittedResource(
+                &props,
+                HeapFlagsNone,
+                &textureDesc,
+                ResourceStateCommon,
+                nullptr,
+                IID_PPV_ARGS(&texture.image)));
+        }
 
         void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue)
         {
@@ -103,32 +149,8 @@ namespace BruteForce
                     metadata.format = MakeSRGB(metadata.format);
                 }*/
                 ResourceDesc textureDesc = {};
-                switch (metadata.dimension)
-                {
-                case DirectX::TEX_DIMENSION_TEXTURE1D:
-                    textureDesc = CD3DX12_RESOURCE_DESC::Tex1D(
-                        metadata.format,
-                        static_cast<UINT64>(metadata.width),
-                        static_cast<UINT16>(metadata.arraySize));
-                    break;
-                case DirectX::TEX_DIMENSION_TEXTURE2D:
-                    textureDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-                        metadata.format,
-                        static_cast<UINT64>(metadata.width),
-                        static_cast<UINT>(metadata.height),
-                        static_cast<UINT16>(metadata.arraySize));
-                    break;
-                case DirectX::TEX_DIMENSION_TEXTURE3D:
-                    textureDesc = CD3DX12_RESOURCE_DESC::Tex3D(
-                        metadata.format,
-                        static_cast<UINT64>(metadata.width),
-                        static_cast<UINT>(metadata.height),
-                        static_cast<UINT16>(metadata.depth));
-                    break;
-                default:
-                    throw std::exception("Invalid texture dimension.");
-                    break;
-                }
+                FillTextureDescriptor(metadata, textureDesc);
+                
                 HeapProperties props(D3D12_HEAP_TYPE_DEFAULT);
                 //Resource textureResource;
                 ThrowIfFailed(device->CreateCommittedResource(
@@ -176,7 +198,7 @@ namespace BruteForce
             LoadTextureFromFile(*texture, (content_path + filename), device, copy_queue);
             texture->image->SetName((L"Texture: " + filename).c_str());
 
-            if (format != DXGI_FORMAT_UNKNOWN)
+            if (format != TargetFormat_Unknown)
             {
                 texture->Format = format;
             }

@@ -32,8 +32,8 @@ namespace BruteForce
 		Window(): Width(0), Height(0), m_VSync(true), m_Tearing(false){};
 		virtual ~Window() {};
 		virtual void Show() = 0;
-		virtual SwapChain CreateSwapChain(CommandQueue& commandQueue, uint32_t bufferCount) = 0;
-		virtual SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount) = 0;
+		virtual SwapChain CreateSwapChain(CommandQueue& commandQueue, uint32_t bufferCount, TargetFormat format) = 0;
+		virtual SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount, TargetFormat format) = 0;
 		void SetOnPaint(SimpleFunctionPtr func) { funcOnPaint = func; }
 		void SetOnResize(ResizeFunctionPtr func) { funcOnResize = func; }
 		bool SetSize(uint32_t width, uint32_t height) { if (Width == width && Height == height) return false; Width = width; Height = height; return true; }

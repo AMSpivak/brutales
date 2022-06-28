@@ -209,6 +209,7 @@
     <ClInclude Include="PipelineState.h" />
     <ClInclude Include="PlatformDefine.h" />
     <ClInclude Include="PlatformDX12.h" />
+    <ClInclude Include="PlatformTexture.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderInstanced.h" />
     <ClInclude Include="RenderSubsystem.h" />

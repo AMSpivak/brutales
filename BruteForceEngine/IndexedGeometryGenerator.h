@@ -202,7 +202,7 @@ namespace BruteForce
                 num_indexes, sizeof(WORD), plane_indexes);
 
             geometry.m_IndexBufferView.BufferLocation = geometry.m_IndexBuffer->GetGPUVirtualAddress();
-            geometry.m_IndexBufferView.Format = DXGI_FORMAT_R16_UINT;
+            geometry.m_IndexBufferView.Format = TargetFormat_R16_UInt;
             geometry.m_IndexBufferView.SizeInBytes = static_cast<UINT>(sizeof(WORD) * num_indexes);
 
 

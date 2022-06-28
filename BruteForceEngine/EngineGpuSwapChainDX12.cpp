@@ -9,12 +9,12 @@ using namespace Microsoft::WRL;
 #include "d3dx12.h"
 namespace BruteForce
 {
-    SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount, int Width, int Height, bool tearing, WindowHandle mhWnd)
+    SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount, int Width, int Height, bool tearing, TargetFormat format, WindowHandle mhWnd)
     {
-        return BruteForce::CreateSwapChain(commandQueue.m_command_queue, bufferCount, Width, Height, tearing, mhWnd);
+        return BruteForce::CreateSwapChain(commandQueue.m_command_queue, bufferCount, Width, Height, tearing, format, mhWnd);
     }
 
-    SwapChain CreateSwapChain(CommandQueue& commandQueue, uint32_t bufferCount, int Width, int Height, bool tearing, WindowHandle mhWnd)
+    SwapChain CreateSwapChain(CommandQueue& commandQueue, uint32_t bufferCount, int Width, int Height, bool tearing, TargetFormat format, WindowHandle mhWnd)
     {
         ComPtr<IDXGISwapChain4> dxgiSwapChain4;
         ComPtr<IDXGIFactory4> dxgiFactory4;

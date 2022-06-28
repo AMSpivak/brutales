@@ -231,14 +231,14 @@ namespace BruteForce
     }
 
 
-    SwapChain WindowDX12::CreateSwapChain(ComPtr<ID3D12CommandQueue>& commandQueue, uint32_t bufferCount)
+    SwapChain WindowDX12::CreateSwapChain(ComPtr<ID3D12CommandQueue>& commandQueue, uint32_t bufferCount, TargetFormat format)
     {
-        return m_SwapChain = BruteForce::CreateSwapChain(commandQueue, bufferCount, Width, Height, CheckTearingSupport(), mhWnd);
+        return m_SwapChain = BruteForce::CreateSwapChain(commandQueue, bufferCount, Width, Height, CheckTearingSupport(), format, mhWnd);
     }
 
-    SwapChain WindowDX12::CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount)
+    SwapChain WindowDX12::CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount, TargetFormat format)
     {
-        return m_SwapChain = BruteForce::CreateSwapChain(commandQueue, bufferCount, Width, Height, CheckTearingSupport(), mhWnd);
+        return m_SwapChain = BruteForce::CreateSwapChain(commandQueue, bufferCount, Width, Height, CheckTearingSupport(), format, mhWnd);
     }
 
 
