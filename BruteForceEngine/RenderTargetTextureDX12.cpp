@@ -17,7 +17,6 @@ namespace BruteForce
 			device->CreateRenderTargetView(m_resource.Get(), nullptr, rt_handle);
 			device->CreateShaderResourceView(m_resource.Get(), nullptr, srv_handle);
 			m_rtvDescriptor = rt_handle;
-			m_srvDescriptor = srv_handle;
 			return true;
 		}
 
@@ -63,10 +62,6 @@ namespace BruteForce
 		DescriptorHandle& RenderTargetTexture::GetRT()
 		{
 			return m_rtvDescriptor;
-		}
-		DescriptorHandle* RenderTargetTexture::GetSrvPointer()
-		{
-			return &m_srvDescriptor;
 		}
 	}
 }

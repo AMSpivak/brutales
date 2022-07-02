@@ -12,7 +12,6 @@ namespace BruteForce
 		private:
 			Resource            m_resource;
 			ResourceStates      m_state;
-			DescriptorHandle    m_srvDescriptor;
 			DescriptorHandle    m_rtvDescriptor;
 
 			TargetFormat        m_format;
@@ -32,7 +31,6 @@ namespace BruteForce
 			//bool EndRender();
 			void TransitionTo(SmartCommandList& commandlist, ResourceStates dst);
 			DescriptorHandle& GetRT();
-			DescriptorHandle* GetSrvPointer();
 
 		};
 
