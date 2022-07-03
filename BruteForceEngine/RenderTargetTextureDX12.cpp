@@ -25,7 +25,7 @@ namespace BruteForce
 			m_clearColor[0] = m_clearColor[1] = m_clearColor[2] = m_clearColor[3] = 0.0f;
 			m_format = format;
 			ResourceDesc desc = CD3DX12_RESOURCE_DESC::Tex2D(m_format,
-				static_cast<UINT64>(width),
+				static_cast<UINT>(width),
 				static_cast<UINT>(height),
 				1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
 
@@ -36,7 +36,7 @@ namespace BruteForce
 			auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 			// Create a render target
 			ThrowIfFailed(
-				device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES,
+				device->CreateCommittedResource(&heapProperties, HeapFlagsNone,
 					&desc,
 					m_state, &clearValue,
 					IID_PPV_ARGS(&m_resource))
