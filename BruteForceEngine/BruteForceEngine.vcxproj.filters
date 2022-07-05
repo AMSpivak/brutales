@@ -63,9 +63,6 @@
     <ClCompile Include="DepthBufferDX12.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="RenderTargetTextureDX12.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="ScreenSpaceToRt.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
@@ -153,9 +150,6 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="DepthBuffer.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderTargetTexture.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="PipelineState.h">

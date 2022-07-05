@@ -178,7 +178,6 @@
     <ClCompile Include="IndexedGeometryCube.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RenderInstanced.cpp" />
-    <ClCompile Include="RenderTargetTextureDX12.cpp" />
     <ClCompile Include="RenderTerrain.cpp" />
     <ClCompile Include="ResourcesDX12.cpp" />
     <ClCompile Include="ScreenSpaceToRt.cpp" />
@@ -213,7 +212,6 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderInstanced.h" />
     <ClInclude Include="RenderSubsystem.h" />
-    <ClInclude Include="RenderTargetTexture.h" />
     <ClInclude Include="RenderTerrain.h" />
     <ClInclude Include="Resources.h" />
     <ClInclude Include="ScreenSpaceToRT.h" />

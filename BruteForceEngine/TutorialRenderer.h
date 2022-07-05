@@ -10,7 +10,6 @@
 #include "ScreenSpaceToRt.h"
 #include "CalcSubsystem.h"
 #include "DepthBuffer.h"
-#include "RenderTargetTexture.h"
 #include "DescriptorHeapManager.h"
 #include <vector>
 #include <memory>
@@ -41,7 +40,7 @@ private:
 public:
     BruteForce::Textures::DepthBuffer m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;
-    BruteForce::Textures::RenderTargetTexture m_RTTextures[RendererNumFrames];
+    BruteForce::Textures::Texture m_RTTextures[RendererNumFrames];
     BruteForce::DescriptorHeap m_RTHeap;
     //BruteForce::DescriptorHeap m_RTSrvHeap;
 

@@ -116,8 +116,15 @@ void TutorialRenderer::Resize(BruteForce::Device& device)
 
         /*for (uint8_t i = 0; i < RendererNumFrames; i++)
         {*/
-            m_RTTextures[0].Assign(device, width, height, render_format);
-            m_RTTextures[0].CreateViews(device, srv_handle, rt_handle);
+            //m_RTTextures[0].Assign(device, width, height, render_format);
+            //m_RTTextures[0].CreateViews(device, srv_handle, rt_handle);
+        BruteForce::Textures::TexMetadata metadata;
+        metadata.format = render_format;
+        metadata.width = width;
+        metadata.height = height;
+        BruteForce::Textures::CreateTexture(m_RTTextures[0], metadata, device, true);
+        m_RTTextures[0].CreateSrv(device, srv_handle);
+        m_RTTextures[0].CreateRtv(device, rt_handle);
 
         /*    rt_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
             srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);

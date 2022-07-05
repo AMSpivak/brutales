@@ -17,26 +17,38 @@ namespace BruteForce
 		private:
 			std::mutex m_mutex;
 			size_t m_Mips;
-			size_t heap_range_srv_index;
-			size_t heap_range_uav_index;
+			size_t m_heap_range_srv_index;
+			size_t m_heap_range_uav_index;
+
+			Resource            m_resource;
+			ResourceStates      m_state;
+			DescriptorHandle    m_rtvDescriptor;
+			float               m_clearColor[4];
+			bool m_render_target;
 		public:
-			Texture() = default;
+			Texture() : m_render_target(false) {};
 			Texture(const Texture &) = default;
 			~Texture() {};
-			Resource image;
-			TargetFormat Format;
+
+			TargetFormat m_format;
 			
 			//DescriptorHandle m_descriptor_handle;
 			void CreateSrv(Device& device, DescriptorHandle& descriptor_handle);
 			void CreateSrv(Device& device, DescriptorHeapRange& descriptor_range, size_t index);
 			void CreateUav(Device& device, DescriptorHandle& descriptor_handle);
 			void CreateUav(Device& device, DescriptorHeapRange& descriptor_range, size_t index);
+			void CreateRtv(Device& device, DescriptorHandle& rt_handle);
+
+			void SetName(LPCWSTR name);
+
+			void TransitionTo(SmartCommandList& commandlist, ResourceStates dst);
+			DescriptorHandle& GetRT();
 
 		friend void LoadTextureFromFile(Texture&, const std::wstring& /*, TextureUsage textureUsage */, Device&, SmartCommandQueue&);
-		friend void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device);
+		friend void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target);
 		};
 
-		void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device);
+		void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target);
 
 		void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue);
 

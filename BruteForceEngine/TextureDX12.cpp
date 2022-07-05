@@ -11,44 +11,87 @@ namespace BruteForce
     {
         void Texture::CreateSrv(Device& device, DescriptorHandle& descriptor_handle)
         {
+            if (m_render_target)
+            {
+                device->CreateShaderResourceView(m_resource.Get(), nullptr, descriptor_handle);
+                return;
+            }
             SrvDesc shaderResourceViewDesc = {};
             shaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
             shaderResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-            shaderResourceViewDesc.Format = Format;
+            shaderResourceViewDesc.Format = m_format;
             shaderResourceViewDesc.Texture2D.MipLevels = static_cast<UINT>(m_Mips);
             shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
             shaderResourceViewDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-            device->CreateShaderResourceView(image.Get(), &shaderResourceViewDesc, descriptor_handle);
+            device->CreateShaderResourceView(m_resource.Get(), &shaderResourceViewDesc, descriptor_handle);
             //m_descriptor_handle = descriptor_handle;
         }
 
         void Texture::CreateSrv(Device& device, DescriptorHeapRange& descriptor_range, size_t index)
         {
             assert(index < descriptor_range.m_Size);
-            heap_range_srv_index = index;
+            m_heap_range_srv_index = index;
             auto descriptor_handle = descriptor_range.m_CpuHandle;
-            descriptor_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav) * heap_range_srv_index;
+            descriptor_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav) * m_heap_range_srv_index;
             CreateSrv(device, descriptor_handle);
         }
 
         void Texture::CreateUav(Device& device, DescriptorHandle& descriptor_handle)
         {
             D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-            uavDesc.Format = Format;
+            uavDesc.Format = m_format;
             uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
             uavDesc.Texture2D.MipSlice = 0;
             uavDesc.Texture2D.PlaneSlice = 0;
-            device->CreateUnorderedAccessView(image.Get(), nullptr, &uavDesc, descriptor_handle);
+            device->CreateUnorderedAccessView(m_resource.Get(), nullptr, &uavDesc, descriptor_handle);
             //m_descriptor_handle = descriptor_handle;
         }
 
         void Texture::CreateUav(Device& device, DescriptorHeapRange& descriptor_range, size_t index)
         {
             assert(index < descriptor_range.m_Size);
-            heap_range_uav_index = index;
+            m_heap_range_uav_index = index;
             auto descriptor_handle = descriptor_range.m_CpuHandle;
-            descriptor_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav) * heap_range_uav_index;
+            descriptor_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav) * m_heap_range_uav_index;
             CreateUav(device, descriptor_handle);
+        }
+
+        void Texture::CreateRtv(Device& device, DescriptorHandle& rt_handle)
+        {
+            if (!m_resource)
+            {
+                return;
+            }
+
+            device->CreateRenderTargetView(m_resource.Get(), nullptr, rt_handle);
+            m_rtvDescriptor = rt_handle;
+        }
+
+        void Texture::SetName(LPCWSTR name)
+        {
+            m_resource->SetName(name);
+        }
+
+        void Texture::TransitionTo(SmartCommandList& commandlist, ResourceStates dst)
+        {
+            if (m_state == dst)
+            {
+                return;
+            }
+
+            ResourceBarrier barrier = BruteForce::ResourceBarrier::Transition(
+                m_resource.Get(),
+                m_state,
+                dst);
+
+            commandlist.command_list->ResourceBarrier(1, &barrier);
+
+            m_state = dst;
+        }
+
+        DescriptorHandle& Texture::GetRT()
+        {
+            return m_rtvDescriptor;
         }
 
         bool FillTextureDescriptor(const DirectX::TexMetadata& metadata, ResourceDesc& textureDesc)
@@ -83,20 +126,47 @@ namespace BruteForce
             return true;
         }
 
-        void CreateTexture(Texture& texture, const DirectX::TexMetadata& metadata, Device& device)
+        void CreateTexture(Texture& texture, const DirectX::TexMetadata& metadata, Device& device, bool render_target)
         {
+            texture.m_render_target = render_target;
             ResourceDesc textureDesc = {};
-            FillTextureDescriptor(metadata, textureDesc);
+            if (render_target)
+            {
+                DirectX::TexMetadata tmp_meta(metadata);
+                tmp_meta.dimension = DirectX::TEX_DIMENSION_TEXTURE2D;
+                tmp_meta.arraySize = 1;
+                FillTextureDescriptor(tmp_meta, textureDesc);
+            }
+            else
+            {
+                FillTextureDescriptor(metadata, textureDesc);
+            }
 
             HeapProperties props(D3D12_HEAP_TYPE_DEFAULT);
             //Resource textureResource;
+
+            D3D12_CLEAR_VALUE* pClearValue = nullptr;
+            texture.m_state = ResourceStateCommon;
+
+            if (render_target)
+            {
+                texture.m_clearColor[0] = texture.m_clearColor[1] = texture.m_clearColor[2] = texture.m_clearColor[3] = 0.0f;
+
+                D3D12_CLEAR_VALUE clearValue = { metadata.format, {} };
+                memcpy(clearValue.Color, texture.m_clearColor, sizeof(clearValue.Color));
+                pClearValue = &clearValue;
+
+                textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+                texture.m_state = ResourceStatesRenderTarget;
+            }
+
             ThrowIfFailed(device->CreateCommittedResource(
                 &props,
                 HeapFlagsNone,
                 &textureDesc,
-                ResourceStateCommon,
-                nullptr,
-                IID_PPV_ARGS(&texture.image)));
+                texture.m_state,
+                pClearValue,
+                IID_PPV_ARGS(&texture.m_resource)));
         }
 
         void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue)
@@ -148,20 +218,8 @@ namespace BruteForce
                 {
                     metadata.format = MakeSRGB(metadata.format);
                 }*/
-                ResourceDesc textureDesc = {};
-                FillTextureDescriptor(metadata, textureDesc);
-                
-                HeapProperties props(D3D12_HEAP_TYPE_DEFAULT);
-                //Resource textureResource;
-                ThrowIfFailed(device->CreateCommittedResource(
-                    &props,
-                    HeapFlagsNone,
-                    &textureDesc,
-                    ResourceStateCommon,
-                    nullptr,
-                    IID_PPV_ARGS(&texture.image)));
 
-                //texture.image = textureResource;
+                CreateTexture(texture, metadata, device, false);
 
                 std::vector<D3D12_SUBRESOURCE_DATA> subresources(scratchImage.GetImageCount());
                 const DirectX::Image* pImages = scratchImage.GetImages();
@@ -175,17 +233,17 @@ namespace BruteForce
                 texture.m_Mips = scratchImage.GetImageCount();
 
                 smart_queue.CopyTextureSubresource(
-                    texture.image,
+                    texture.m_resource,
                     0,
                     static_cast<uint32_t>(subresources.size()),
                     subresources.data(), ResourceStateCommon);
 
-                if (subresources.size() < texture.image->GetDesc().MipLevels)
+                if (subresources.size() < texture.m_resource->GetDesc().MipLevels)
                 {
                     //GenerateMips(texture);
                 }
 
-                texture.Format = metadata.format;
+                texture.m_format = metadata.format;
                 
             }
 
@@ -196,11 +254,11 @@ namespace BruteForce
         {
             auto texture = textures.emplace_back(std::make_shared<BruteForce::Textures::Texture>());
             LoadTextureFromFile(*texture, (content_path + filename), device, copy_queue);
-            texture->image->SetName((L"Texture: " + filename).c_str());
+            texture->SetName((L"Texture: " + filename).c_str());
 
             if (format != TargetFormat_Unknown)
             {
-                texture->Format = format;
+                texture->m_format = format;
             }
 
             texture->CreateSrv(device, p_srv_handle_start);
