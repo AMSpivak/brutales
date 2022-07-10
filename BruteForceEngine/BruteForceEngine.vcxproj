@@ -219,6 +219,7 @@
     <ClInclude Include="ShaderCommon.h" />
     <ClInclude Include="TerrainShadowCB.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TonemapCB.h" />
     <ClInclude Include="TutorialRenderer.h" />
     <ClInclude Include="VideoDriverDX12.h" />
     <ClInclude Include="VideoDriverInterface.h" />

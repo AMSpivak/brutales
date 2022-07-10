@@ -1,3 +1,4 @@
+#include "TonemapCB.h"
 
 float luminance(float3 v)
 {
