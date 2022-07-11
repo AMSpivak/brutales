@@ -4,6 +4,6 @@
 
 CONST_BUFFER(TonemapCB, 0)
 {
-    float Exposure;
+    float CB_Exposure;
 };
 #endif

@@ -179,10 +179,13 @@
     <ClInclude Include="DescriptorHeapManager.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="PlatformTexture.h">
+    <ClInclude Include="TexturePlat.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="TonemapCB.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantBufferPlat.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

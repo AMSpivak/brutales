@@ -193,6 +193,7 @@
     <ClInclude Include="CalcTerrainShadow.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ConstantBuffer.h" />
+    <ClInclude Include="ConstantBufferPlat.h" />
     <ClInclude Include="Controller.h" />
     <ClInclude Include="ControllerWinKeyboard.h" />
     <ClInclude Include="d3dx12.h" />
@@ -208,7 +209,7 @@
     <ClInclude Include="PipelineState.h" />
     <ClInclude Include="PlatformDefine.h" />
     <ClInclude Include="PlatformDX12.h" />
-    <ClInclude Include="PlatformTexture.h" />
+    <ClInclude Include="TexturePlat.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderInstanced.h" />
     <ClInclude Include="RenderSubsystem.h" />

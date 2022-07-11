@@ -115,22 +115,7 @@ namespace BruteForce
 
                 for (int i = 0; i < frames_count; i++)
                 {
-                    auto heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-                    auto res_desc = CD3DX12_RESOURCE_DESC::Buffer(m_TerrainBuffers[i].GetResourceHeapSize());
-                    ThrowIfFailed(device->CreateCommittedResource(
-                        &heap_props,
-                        HeapFlagsNone,
-                        &res_desc,
-                        ResourceStateRead,
-                        nullptr,
-                        IID_PPV_ARGS(&m_TerrainBuffers[i].m_GpuBuffer)));
-
-                    m_TerrainBuffers[i].m_GpuBuffer->SetName(L"Constant Buffer Upload Resource Heap");
-                    D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
-                    cbvDesc.BufferLocation = m_TerrainBuffers[i].m_GpuBuffer->GetGPUVirtualAddress();
-                    cbvDesc.SizeInBytes = static_cast<UINT>(m_TerrainBuffers[i].GetBufferSize());
-                    device->CreateConstantBufferView(&cbvDesc, srv_handle);
-
+                    CreateUploadGPUBuffer(device, m_TerrainBuffers[i], srv_handle);
 
                     m_TerrainBuffers[i].Map();
                     m_TerrainBuffers[i].Update();

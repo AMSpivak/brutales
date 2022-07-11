@@ -1,7 +1,7 @@
 #ifndef BRUTEFORCE_TEXTURE_H
 #define BRUTEFORCE_TEXTURE_H
 //#include "PlatformDefine.h"
-#include "PlatformTexture.h"
+#include "TexturePlat.h"
 #include "EngineGpuCommands.h"
 #include "DescriptorHeapManager.h"
 #include <mutex>

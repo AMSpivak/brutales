@@ -2,6 +2,7 @@
 #define CONSTANT_BUFFER_H
 
 #include "PlatformDefine.h"
+#include "ConstantBufferPlat.h"
 #include "Helpers.h"
 
 namespace BruteForce
