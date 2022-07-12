@@ -12,14 +12,9 @@ struct ModelViewProjection
 
 ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b2);
 
-struct TerrainCB
-{
-    float4 m_PlanesPositions[1024];
-    float4 m_TerrainScaler;
-};
 #include "TerrainVertexCB.h"
 
-ConstantBuffer<TerrainCB> PlanesCB[3] : register(b17);
+ConstantBuffer<TerrainVertexCB> PlanesCB[3] : register(b17);
 
 struct VertexPosColor
 {

@@ -78,7 +78,7 @@ namespace BruteForce
                 delete[] m_TerrainBuffers;
             }
 
-            m_TerrainBuffers = new ConstantBuffer<TerrainCB>[frames_count];
+            m_TerrainBuffers = new ConstantBuffer<TerrainVertexCB>[frames_count];
 
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path{ settings.GetExecuteDirWchar() };
