@@ -2,6 +2,7 @@
 #define CONSTANT_BUFFER_PLAT_H
 
 #include "PlatformDefine.h"
+#include "Helpers.h"
 
 namespace BruteForce
 {
@@ -26,6 +27,14 @@ namespace BruteForce
         cbvDesc.SizeInBytes = static_cast<UINT>(buffer.GetBufferSize());
         device->CreateConstantBufferView(&cbvDesc, cb_handle);
     }
+
+    template <typename CBStruct>
+    void MapUploadCB(CBStruct& buffer)
+    {
+        CD3DX12_RANGE readRange(0, 0);    // We do not intend to read from this resource on the CPU. (End is less than or equal to begin)
+        ThrowIfFailed(buffer.m_GpuBuffer->Map(0, &readRange, reinterpret_cast<void**>(&buffer.m_GpuAddress)));
+    }
+
 
 #endif
 }

@@ -6,7 +6,9 @@
 #include <vector>
 #include <memory>
 #include "ConstantBuffer.h"
-#include <memory>
+//#include "ShaderCppTypesRedefine.h"
+
+
 namespace BruteForce
 {
     namespace Render
@@ -14,11 +16,14 @@ namespace BruteForce
         class RenderTerrain : public RenderSubsystem
         {
         private:
-            struct TerrainCB
+            #include "ShaderCppTypesRedefine.h"
+            #include "TerrainVertexCB.h"
+
+            /*struct TerrainCB
             {               
                 Math::Vec4Float m_PlanesPositions[1024];
                 Math::Vec4Float m_TerrainScaler;
-            };
+            };*/
             ConstantBuffer<TerrainCB>* m_TerrainBuffers;
             std::vector<std::shared_ptr<Textures::Texture>> m_textures;
             DescriptorHeap m_SVRHeap;

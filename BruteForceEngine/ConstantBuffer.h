@@ -43,8 +43,7 @@ namespace BruteForce
 
 		void Map()
 		{
-			CD3DX12_RANGE readRange(0, 0);    // We do not intend to read from this resource on the CPU. (End is less than or equal to begin)
-			ThrowIfFailed(m_GpuBuffer->Map(0, &readRange, reinterpret_cast<void**>(&m_GpuAddress)));
+			MapUploadCB(*this);
 		}
 
 		bool Update()
