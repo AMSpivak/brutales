@@ -246,8 +246,7 @@ namespace BruteForce
             commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
             commandList->SetGraphicsRootDescriptorTable(0, render_dest.HeapManager.GetGpuDescriptorHandle());
-            commandList->SetGraphicsRootDescriptorTable(1,
-                m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());
+            commandList->SetGraphicsRootDescriptorTable(1, m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());
 
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             commandList->IASetVertexBuffers(0, 1, &m_plane.m_VertexBufferView);
