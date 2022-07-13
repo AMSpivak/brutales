@@ -13,8 +13,6 @@ namespace BruteForce
             //DescriptorHeap m_SrvHeapPtr;
             std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvDescriptors;
             DescriptorHeap m_SamplerHeap;
-            pResource m_IndexBuffer;
-            IndexBufferView m_IndexBufferView;
         public:
             ScreenSpaceToRt();
             virtual ~ScreenSpaceToRt();

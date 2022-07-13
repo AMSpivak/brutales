@@ -12,7 +12,6 @@ namespace BruteForce
         }
         ScreenSpaceToRt::~ScreenSpaceToRt()
         {
-            m_IndexBuffer->Release();
         }
         void ScreenSpaceToRt::Update(float delta_time, uint8_t frame_index)
         {
@@ -124,26 +123,6 @@ namespace BruteForce
             };
             ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
             m_PipelineState->SetName(L"Tone mapping PSO");
-
-
-            size_t num_indexes = 3;
-            WORD* indexes = new WORD[num_indexes]{0,2,1};
-
-            SmartCommandQueue smart_queue(device, BruteForce::CommandListTypeDirect);
-            auto commandList = smart_queue.GetCommandList();
-            BruteForce::pResource intermediateIndexBuffer;
-            BruteForce::UpdateBufferResource(device, commandList,
-                &m_IndexBuffer, &intermediateIndexBuffer,
-                num_indexes, sizeof(WORD), indexes);
-
-            m_IndexBufferView.BufferLocation = m_IndexBuffer->GetGPUVirtualAddress();
-            m_IndexBufferView.Format = TargetFormat_R16_UInt;
-            m_IndexBufferView.SizeInBytes = static_cast<UINT>(sizeof(WORD) * num_indexes);
-
-
-            auto fenceValue = smart_queue.ExecuteCommandList(commandList);
-            smart_queue.WaitForFenceValue(fenceValue);
-            intermediateIndexBuffer->Release();
         }
 
         SmartCommandList& ScreenSpaceToRt::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)
@@ -165,12 +144,12 @@ namespace BruteForce
 
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             commandList->IASetVertexBuffers(0, 1, NULL);
-            commandList->IASetIndexBuffer(&m_IndexBufferView);
+            commandList->IASetIndexBuffer(NULL);
             commandList->RSSetViewports(1, render_dest.m_Viewport);
             commandList->RSSetScissorRects(1, render_dest.m_ScissorRect);
             commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, NULL);
 
-            commandList->DrawIndexedInstanced(3, 1, 0, 0, 0);;
+            commandList->DrawInstanced(3, 1, 0, 0);
             return smart_command_list;
         }
 
