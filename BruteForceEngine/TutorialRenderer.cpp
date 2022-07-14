@@ -88,7 +88,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
     return true;
 }
 
-void TutorialRenderer::Update(float delta_time)
+void TutorialRenderer::Update(float delta_time, BruteForce::SmartCommandQueue& compute_SmartCommandQueue)
 {
     m_time += delta_time;
 }

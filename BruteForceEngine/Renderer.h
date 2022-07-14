@@ -22,6 +22,7 @@ namespace BruteForce
         // Use WARP adapter
         Device& m_Device;
         SmartCommandQueue m_SmartCommandQueue;
+        SmartCommandQueue m_ComputeSmartCommandQueue;
         Resource m_BackBuffers[t_NumFrames];
         DescriptorHeap m_BackBuffersDHeap;
         UINT m_RTVDescriptorSize;
@@ -35,7 +36,7 @@ namespace BruteForce
         Viewport m_Viewport;
         ScissorRect m_ScissorRect;
         Renderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp) : m_Window(pWindow), m_NumFrames(t_NumFrames), m_Device(device)
-                , m_SmartCommandQueue(m_Device, BruteForce::CommandListTypeDirect)
+                , m_SmartCommandQueue(m_Device, BruteForce::CommandListTypeDirect), m_ComputeSmartCommandQueue(m_Device, BruteForce::CommandListTypeCompute)
         {
             m_Window->CreateSwapChain(m_SmartCommandQueue, m_NumFrames, TargetFormat_R8G8B8A8_Unorm);
             auto& refSwapChain = m_Window->GetSwapChainReference();

@@ -59,7 +59,7 @@ public:
 
     bool LoadContent(BruteForce::Device& device);
     void Resize(BruteForce::Device& device);
-    void Update(float delta_time_ms);
+    void Update(float delta_time_ms, BruteForce::SmartCommandQueue& compute_SmartCommandQueue);
     void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue);
     BruteForce::Camera* GetCameraPtr();
 };

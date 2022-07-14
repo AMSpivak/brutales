@@ -163,7 +163,7 @@ void Update()
     }
     
 
-    p_Renderer->Update(msecs);
+    p_Renderer->Update(msecs, p_Renderer->m_ComputeSmartCommandQueue);
 
     if (elapsedSeconds > 1.0)
     {
