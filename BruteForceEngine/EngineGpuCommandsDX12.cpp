@@ -147,15 +147,30 @@ namespace BruteForce
         command_list->SetPipelineState(state.Get());
     }
 
-    void SmartCommandList::SetRootSignature(const RootSignature& signature)
+    void SmartCommandList::SetGraphicsRootSignature(const RootSignature& signature)
     {
         command_list->SetGraphicsRootSignature(signature.Get());
+    }
+
+    void SmartCommandList::SetComputeRootSignature(const RootSignature& signature)
+    {
+        command_list->SetComputeRootSignature(signature.Get());
     }
 
 
     uint64_t SmartCommandQueue::Signal()
     {
         return m_fence.Signal(m_command_queue);
+    }
+
+    bool SmartCommandQueue::IsFenceCompleted()
+    {
+        return m_fence.IsCompleted();
+    }
+
+    bool SmartCommandQueue::IsFenceCompleted(uint64_t fenceValue)
+    {
+        return m_fence.IsCompleted(fenceValue);
     }
 
     void SmartCommandQueue::WaitForFenceValue(uint64_t fenceValue, std::chrono::milliseconds duration)

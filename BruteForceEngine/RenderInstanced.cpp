@@ -147,7 +147,7 @@ namespace BruteForce
         {
             auto& commandList = smart_command_list.command_list;
             smart_command_list.SetPipelineState(m_PipelineState);
-            smart_command_list.SetRootSignature(m_RootSignature);
+            smart_command_list.SetGraphicsRootSignature(m_RootSignature);
 
             ID3D12DescriptorHeap* ppHeaps[] = { m_SVRHeap.Get(), m_SamplerHeap.Get() };
             commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);

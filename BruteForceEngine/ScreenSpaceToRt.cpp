@@ -75,12 +75,9 @@ namespace BruteForce
             descRangeSamp.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);
 
             CD3DX12_ROOT_PARAMETER1 rootParameters[2];
-            //rootParameters[2].InitAsConstants(1, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
             rootParameters[0].InitAsDescriptorTable(1, &descRange, D3D12_SHADER_VISIBILITY_PIXEL);
             rootParameters[1].InitAsDescriptorTable(1, &descRangeSamp, D3D12_SHADER_VISIBILITY_ALL);
 
-            //CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDescription;
-            //rootSignatureDescription.Init(3, rootParameters);
             CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
 
             rootSignatureDescription.Init_1_1(_countof(rootParameters), rootParameters, 0, nullptr, rootSignatureFlags);
@@ -132,7 +129,7 @@ namespace BruteForce
 
             auto& commandList = smart_command_list.command_list;
             smart_command_list.SetPipelineState(m_PipelineState);
-            smart_command_list.SetRootSignature(m_RootSignature);
+            smart_command_list.SetGraphicsRootSignature(m_RootSignature);
 
             ID3D12DescriptorHeap* ppHeaps[] = { render_dest.HeapManager.GetDescriptorHeapPointer(), m_SamplerHeap.Get()};
             commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);

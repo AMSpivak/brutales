@@ -27,7 +27,8 @@ namespace BruteForce
         void ClearRTV(DescriptorHandle& rtv, const FLOAT* clearColor);
         void ClearDSV(DescriptorHandle& dsv, bool depth, bool stencil, FLOAT depth_val, UINT8 stencil_val);
         void SetPipelineState(const PipelineState& state);
-        void SetRootSignature(const RootSignature& signature);
+        void SetGraphicsRootSignature(const RootSignature& signature);
+        void SetComputeRootSignature(const RootSignature& signature);
     };
 
 
@@ -41,6 +42,8 @@ namespace BruteForce
         SmartCommandList GetCommandList();
         uint64_t ExecuteCommandList(SmartCommandList& list);
         uint64_t Signal();
+        bool IsFenceCompleted();
+        bool IsFenceCompleted(uint64_t fenceValue);
         void WaitForFenceValue(uint64_t fenceValue, std::chrono::milliseconds duration = std::chrono::milliseconds::max());
         void CopyTextureSubresource(Resource& desttexture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData, ResourceStates finalResourceState);
 
