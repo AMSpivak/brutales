@@ -94,8 +94,11 @@ namespace BruteForce
         SmartCommandList& CalcTerrainShadow::PrepareRenderCommandList(SmartCommandList& smart_command_list)
         {
             auto& command_list = smart_command_list.command_list;
+            smart_command_list.SetPipelineState(m_PipelineState);
+            smart_command_list.SetComputeRootSignature(m_RootSignature);
 
 
+            command_list->Dispatch( 5, 1, 1);
             //command_list
             // TODO: insert return statement here
             return smart_command_list;

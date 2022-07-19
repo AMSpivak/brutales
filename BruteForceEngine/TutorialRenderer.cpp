@@ -135,7 +135,18 @@ void TutorialRenderer::Resize(BruteForce::Device& device)
 
 void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue)
 {
+    auto smart_compute_command_list = m_ComputeSmartCommandQueue.GetCommandList();
+
+    for (auto& subsystem : m_CalcSystems)
+    {
+        subsystem->PrepareRenderCommandList(smart_compute_command_list);
+        //m_ComputeSmartCommandQueue
+    }
+    m_ComputeSmartCommandQueue.ExecuteCommandList(smart_compute_command_list);
+
     std::vector<BruteForce::SmartCommandList> command_lists;
+
+    
 
     BruteForce::CDescriptorHandle rtv(m_BackBuffersDHeap->GetCPUDescriptorHandleForHeapStart(), m_CurrentBackBufferIndex, m_RTVDescriptorSize);
     BruteForce::DescriptorHandle dsv = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
