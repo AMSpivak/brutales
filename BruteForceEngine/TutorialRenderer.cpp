@@ -43,7 +43,9 @@ TutorialRenderer::TutorialRenderer(BruteForce::Device& device,
     }
 
     m_SRV_Heap.Create(device, 1000, BruteForce::DescriptorHeapCvbSrvUav);
-
+    constexpr UINT sun_shadows = 1;
+    //SunShadowSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, sun_shadows, BruteForce::DescriptorRangeTypeSrv, "SunShadowsSrvs");
+    //SunShadowUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, sun_shadows, BruteForce::DescriptorRangeTypeUav, "SunShadowsUavs");
     RTSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RendererNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsSrvs");
     m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderTerrain>());
     //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderInstanced>());

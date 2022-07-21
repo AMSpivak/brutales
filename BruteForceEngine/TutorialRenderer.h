@@ -36,6 +36,8 @@ private:
     BruteForce::Render::ScreenSpaceToRt m_ToneMapper;
     BruteForce::TargetFormat m_OutputFormat;
     std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvDescriptors;
+    //std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowSrvDescriptors;
+    //std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowUavDescriptors;
     BruteForce::DescriptorHeapManager& m_SRV_Heap;
 public:
     BruteForce::Textures::DepthBuffer m_DepthBuffer;
