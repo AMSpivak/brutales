@@ -40,6 +40,11 @@ namespace BruteForce
 		return managed_range;
 	}
 
+	std::shared_ptr<DescriptorHeapRange> DescriptorHeapManager::GetManagedRange(const std::string& name)
+	{
+		return m_Atlas.Find(name);
+	}
+
 	DescriptorHandleGpu DescriptorHeapManager::GetGpuDescriptorHandle()
 	{
 		return m_Heap->GetGPUDescriptorHandleForHeapStart();

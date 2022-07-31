@@ -81,7 +81,6 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
                                                             BruteForce::TargetFormat_D32_Float
     };
 
-    m_ToneMapper.SetRenderParameter(RTSrvDescriptors);
     m_ToneMapper.LoadContent(device, m_NumFrames, desc_rt, m_CopyCommandQueue, m_SRV_Heap);
     m_ContentLoaded = true;
 

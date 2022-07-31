@@ -40,6 +40,7 @@ namespace BruteForce
 		void Create(Device& device, size_t size, DescriptorHeapType HeapType);
 		DescriptorHandle AllocateRange(Device& device, size_t size, DescriptorHeapRange& range);
 		std::shared_ptr<DescriptorHeapRange> AllocateManagedRange(Device& device, size_t size, DescriptorRangeType type, const std::string& name);
+		std::shared_ptr<DescriptorHeapRange> GetManagedRange(const std::string& name);
 		DescriptorHandleGpu GetGpuDescriptorHandle();
 		pDescriptorHeap GetDescriptorHeapPointer();
 	};

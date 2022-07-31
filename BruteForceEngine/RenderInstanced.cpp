@@ -20,7 +20,7 @@ namespace BruteForce
         void RenderInstanced::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue, DescriptorHeapManager& descriptor_heap_manager)
         {
             auto& settings = BruteForce::GetSettings();
-            std::wstring content_path { settings.GetExecuteDirWchar() };
+            std::wstring content_path{ settings.GetExecuteDirWchar() };
 
             {
                 D3D12_DESCRIPTOR_HEAP_DESC descHeapSampler = {};
@@ -54,7 +54,7 @@ namespace BruteForce
                 descHeapCbvSrv.Flags = BruteForce::DescriptorHeapShaderVisible;
                 ThrowIfFailed(device->CreateDescriptorHeap(&descHeapCbvSrv, __uuidof(ID3D12DescriptorHeap), (void**)&m_SVRHeap));
 
-                
+
                 auto srv_handle = m_SVRHeap->GetCPUDescriptorHandleForHeapStart();
                 BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_path, m_textures, device, srv_handle);
             }
@@ -72,12 +72,7 @@ namespace BruteForce
                 { "COLOR", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
             };
 
-            D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
-            featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
-            if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
-            {
-                featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
-            }
+
 
             D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
                 D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
@@ -100,15 +95,24 @@ namespace BruteForce
             CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
 
             rootSignatureDescription.Init_1_1(_countof(rootParameters), rootParameters, 0, nullptr, rootSignatureFlags);
+            
+            {
+                D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
+                featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
+                if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
+                {
+                    featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
+                }
 
-            BruteForce::DataBlob rootSignatureBlob;
-            BruteForce::DataBlob errorBlob;
-            ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&rootSignatureDescription,
-                featureData.HighestVersion, &rootSignatureBlob, &errorBlob));
+                BruteForce::DataBlob rootSignatureBlob;
+                BruteForce::DataBlob errorBlob;
+                ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&rootSignatureDescription,
+                    featureData.HighestVersion, &rootSignatureBlob, &errorBlob));
 
-            // Create the root signature.
-            ThrowIfFailed(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
-                rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)));
+                // Create the root signature.
+                ThrowIfFailed(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
+                    rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)));
+            }
 
 
             struct PipelineStateStream

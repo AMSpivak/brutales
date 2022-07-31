@@ -64,10 +64,9 @@ namespace BruteForce
 
             CD3DX12_DESCRIPTOR_RANGE1 descRange;
 
-            /*if (!RTSrvDescriptors)
-            {
-                RTSrvDescriptors = descriptor_heap_manager.
-            }*/
+            RTSrvDescriptors = descriptor_heap_manager.GetManagedRange("RenderTargetsSrvs");
+            assert(RTSrvDescriptors);
+
             RTSrvDescriptors->Fill(&descRange, 0);
             descRange.NumDescriptors = 1;
 
@@ -148,11 +147,6 @@ namespace BruteForce
 
             commandList->DrawInstanced(3, 1, 0, 0);
             return smart_command_list;
-        }
-
-        void ScreenSpaceToRt::SetRenderParameter(decltype(RTSrvDescriptors) SrvPtr)
-        {
-            RTSrvDescriptors = SrvPtr;
         }
     }
 }
