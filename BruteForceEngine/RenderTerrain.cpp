@@ -2,6 +2,7 @@
 #include "Helpers.h"
 #include "IndexedGeometryGenerator.h"
 #include "Settings.h"
+#include "GameEnvironment.h"
 
 
 namespace BruteForce
@@ -47,8 +48,10 @@ namespace BruteForce
                 plate_half_widht *= 2.0f;
             }
             float plane_mesh_step = 1.0f / 100;
-
-            m_TerrainBuffers[index].m_CpuBuffer->m_TerrainScaler = Math::Vec4Float{ 0.0002f,500.0f, 0.0002f,  plane_mesh_step };
+            
+            auto terrain_scaler = GlobalLevelInfo::ReadGlobalTerrainInfo().m_TerrainScaler;
+            terrain_scaler.w = plane_mesh_step;
+            m_TerrainBuffers[index].m_CpuBuffer->m_TerrainScaler = terrain_scaler;
 
             m_TerrainBuffers[index].Update();
 
@@ -126,7 +129,8 @@ namespace BruteForce
 
             {
                 {
-                    HeightmapTexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(2), BruteForce::DescriptorRangeTypeSrv, "TerrainHeightmapTextures");
+                    HeightmapTexturesRange = descriptor_heap_manager.GetManagedRange("TerrainHeightmapTextures");
+                    assert(HeightmapTexturesRange);
                     auto& srv_handle = HeightmapTexturesRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(textures_count), TexturesRange);
                     BruteForce::Textures::AddTexture(content_path, { L"desert_map_16.png" }, m_textures, device, copy_queue, srv_handle);
                     BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, device, copy_queue, srv_handle, TargetFormat_R8G8B8A8_UInt);
@@ -138,6 +142,8 @@ namespace BruteForce
                 auto& srv_handle = TexturesRange->m_CpuHandle;
                 BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_path, m_textures, device, copy_queue, srv_handle);
             }
+
+            SunShadowSrvDescriptors = descriptor_heap_manager.GetManagedRange("TerrainShadowSrvs");
 
             BruteForce::DataBlob vertexShaderBlob;
             ThrowIfFailed(D3DReadFileToBlob((content_path + L"TerrainVertexShader.cso").c_str(), &vertexShaderBlob));
@@ -163,18 +169,18 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-            DescriptorRange descRange[3];
-            TexturesRange->Fill(&descRange[0], 2);
-            HeightmapTexturesRange->Fill(&descRange[1], 0);
-            CbvRange->Fill(&descRange[2], 17);
-
+            DescriptorRange descRange[4];
+            TexturesRange->Fill(descRange[0], 5);
+            HeightmapTexturesRange->Fill(descRange[1], 0);
+            CbvRange->Fill(descRange[2], 17);
+            SunShadowSrvDescriptors->Fill(descRange[3], 2);
 
             CD3DX12_DESCRIPTOR_RANGE1 descRangeSamp;
             descRangeSamp.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);
 
             CD3DX12_ROOT_PARAMETER1 rootParameters[4];
             rootParameters[3].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 2, 0, D3D12_SHADER_VISIBILITY_VERTEX);
-            rootParameters[2].InitAsConstants(1, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+            rootParameters[2].InitAsConstants(1, 0, 0, D3D12_SHADER_VISIBILITY_ALL);
             rootParameters[0].InitAsDescriptorTable(_countof(descRange), descRange, D3D12_SHADER_VISIBILITY_ALL);
             rootParameters[1].InitAsDescriptorTable(1, &descRangeSamp, D3D12_SHADER_VISIBILITY_ALL);
 
@@ -192,7 +198,7 @@ namespace BruteForce
             // Create the root signature.
             ThrowIfFailed(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
                 rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)));
-
+            m_RootSignature->SetName(L"Render terrain RS");
 
             struct PipelineStateStream
             {
@@ -224,7 +230,7 @@ namespace BruteForce
                 sizeof(PipelineStateStream), &pipelineStateStream
             };
             ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
-            m_PipelineState->SetName(L"Pipeline state");
+            m_PipelineState->SetName(L"Render terrain PSO");
             Geometry::CreatePlane<VertexPos>(device, m_plane, 100, 100, 1.0f, 1.0f);
             //Geometry::CreatePlane<VertexPos>(device, m_plane, 3, 3, 1.0f, 1.0f);
         }

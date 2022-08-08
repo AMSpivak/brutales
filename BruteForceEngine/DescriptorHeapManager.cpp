@@ -56,10 +56,10 @@ namespace BruteForce
 	}
 
 
-	void DescriptorHeapRange::Fill(DescriptorRange* range, size_t reg)
+	void DescriptorHeapRange::Fill(DescriptorRange& range, size_t reg)
 	{
-		range->Init(m_Type, static_cast<UINT>(m_Size), static_cast<UINT>(reg));
-		range->OffsetInDescriptorsFromTableStart = static_cast<UINT>(m_Start);
+		range.Init(m_Type, static_cast<UINT>(m_Size), static_cast<UINT>(reg));
+		range.OffsetInDescriptorsFromTableStart = static_cast<UINT>(m_Start);
 	}
 
 }

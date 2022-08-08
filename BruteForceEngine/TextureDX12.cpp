@@ -110,6 +110,7 @@ namespace BruteForce
                     static_cast<UINT64>(metadata.width),
                     static_cast<UINT>(metadata.height),
                     static_cast<UINT16>(metadata.arraySize));
+                textureDesc.MipLevels = metadata.mipLevels;
                 break;
             case DirectX::TEX_DIMENSION_TEXTURE3D:
                 textureDesc = CD3DX12_RESOURCE_DESC::Tex3D(
@@ -126,7 +127,7 @@ namespace BruteForce
             return true;
         }
 
-        void CreateTexture(Texture& texture, const DirectX::TexMetadata& metadata, Device& device, bool render_target)
+        void CreateTexture(Texture& texture, const DirectX::TexMetadata& metadata, Device& device, bool render_target, bool is_uav)
         {
             texture.m_render_target = render_target;
             ResourceDesc textureDesc = {};
@@ -135,11 +136,14 @@ namespace BruteForce
                 DirectX::TexMetadata tmp_meta(metadata);
                 tmp_meta.dimension = DirectX::TEX_DIMENSION_TEXTURE2D;
                 tmp_meta.arraySize = 1;
+                tmp_meta.mipLevels = 1;
                 FillTextureDescriptor(tmp_meta, textureDesc);
+                texture.m_Mips = 1;
             }
             else
             {
                 FillTextureDescriptor(metadata, textureDesc);
+                texture.m_Mips = metadata.mipLevels;
             }
 
             HeapProperties props(D3D12_HEAP_TYPE_DEFAULT);
@@ -147,7 +151,7 @@ namespace BruteForce
 
             D3D12_CLEAR_VALUE* pClearValue = nullptr;
             texture.m_state = ResourceStateCommon;
-
+            
             if (render_target)
             {
                 texture.m_clearColor[0] = texture.m_clearColor[1] = texture.m_clearColor[2] = texture.m_clearColor[3] = 0.0f;
@@ -159,6 +163,12 @@ namespace BruteForce
                 textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
                 texture.m_state = ResourceStatesRenderTarget;
             }
+            if (is_uav)
+            {
+                textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+                //pClearValue = nullptr;
+            }
+ 
 
             ThrowIfFailed(device->CreateCommittedResource(
                 &props,
@@ -219,7 +229,7 @@ namespace BruteForce
                     metadata.format = MakeSRGB(metadata.format);
                 }*/
 
-                CreateTexture(texture, metadata, device, false);
+                CreateTexture(texture, metadata, device, false, false);
 
                 std::vector<D3D12_SUBRESOURCE_DATA> subresources(scratchImage.GetImageCount());
                 const DirectX::Image* pImages = scratchImage.GetImages();

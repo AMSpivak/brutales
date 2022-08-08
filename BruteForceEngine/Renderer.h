@@ -18,6 +18,7 @@ namespace BruteForce
     protected:
         BruteForce::Window* m_Window;
         const uint8_t m_NumFrames;
+        const  BruteForce::TargetFormat m_TargetFormat;
     public:
         // Use WARP adapter
         Device& m_Device;
@@ -35,10 +36,11 @@ namespace BruteForce
 
         Viewport m_Viewport;
         ScissorRect m_ScissorRect;
-        Renderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp) : m_Window(pWindow), m_NumFrames(t_NumFrames), m_Device(device)
+        Renderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp, BruteForce::TargetFormat t_format) : m_Window(pWindow), m_NumFrames(t_NumFrames)
+                , m_Device(device), m_TargetFormat(t_format)
                 , m_SmartCommandQueue(m_Device, BruteForce::CommandListTypeDirect), m_ComputeSmartCommandQueue(m_Device, BruteForce::CommandListTypeCompute)
         {
-            m_Window->CreateSwapChain(m_SmartCommandQueue, m_NumFrames, TargetFormat_R8G8B8A8_Unorm);
+            m_Window->CreateSwapChain(m_SmartCommandQueue, m_NumFrames, m_TargetFormat);
             auto& refSwapChain = m_Window->GetSwapChainReference();
 
             m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();

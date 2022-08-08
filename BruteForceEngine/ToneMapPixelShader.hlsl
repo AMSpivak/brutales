@@ -56,6 +56,8 @@ float4 main(PixelShaderInput IN) : SV_Target
     float p = 1.0f;
     float3 color = lerp(c_night, c_day, p) * texture0.Sample(sampl, IN.Tex).xyz;
 
-    float exposure_bias = 0.05f;
-    return float4(uncharted2_filmic(color, exposure_bias), 1.0f);
+    float exposure_bias = 0.1f;
+    float3 result = uncharted2_filmic(color, exposure_bias);
+    result = pow(result, 2.2f);
+    return float4(result, 1.0f);
 }

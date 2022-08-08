@@ -67,7 +67,7 @@ namespace BruteForce
             RTSrvDescriptors = descriptor_heap_manager.GetManagedRange("RenderTargetsSrvs");
             assert(RTSrvDescriptors);
 
-            RTSrvDescriptors->Fill(&descRange, 0);
+            RTSrvDescriptors->Fill(descRange, 0);
             descRange.NumDescriptors = 1;
 
             CD3DX12_DESCRIPTOR_RANGE1 descRangeSamp;

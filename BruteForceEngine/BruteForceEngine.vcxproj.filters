@@ -66,10 +66,13 @@
     <ClCompile Include="ScreenSpaceToRt.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="CalcTerrainShadow.cpp">
+    <ClCompile Include="ComputeTerrainShadow.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="DescriptorHeapManager.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEnvironment.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
@@ -158,7 +161,7 @@
     <ClInclude Include="ScreenSpaceToRT.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="CalcSubsystem.h">
+    <ClInclude Include="ComputeSubsystem.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="ShaderCommon.h">
@@ -170,7 +173,7 @@
     <ClInclude Include="Atlas.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="CalcTerrainShadow.h">
+    <ClInclude Include="ComputeTerrainShadow.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="AAVasiliev\PlatformPoint.h">

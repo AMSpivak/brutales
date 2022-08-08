@@ -20,7 +20,7 @@ namespace BruteForce
 		DescriptorHeapRange(const std::string &name, DescriptorRangeType type):m_Start(0), m_Size(0), m_CpuHandle(), m_Type(type), m_Name(name) {}
 
 		//DescriptorHeapRange(size_t start, size_t size, DescriptorRangeType const std::string &name):m_Start(start), m_Size(size), m_Name(name) {}
-		void Fill(DescriptorRange* range, size_t reg);
+		void Fill(DescriptorRange& range, size_t reg);
 	};
 
 

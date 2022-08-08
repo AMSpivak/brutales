@@ -24,7 +24,7 @@ namespace BruteForce
 			ResourceStates      m_state;
 			DescriptorHandle    m_rtvDescriptor;
 			float               m_clearColor[4];
-			bool m_render_target;
+			bool				m_render_target;
 		public:
 			Texture() : m_render_target(false) {};
 			Texture(const Texture &) = default;
@@ -45,10 +45,10 @@ namespace BruteForce
 			DescriptorHandle& GetRT();
 
 		friend void LoadTextureFromFile(Texture&, const std::wstring& /*, TextureUsage textureUsage */, Device&, SmartCommandQueue&);
-		friend void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target);
+		friend void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav);
 		};
 
-		void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target);
+		void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav);
 
 		void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue);
 

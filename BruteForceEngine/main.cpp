@@ -249,7 +249,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
         g_ClientWidth, g_ClientHeight);
     
     p_HeapManager = new BruteForce::DescriptorHeapManager();
-    p_Renderer = new TutorialRenderer(g_Device, pWindow, false, *p_HeapManager);
+    p_Renderer = new TutorialRenderer(g_Device, pWindow, false, BruteForce::TargetFormat_R8G8B8A8_Unorm,*p_HeapManager);
 
     p_Renderer->LoadContent(g_Device);
     test_controller = new BruteForce::Controller::ControllerWinKey();

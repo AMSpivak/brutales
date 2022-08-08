@@ -128,7 +128,7 @@ namespace BruteForce
 
             D3D12_RT_FORMAT_ARRAY rtvFormats = {};
             rtvFormats.NumRenderTargets = 1;
-            rtvFormats.RTFormats[0] = TargetFormat_R8G8B8A8_Unorm;
+            rtvFormats.RTFormats[0] = desc.RTFormat;
 
             pipelineStateStream.pRootSignature = m_RootSignature.Get();
             pipelineStateStream.InputLayout = { inputLayout, _countof(inputLayout) };

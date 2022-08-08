@@ -8,7 +8,7 @@
 #include "Camera.h"
 #include "RenderSubsystem.h"
 #include "ScreenSpaceToRt.h"
-#include "CalcSubsystem.h"
+#include "ComputeSubsystem.h"
 #include "DepthBuffer.h"
 #include "DescriptorHeapManager.h"
 #include <vector>
@@ -32,13 +32,16 @@ class TutorialRenderer :
 private: 
     BruteForce::SmartCommandQueue m_CopyCommandQueue;
     std::vector<std::shared_ptr<BruteForce::Render::RenderSubsystem>> m_RenderSystems;
-    std::vector<std::shared_ptr<BruteForce::Render::CalcSubsystem>> m_CalcSystems;
+    std::vector<std::shared_ptr<BruteForce::Compute::ComputeSubsystem>> m_CalcSystems;
     BruteForce::Render::ScreenSpaceToRt m_ToneMapper;
-    BruteForce::TargetFormat m_OutputFormat;
-    std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvDescriptors;
-    //std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowSrvDescriptors;
-    //std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowUavDescriptors;
     BruteForce::DescriptorHeapManager& m_SRV_Heap;
+    std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvDescriptors;
+    std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowSrvDescriptors;
+    std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowUavDescriptors;
+    std::shared_ptr<BruteForce::DescriptorHeapRange> HeightmapTexturesRange;
+
+    BruteForce::Textures::Texture m_ShadowTextures[RendererNumFrames];
+    void CreateCommonResources(BruteForce::Device& device);
 public:
     BruteForce::Textures::DepthBuffer m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;
@@ -54,7 +57,7 @@ public:
 
     TutorialRenderer(BruteForce::Device& device,
         BruteForce::Window* pWindow,
-        bool UseWarp,
+        bool UseWarp, BruteForce::TargetFormat t_format,
         BruteForce::DescriptorHeapManager& SRV_Heap);
 
     ~TutorialRenderer();

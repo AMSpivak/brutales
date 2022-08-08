@@ -2,11 +2,10 @@
 #define GAME_ENVIRONMENT_H
 
 #include "PlatformDefine.h"
-#include "ConstantBuffer.h"
 
 namespace BruteForce
 {
-    namespace Atmosphere
+    namespace GlobalLevelInfo
     {
         struct AtmosphereCB
         {
@@ -14,6 +13,13 @@ namespace BruteForce
             Math::Vec4Float m_SunDirection;
             //uint32_t m_PlanesCount;
         };
+        struct TerrainInfo
+        {
+            Math::Vec4Float m_TerrainScaler;
+        };
+
+        TerrainInfo& GetGlobalTerrainInfo();
+        const TerrainInfo& ReadGlobalTerrainInfo();
 
         // ConstantBuffer<AtmosphereCB>* GetAtmosphereCB(uint8_t frame_index);
     }

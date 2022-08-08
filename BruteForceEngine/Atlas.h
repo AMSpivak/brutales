@@ -107,12 +107,10 @@ namespace BruteForce
             auto it = m_map.find(hash);
             if (it != m_map.end())
             {
-                std::cout << "Reuse element: " << filename << "\n";
                 return it->second.lock();
             }
             auto resource = std::shared_ptr<T>(new T(m_resourse_folder + filename, params...), Deleter(this, hash));
             m_map.insert(std::pair<const size_t, std::weak_ptr<T>>(hash, resource));
-            std::cout << "New element: " << filename << "\n";
             return resource;
 
         }
@@ -123,7 +121,6 @@ namespace BruteForce
             auto it = m_map.find(hash);
             if (it != m_map.end())
             {
-                std::cout << "Found element: " << filename << "\n";
                 return it->second.lock();
             }
             return std::shared_ptr<T>(nullptr);

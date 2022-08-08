@@ -27,6 +27,7 @@ namespace BruteForce
             std::shared_ptr<DescriptorHeapRange> TexturesRange;
             std::shared_ptr<DescriptorHeapRange> HeightmapTexturesRange;
             std::shared_ptr <DescriptorHeapRange> CbvRange;
+            std::shared_ptr <DescriptorHeapRange> SunShadowSrvDescriptors;
         public:
             RenderTerrain();
             virtual ~RenderTerrain();

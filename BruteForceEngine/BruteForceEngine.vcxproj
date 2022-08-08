@@ -167,7 +167,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CalcTerrainShadow.cpp" />
+    <ClCompile Include="ComputeTerrainShadow.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ControllerWinKeyboard.cpp" />
     <ClCompile Include="DepthBufferDX12.cpp" />
@@ -175,6 +175,7 @@
     <ClCompile Include="EngineGpuCommandsDX12.cpp" />
     <ClCompile Include="EngineGpuFenceDX12.cpp" />
     <ClCompile Include="EngineGpuSwapChainDX12.cpp" />
+    <ClCompile Include="GameEnvironment.cpp" />
     <ClCompile Include="IndexedGeometryCube.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RenderInstanced.cpp" />
@@ -189,8 +190,8 @@
   <ItemGroup>
     <ClInclude Include="AAVasiliev\PlatformPoint.h" />
     <ClInclude Include="Atlas.h" />
-    <ClInclude Include="CalcSubsystem.h" />
-    <ClInclude Include="CalcTerrainShadow.h" />
+    <ClInclude Include="ComputeSubsystem.h" />
+    <ClInclude Include="ComputeTerrainShadow.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="ConstantBufferPlat.h" />
