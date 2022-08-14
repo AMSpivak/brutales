@@ -183,6 +183,7 @@
     <ClCompile Include="ResourcesDX12.cpp" />
     <ClCompile Include="ScreenSpaceToRt.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="BruteForceMath.cpp" />
     <ClCompile Include="TextureDX12.cpp" />
     <ClCompile Include="TutorialRenderer.cpp" />
     <ClCompile Include="VideoDriverDX12.cpp" />
@@ -190,6 +191,7 @@
   <ItemGroup>
     <ClInclude Include="AAVasiliev\PlatformPoint.h" />
     <ClInclude Include="Atlas.h" />
+    <ClInclude Include="BruteForceMath.h" />
     <ClInclude Include="ComputeSubsystem.h" />
     <ClInclude Include="ComputeTerrainShadow.h" />
     <ClInclude Include="Camera.h" />

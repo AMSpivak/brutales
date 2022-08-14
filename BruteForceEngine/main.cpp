@@ -47,6 +47,7 @@ using namespace Microsoft::WRL;
 #include "ControllerWinKeyboard.h"
 #include "Settings.h"
 #include "GameEnvironment.h"
+#include "BruteForceMath.h"
 
 
 // Use WARP adapter
@@ -154,6 +155,7 @@ void Update()
         }
 
         static float sun_inclination = 45.0f;
+        static float sun_azimuth = 180.0f;
 
         bool chng = false;
 
@@ -173,15 +175,22 @@ void Update()
             auto& atmosphere = BruteForce::GlobalLevelInfo::GetGlobalAtmosphereInfo();
             constexpr float pi = 3.141593f;
             constexpr float offset = 0.0001f;
-            float sun_inclination_rad = pi * (90.0f -sun_inclination) / 180.0f;
-            float shadow_tg_1 = 1.f/(tan(sun_inclination_rad) + offset);
-            constexpr float shadow_angle_delta = 10.0f;
-            float shadow_tg_2 = 1.f/(tan(pi * (90.0f - sun_inclination - shadow_angle_delta) / 180.0f) + offset);
+            const float shadow_angle_delta = BruteForce::Math::DegToRad(10.0f);
+            const float sun_inclination_rad = BruteForce::Math::DegToRad(90.0f -sun_inclination);
+            float tang_dir = sin(sun_inclination_rad);
+            float norm_dir = cos(sun_inclination_rad);
+
+            float shadow_tg_1 = norm_dir /(tang_dir + offset);
+            float a2 = atan(tang_dir / (norm_dir + offset)) - shadow_angle_delta;
+            a2 = a2 < 0.0f ? 0.0f : a2;
+            float shadow_tg_2 = 1.f/(tan(a2) + offset);
+
+            float azimuth_rad = BruteForce::Math::DegToRad(sun_azimuth);
 
             atmosphere.m_SunInfo = { 
-                -sin(sun_inclination_rad),
-                cos(sun_inclination_rad),
-                0.0f,
+                tang_dir * cos(azimuth_rad),
+                norm_dir,
+                tang_dir * sin(-azimuth_rad),
                 100.0f};
             atmosphere.m_SunShadow.x = shadow_tg_1;
             atmosphere.m_SunShadow.y = shadow_tg_2;

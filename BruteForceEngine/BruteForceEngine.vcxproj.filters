@@ -75,6 +75,9 @@
     <ClCompile Include="GameEnvironment.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="BruteForceMath.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VideoDriverDX12.h">
@@ -198,6 +201,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="HdrHistogramCB.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="BruteForceMath.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
