@@ -44,7 +44,7 @@ VertexShaderOutput main(VertexPosColor IN, uint id : SV_InstanceID)
     uint t_height;
     
     tex_height.GetDimensions(t_width, t_height);
-    float2 offset = float2(1.0f/ t_width, 1.0f/ t_height);
+    float2 offset = float2(1.5f/ t_width, 1.5f/ t_height);
     //float2 offset = PlanesCB.m_TerrainScaler.xz * PlanesCB.m_PlanesPositions[id].z * PlanesCB.m_TerrainScaler.w;
 
     float2 pos = pos_p * PlanesCB[FrameInfoCB.frame_index].m_TerrainScaler.xz + float2(0.5f, 0.5f);

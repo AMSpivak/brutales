@@ -38,6 +38,7 @@ using namespace Microsoft::WRL;
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <cmath>
 // Helper functions
 #include "Helpers.h"
 #include "tutorialRenderer.h"
@@ -45,6 +46,8 @@ using namespace Microsoft::WRL;
 #include "Camera.h"
 #include "ControllerWinKeyboard.h"
 #include "Settings.h"
+#include "GameEnvironment.h"
+
 
 // Use WARP adapter
 bool g_UseWarp = false;
@@ -123,16 +126,6 @@ void Update()
             test_controller->GetAxeState(BruteForce::Controller::Axes::CameraHorizontal) * (1.0f),
             0.0f
         );
-        //test_camera->RotateView({ 0,1,0,0 }, test_controller->GetAxeState(BruteForce::Controller::Axes::CameraHorizontal) * (-10.0f));
-        //test_camera->RotateView({ 1,0,0,0 }, test_controller->GetAxeState(BruteForce::Controller::Axes::CameraVertical)*(-10.0f));
-        //if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::RotateRight))
-        //{
-        //    test_camera->RotateView({ 0,1,0,0 }, -0.03f * msecs);
-        //}
-        //if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::RotateLeft))
-        //{
-        //    test_camera->RotateView({ 0,1,0,0 }, 0.03f * msecs);
-        //}
 
         if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::MoveRight))
         {
@@ -160,6 +153,39 @@ void Update()
             test_camera->MoveView(0.f, -0.02f * msecs, 0.f);
         }
 
+        static float sun_inclination = 45.0f;
+
+        bool chng = false;
+
+        if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::DbgInrease) && (sun_inclination >= 0.0f))
+        {
+            sun_inclination += msecs * 0.01f;
+            chng = true;
+        }
+        if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::DbgDecrease)&& (sun_inclination <= 90.0f))
+        {
+            sun_inclination -= msecs * 0.01f;
+            chng = true;
+        }
+        if (chng)
+        {
+            sun_inclination = sun_inclination < 0.0f ? 0.0f : sun_inclination > 90.0f ? 90.0f : sun_inclination;
+            auto& atmosphere = BruteForce::GlobalLevelInfo::GetGlobalAtmosphereInfo();
+            constexpr float pi = 3.141593f;
+            constexpr float offset = 0.0001f;
+            float sun_inclination_rad = pi * (90.0f -sun_inclination) / 180.0f;
+            float shadow_tg_1 = 1.f/(tan(sun_inclination_rad) + offset);
+            constexpr float shadow_angle_delta = 10.0f;
+            float shadow_tg_2 = 1.f/(tan(pi * (90.0f - sun_inclination - shadow_angle_delta) / 180.0f) + offset);
+
+            atmosphere.m_SunInfo = { 
+                -sin(sun_inclination_rad),
+                cos(sun_inclination_rad),
+                0.0f,
+                100.0f};
+            atmosphere.m_SunShadow.x = shadow_tg_1;
+            atmosphere.m_SunShadow.y = shadow_tg_2;
+        }
     }
     
 

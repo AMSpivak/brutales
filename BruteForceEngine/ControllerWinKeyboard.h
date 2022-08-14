@@ -9,6 +9,7 @@ namespace BruteForce
 		{
 		private:
 			bool camera_look;
+			bool camera_look_key;
 			int MouseSensetivity;
 			int MouseX;
 			int MouseY;
@@ -18,7 +19,11 @@ namespace BruteForce
 			float CameraY;
 
 		public:
-			ControllerWinKey() : camera_look{ false }, MouseSensetivity{ 200 }, CameraX{ 0.0f }, CameraY{ 0.0f }
+			ControllerWinKey() : camera_look{ false }, camera_look_key{false},
+				MouseSensetivity{ 200 }
+				, MouseX{ 0 }, MouseY{ 0 }
+				, LockX{ 0 }, LockY{ 0 }
+				, CameraX{ 0.0f }, CameraY{ 0.0f }
 			{}
 			bool GetKeyPressed(Keys key) override;
 			float GetAxeState(Axes axe) override;

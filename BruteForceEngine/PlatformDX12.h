@@ -141,10 +141,24 @@ namespace BruteForce
 		{
 			return DirectX::XMVectorAdd(a,b);
 		}
+		inline Vector VectorDivide(const Vector& a, const Vector& b)
+		{
+			return DirectX::XMVectorDivide(a, b);
+		}
 		inline Vector VectorSet(float x, float y, float z, float w)
 		{
 			return DirectX::XMVectorSet(x, y, z, w);
 		}
+		inline Vector Vector3Norm(Vector vec)
+		{
+			return DirectX::XMVector3Normalize(vec);
+		}
+
+		inline Vector Vector3Lenght(Vector vec)
+		{
+			return DirectX::XMVector3Length(vec);
+		}
+
 		inline Matrix MatrixRotationAxis(const Vector &axe, float angle)
 		{
 			return DirectX::XMMatrixRotationAxis(axe, angle);

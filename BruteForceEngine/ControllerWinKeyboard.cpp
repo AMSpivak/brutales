@@ -39,6 +39,12 @@ namespace BruteForce
 			case Keys::RotateRight:
 				return GetKeyState(VK_NUMPAD6) & 0x8000;
 				break;
+			case Keys::DbgInrease:
+				return GetKeyState(VK_ADD) & 0x8000;
+				break;
+			case Keys::DbgDecrease:
+				return GetKeyState(VK_SUBTRACT) & 0x8000;
+				break;
 
 			default:
 				break;
@@ -74,7 +80,14 @@ namespace BruteForce
 				LockY = mouse.y;
 			}
 
-			camera_look = GetKeyState(VK_RBUTTON) & 0x8000;
+			bool current_camera_look_key = GetKeyState(VK_F5) & 0x8000;
+			if (current_camera_look_key && !camera_look_key)
+			{
+				camera_look = !camera_look;
+			}
+			camera_look_key = current_camera_look_key;
+
+			//camera_look = GetKeyState(VK_RBUTTON) & 0x8000;
 	
 			if (camera_look)
 			{

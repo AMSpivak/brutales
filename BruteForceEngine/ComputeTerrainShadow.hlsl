@@ -27,7 +27,7 @@ Texture2D<float4> SrcTerrain : register(t0);
 // Write up to 4 mip map levels.
 RWTexture2D<float4> OutShadow[3] : register(u0);
 
-SamplerState LinearClampSampler : register(s0);
+SamplerState TerrainSampler : register(s0);
 
 #define BLOCK_SIZE 64
 [numthreads(BLOCK_SIZE, 1, 1)]
@@ -49,12 +49,12 @@ void main( uint3 DTid : SV_DispatchThreadID )
         int shadow_index_second = -1;
 
         const float h_offset = 0.01;
-
+        float h_old = 0.0f;
         for (int i = 0; i < terrain_shadowCB[FrameInfoCB.frame_index].srcTextureSize.x; i++)
         {
             float2 l_dir = terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.xy;
             float2 UV = l_dir * i + float2(-l_dir.y, l_dir.x) * row + terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.wz;
-            float h = SrcTerrain.SampleLevel(LinearClampSampler, UV, 0).r * terrain_shadowCB[FrameInfoCB.frame_index].LightSpace2.y;
+            float h = SrcTerrain.SampleLevel(TerrainSampler, UV, 0).r * terrain_shadowCB[FrameInfoCB.frame_index].LightSpace2.y;
             float calc_h = (shadow_height - (i - shadow_index) * shadow_height_decrease);
             if (h > calc_h)
             {
@@ -71,7 +71,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
                 //calc_h_second = h - shadow_height_decrease_second;
             }
 
-            OutShadow[FrameInfoCB.frame_index][int2(i, row)] = float4(calc_h, calc_h_second, calc_h - h, calc_h_second - h);
+            OutShadow[FrameInfoCB.frame_index][int2(i, row)] = float4(calc_h, calc_h_second, h, calc_h_second - h);
         }
     }
 

@@ -12,6 +12,8 @@ namespace BruteForce
 {
     namespace Compute
     {
+        
+
         class ComputeTerrainShadow: public ComputeSubsystem
         {
         private:
@@ -22,6 +24,7 @@ namespace BruteForce
 
             ConstantBuffer<TerrainShadowCB>* m_TerrainShadowBuffers;
         public:
+            static const int GetTerrainShadowSize() { return 2048; }
             ComputeTerrainShadow();
             virtual ~ComputeTerrainShadow();
             virtual void Update(float delta_time, uint8_t frame_index);

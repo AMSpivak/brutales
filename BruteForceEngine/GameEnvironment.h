@@ -7,10 +7,11 @@ namespace BruteForce
 {
     namespace GlobalLevelInfo
     {
-        struct AtmosphereCB
+        struct AtmosphereInfo
         {
             //Math::Vec4Float m_PlanesPositions[1024];
-            Math::Vec4Float m_SunDirection;
+            Math::Vec4Float m_SunInfo; // x,y,z - position, w - intensivity 
+            Math::Vec4Float m_SunShadow; // x,y - 1,2 shadow decrease, z, w - reserved 
             //uint32_t m_PlanesCount;
         };
         struct TerrainInfo
@@ -20,6 +21,9 @@ namespace BruteForce
 
         TerrainInfo& GetGlobalTerrainInfo();
         const TerrainInfo& ReadGlobalTerrainInfo();
+
+        AtmosphereInfo& GetGlobalAtmosphereInfo();
+        const AtmosphereInfo& ReadGlobalAtmosphereInfo();
 
         // ConstantBuffer<AtmosphereCB>* GetAtmosphereCB(uint8_t frame_index);
     }

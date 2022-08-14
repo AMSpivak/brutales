@@ -29,13 +29,13 @@ namespace BruteForce
         class RenderSubsystem
         {
         protected:
-            
+
             bool m_loaded;
             uint8_t m_FramesCount;
             RootSignature m_RootSignature;
             PipelineState m_PipelineState;
         public:
-            RenderSubsystem():m_loaded(false) {};
+            RenderSubsystem() :m_loaded{ false }, m_FramesCount{0} {};
             virtual ~RenderSubsystem()
             {
                 //if (m_RootSignature) m_RootSignature->Release();

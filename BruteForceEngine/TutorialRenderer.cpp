@@ -17,7 +17,7 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
     HeightmapTexturesRange = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(2), BruteForce::DescriptorRangeTypeSrv, "TerrainHeightmapTextures");
 
     BruteForce::Textures::TexMetadata metadata;
-    constexpr int shadowsize = 2048;
+    const int shadowsize = BruteForce::Compute::ComputeTerrainShadow::GetTerrainShadowSize();
     metadata.width = shadowsize;
     metadata.height = shadowsize;
     metadata.arraySize = 1;

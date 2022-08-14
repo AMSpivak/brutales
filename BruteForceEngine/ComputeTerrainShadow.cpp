@@ -83,7 +83,7 @@ namespace BruteForce
 
             CD3DX12_STATIC_SAMPLER_DESC linearClampSampler(
                 0,
-                D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+                D3D12_FILTER_ANISOTROPIC,//D3D12_FILTER_MIN_MAG_MIP_LINEAR,
                 D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
                 D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
                 D3D12_TEXTURE_ADDRESS_MODE_CLAMP
@@ -131,11 +131,26 @@ namespace BruteForce
 
 
             uint32_t buff_index = compute_helper.frame_index;
-            int shadow_size = 2048;
+            int shadow_size = GetTerrainShadowSize();
             float lateral_scaler = 1 / terrain_scaler.x;
+            const auto& sun_info = GlobalLevelInfo::ReadGlobalAtmosphereInfo();
+            Math::Vector sun_vec_tg = Math::Vector3Norm(Math::VectorSet(sun_info.m_SunInfo.x, 0.0, sun_info.m_SunInfo.z, 0.0));
+
+            //Math::Vector sun_vec_length = Math::VectorNorm3(sun_vec);
+
+            Math::Vec4Float sun_info_dir;
+            //Math::Store(&sun_info_norm, sun_vec_norm);
+            //Math::Vector sun_vec_tang = Math::VectorSet(sun_info_norm.x, 0.0f, sun_info_norm.z, 0.0);
+            //Math::Vector sun_vec_length = Math::Vector3Lenght(sun_vec_tang);
+            //constexpr float offset = 0.00001f;
+            //sun_vec_length = Math::VectorAdd(sun_vec_length, Math::VectorSet(offset, offset, offset, offset));
+            //sun_vec_norm = Math::VectorDivide(sun_vec_norm, sun_vec_length);
+            Math::Store(&sun_info_dir, sun_vec_tg);
+
+            
             //float lateral_scaler = 1 / 0.0002f;
-            float first_shadow_tg = 0.6f * lateral_scaler / shadow_size;
-            float second_shadow_tg = 1.2f * lateral_scaler / shadow_size;
+            float first_shadow_tg = sun_info.m_SunShadow.x * lateral_scaler / shadow_size;
+            float second_shadow_tg = sun_info.m_SunShadow.y * lateral_scaler / shadow_size;
             m_TerrainShadowBuffers[buff_index].m_CpuBuffer->srcTextureSize.x = shadow_size;
             m_TerrainShadowBuffers[buff_index].m_CpuBuffer->srcTextureSize.y = shadow_size;
             m_TerrainShadowBuffers[buff_index].m_CpuBuffer->LightSpace1 = { 1.0f / shadow_size, 0.0f, 0.0f, 0.0};

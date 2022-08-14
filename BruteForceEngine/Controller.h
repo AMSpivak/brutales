@@ -13,7 +13,9 @@ namespace BruteForce
 			MoveUp,
 			MoveDown,
 			RotateLeft,
-			RotateRight
+			RotateRight,
+			DbgInrease,
+			DbgDecrease
 		};
 
 		enum class Axes

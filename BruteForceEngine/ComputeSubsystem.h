@@ -30,7 +30,7 @@ namespace BruteForce
             RootSignature m_RootSignature;
             PipelineState m_PipelineState;
         public:
-            ComputeSubsystem() :m_loaded(false) {};
+            ComputeSubsystem() :m_loaded(false), m_FramesCount(0) {};
             virtual ~ComputeSubsystem()
             {
                 //if (m_RootSignature) m_RootSignature->Release();

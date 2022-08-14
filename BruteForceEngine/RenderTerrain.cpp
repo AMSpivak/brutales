@@ -53,8 +53,10 @@ namespace BruteForce
             terrain_scaler.w = plane_mesh_step;
             m_TerrainBuffers[index].m_CpuBuffer->m_TerrainScaler = terrain_scaler;
 
+            const auto& sun_info = GlobalLevelInfo::ReadGlobalAtmosphereInfo();
+            m_TerrainBuffers[index].m_CpuBuffer->m_SunInfo = sun_info.m_SunInfo;
             m_TerrainBuffers[index].Update();
-
+            
             return counter;
         }
 
@@ -96,7 +98,7 @@ namespace BruteForce
 
                 BruteForce::SamplerDesc samplerDesc;
                 ZeroMemory(&samplerDesc, sizeof(samplerDesc));
-                samplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;// D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+                samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
                 samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
                 samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
                 samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -132,7 +134,7 @@ namespace BruteForce
                     HeightmapTexturesRange = descriptor_heap_manager.GetManagedRange("TerrainHeightmapTextures");
                     assert(HeightmapTexturesRange);
                     auto& srv_handle = HeightmapTexturesRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(textures_count), TexturesRange);
-                    BruteForce::Textures::AddTexture(content_path, { L"desert_map_16.png" }, m_textures, device, copy_queue, srv_handle);
+                    BruteForce::Textures::AddTexture(content_path, { L"desert_map_16_2.png" }, m_textures, device, copy_queue, srv_handle);
                     BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, device, copy_queue, srv_handle, TargetFormat_R8G8B8A8_UInt);
                 }
 
