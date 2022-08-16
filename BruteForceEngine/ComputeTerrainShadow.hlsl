@@ -42,6 +42,8 @@ void main( uint3 DTid : SV_DispatchThreadID )
     int row = DTid.x;
     if (row < terrain_shadowCB[FrameInfoCB.frame_index].srcTextureSize.y)
     {
+        float2 l_dir = terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.xy / terrain_shadowCB[FrameInfoCB.frame_index].srcTextureSize.x;
+
         float shadow_height = 0;
         int shadow_index = -1;
 
@@ -52,8 +54,10 @@ void main( uint3 DTid : SV_DispatchThreadID )
         float h_old = 0.0f;
         for (int i = 0; i < terrain_shadowCB[FrameInfoCB.frame_index].srcTextureSize.x; i++)
         {
-            float2 l_dir = terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.xy;
-            float2 UV = l_dir * i + float2(-l_dir.y, l_dir.x) * row + terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.zw;
+            float2 UV = l_dir * i + float2(-l_dir.y, l_dir.x) * row;// +terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.zw;
+            UV -= float2(terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.x  - terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.y,
+                          terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.y +terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.x) * 0.5f;// terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.zw;
+            UV = float2(0.5f, 0.5f) + terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.z * UV;
             float h = SrcTerrain.SampleLevel(TerrainSampler, UV, 0).r * terrain_shadowCB[FrameInfoCB.frame_index].LightSpace2.y;
             float calc_h = (shadow_height - (i - shadow_index) * shadow_height_decrease);
             if (h > calc_h)

@@ -155,7 +155,7 @@ void Update()
         }
 
         static float sun_inclination = 45.0f;
-        static float sun_azimuth = 135.0f;//180.0f;
+        static float sun_azimuth = 25.0f;//180.0f;
 
         static bool chng = true;
 
@@ -197,6 +197,10 @@ void Update()
             atmosphere.m_SunShadow.y = shadow_tg_2;
             atmosphere.m_SunShadow.z = -cos(azimuth_rad);
             atmosphere.m_SunShadow.w = -sin(-azimuth_rad);
+            float z = abs(atmosphere.m_SunShadow.z);
+            float w = abs(atmosphere.m_SunShadow.w);
+            float sclr = z > w ? z : w;
+            atmosphere.m_SunShadowScaler = 1.0f / sclr;
             chng = false;
         }
     }

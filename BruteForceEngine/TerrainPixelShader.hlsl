@@ -45,9 +45,10 @@ float4 main(PixelShaderInput IN) : SV_Target
     float light = sun_info.w;// (IN.Normal.y* (1.0f - diff) + diff)* light_force;
     float2 l_dir = PlanesCB[FrameInfoCB.frame_index].m_SunShadow.xy;
     //float2 pos = IN.WorldPosition.xz * PlanesCB[FrameInfoCB.frame_index].m_TerrainScaler.xz + float2(0.5f, 0.5f);
-    float2 pos = IN.WorldPosition.xz * PlanesCB[FrameInfoCB.frame_index].m_TerrainScaler.xz + float2(0.5f, 0.5f);
-    float2 UV = pos - PlanesCB[FrameInfoCB.frame_index].m_SunShadow.zw;
+    float2 pos = IN.WorldPosition.xz * PlanesCB[FrameInfoCB.frame_index].m_TerrainScaler.xz;
+    float2 UV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
     UV = l_dir * UV.x + float2(-l_dir.y, l_dir.x) * UV.y;
+    UV = float2(0.5f, 0.5f) + (UV - float2(0.5f, 0.5f)) * PlanesCB[FrameInfoCB.frame_index].m_SunShadow.z;
     float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, UV, 0);
     //shadows.x = (IN.WorldPosition.y - shadows.w) / (0.001 + shadows.x - shadows.y); //smoothstep(shadows.y, shadows.x, IN.WorldPosition.y);
     //shadows.x = (- shadows.w)/(0.001 + shadows.x - shadows.y); //smoothstep(shadows.y, shadows.x, IN.WorldPosition.y);

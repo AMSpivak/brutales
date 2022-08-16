@@ -154,9 +154,9 @@ namespace BruteForce
             m_TerrainShadowBuffers[buff_index].m_CpuBuffer->srcTextureSize.x = shadow_size;
             m_TerrainShadowBuffers[buff_index].m_CpuBuffer->srcTextureSize.y = shadow_size;
 
-            m_TerrainShadowBuffers[buff_index].m_CpuBuffer->LightSpace1 = { sun_info.m_SunShadow.z / shadow_size, sun_info.m_SunShadow.w / shadow_size,
-                                                                            0.5f - sun_info.m_SunShadow.z * 0.5f  + sun_info.m_SunShadow.w * 0.5f,
-                                                                            0.5f - sun_info.m_SunShadow.w * 0.5f - sun_info.m_SunShadow.z * 0.5f };
+            m_TerrainShadowBuffers[buff_index].m_CpuBuffer->LightSpace1 = { sun_info.m_SunShadow.z , sun_info.m_SunShadow.w ,
+                                                                            sun_info.m_SunShadowScaler,
+                                                                            0.0f };
             m_TerrainShadowBuffers[buff_index].m_CpuBuffer->LightSpace2 = { 0.0f, terrain_scaler.y, first_shadow_tg, second_shadow_tg };
             m_TerrainShadowBuffers[buff_index].Update();
 
