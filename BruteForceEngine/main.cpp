@@ -155,7 +155,7 @@ void Update()
         }
 
         static float sun_inclination = 45.0f;
-        static float sun_azimuth = 180.0f;
+        static float sun_azimuth = 100.0f;//180.0f;
 
         bool chng = false;
 
@@ -187,6 +187,7 @@ void Update()
 
             float azimuth_rad = BruteForce::Math::DegToRad(sun_azimuth);
 
+
             atmosphere.m_SunInfo = { 
                 tang_dir * cos(azimuth_rad),
                 norm_dir,
@@ -194,6 +195,8 @@ void Update()
                 100.0f};
             atmosphere.m_SunShadow.x = shadow_tg_1;
             atmosphere.m_SunShadow.y = shadow_tg_2;
+            atmosphere.m_SunShadow.z = -cos(azimuth_rad);
+            atmosphere.m_SunShadow.w = -sin(-azimuth_rad);
         }
     }
     

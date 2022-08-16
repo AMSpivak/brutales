@@ -153,7 +153,10 @@ namespace BruteForce
             float second_shadow_tg = sun_info.m_SunShadow.y * lateral_scaler / shadow_size;
             m_TerrainShadowBuffers[buff_index].m_CpuBuffer->srcTextureSize.x = shadow_size;
             m_TerrainShadowBuffers[buff_index].m_CpuBuffer->srcTextureSize.y = shadow_size;
-            m_TerrainShadowBuffers[buff_index].m_CpuBuffer->LightSpace1 = { 1.0f / shadow_size, 0.0f, 0.0f, 0.0};
+
+            m_TerrainShadowBuffers[buff_index].m_CpuBuffer->LightSpace1 = { sun_info.m_SunShadow.z / shadow_size, sun_info.m_SunShadow.w / shadow_size,
+                                                                            0.5f - sun_info.m_SunShadow.z * 0.5f  + sun_info.m_SunShadow.w * 0.5f,
+                                                                            0.5f - sun_info.m_SunShadow.w * 0.5f - sun_info.m_SunShadow.z * 0.5f };
             m_TerrainShadowBuffers[buff_index].m_CpuBuffer->LightSpace2 = { 0.0f, terrain_scaler.y, first_shadow_tg, second_shadow_tg };
             m_TerrainShadowBuffers[buff_index].Update();
 

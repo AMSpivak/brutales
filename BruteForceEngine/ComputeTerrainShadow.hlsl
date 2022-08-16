@@ -53,7 +53,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
         for (int i = 0; i < terrain_shadowCB[FrameInfoCB.frame_index].srcTextureSize.x; i++)
         {
             float2 l_dir = terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.xy;
-            float2 UV = l_dir * i + float2(-l_dir.y, l_dir.x) * row + terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.wz;
+            float2 UV = l_dir * i + float2(-l_dir.y, l_dir.x) * row + terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.zw;
             float h = SrcTerrain.SampleLevel(TerrainSampler, UV, 0).r * terrain_shadowCB[FrameInfoCB.frame_index].LightSpace2.y;
             float calc_h = (shadow_height - (i - shadow_index) * shadow_height_decrease);
             if (h > calc_h)
