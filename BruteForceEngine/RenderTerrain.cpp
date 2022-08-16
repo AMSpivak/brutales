@@ -55,6 +55,11 @@ namespace BruteForce
 
             const auto& sun_info = GlobalLevelInfo::ReadGlobalAtmosphereInfo();
             m_TerrainBuffers[index].m_CpuBuffer->m_SunInfo = sun_info.m_SunInfo;
+
+            m_TerrainBuffers[index].m_CpuBuffer->m_SunShadow = { sun_info.m_SunShadow.z, -sun_info.m_SunShadow.w,
+                0.5f - sun_info.m_SunShadow.z * 0.5f + sun_info.m_SunShadow.w * 0.5f,
+                0.5f - sun_info.m_SunShadow.w * 0.5f - sun_info.m_SunShadow.z * 0.5f };
+
             m_TerrainBuffers[index].Update();
             
             return counter;

@@ -40,12 +40,15 @@ float4 main(PixelShaderInput IN) : SV_Target
     //return tex[materials.r].Sample(sampl[0], IN.WorldPosition.xz);
     
     float diff = 0.03f;
-    float2 pos = IN.WorldPosition.xz * PlanesCB[FrameInfoCB.frame_index].m_TerrainScaler.xz + float2(0.5f, 0.5f);
     float4 sun_info = PlanesCB[FrameInfoCB.frame_index].m_SunInfo;
     float light_diffuse = clamp(dot(IN.Normal, normalize(sun_info.xyz)),0.0, 1.0);
     float light = sun_info.w;// (IN.Normal.y* (1.0f - diff) + diff)* light_force;
-
-    float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, pos, 0);
+    float2 l_dir = PlanesCB[FrameInfoCB.frame_index].m_SunShadow.xy;
+    //float2 pos = IN.WorldPosition.xz * PlanesCB[FrameInfoCB.frame_index].m_TerrainScaler.xz + float2(0.5f, 0.5f);
+    float2 pos = IN.WorldPosition.xz * PlanesCB[FrameInfoCB.frame_index].m_TerrainScaler.xz + float2(0.5f, 0.5f);
+    float2 UV = pos - PlanesCB[FrameInfoCB.frame_index].m_SunShadow.zw;
+    UV = l_dir * UV.x + float2(-l_dir.y, l_dir.x) * UV.y;
+    float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, UV, 0);
     //shadows.x = (IN.WorldPosition.y - shadows.w) / (0.001 + shadows.x - shadows.y); //smoothstep(shadows.y, shadows.x, IN.WorldPosition.y);
     //shadows.x = (- shadows.w)/(0.001 + shadows.x - shadows.y); //smoothstep(shadows.y, shadows.x, IN.WorldPosition.y);
     //shadows.x = clamp(shadows.x, 0, 1.0f);
