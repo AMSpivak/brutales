@@ -48,7 +48,7 @@ using namespace Microsoft::WRL;
 #include "Settings.h"
 #include "GameEnvironment.h"
 #include "BruteForceMath.h"
-
+#include "SkyAstronomy.h"
 
 // Use WARP adapter
 bool g_UseWarp = false;
@@ -154,49 +154,65 @@ void Update()
             test_camera->MoveView(0.f, -0.02f * msecs, 0.f);
         }
 
-        static float sun_inclination = 45.0f;
-        static float sun_azimuth = 25.0f;//180.0f;
 
+        static float day_hour = 0.5f;
         static bool chng = true;
 
-        if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::DbgInrease) && (sun_inclination >= 0.0f))
+        if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::DbgInrease))
         {
-            sun_inclination += msecs * 0.01f;
+            day_hour += msecs * 0.0001f;
             chng = true;
         }
-        if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::DbgDecrease)&& (sun_inclination <= 90.0f))
+        if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::DbgDecrease))
         {
-            sun_inclination -= msecs * 0.01f;
+            day_hour -= msecs * 0.0001f;
             chng = true;
         }
         if (chng)
         {
-            sun_inclination = sun_inclination < 0.0f ? 0.0f : sun_inclination > 90.0f ? 90.0f : sun_inclination;
+            day_hour = day_hour < 0.0f ? 0.0f : day_hour > 1.0f ? 1.0f : day_hour;
+
+            constexpr int day_of_year = 170;
+            constexpr float latitude = 30.f;
+            constexpr float moon_sun_latitude = 30.f;
+
+            SkyInfo Sky = GetSkyInfo(day_of_year, day_hour, latitude, moon_sun_latitude);
+            BruteForce::Math::Vec4Float sun;
+            BruteForce::Math::Store(&sun, Sky.SunDirection);
+
+            BruteForce::Math::Vec4Float shadow_dir;
+            BruteForce::Math::Store(&shadow_dir, BruteForce::Math::Vector3Norm({ sun.x, 0.0f, sun.z, 0.0f}));
+
+            //float sun_azimuth = sun_info.Azimuth;
+            float sun_intencivity = 100.0f;
+            if (sun.y < 0.0f)
+            {
+                sun_intencivity = 10.0f;
+            }
+
+            sun.y = sun.y < 0.0f ? 0.0f : sun.y;
+
             auto& atmosphere = BruteForce::GlobalLevelInfo::GetGlobalAtmosphereInfo();
-            constexpr float pi = 3.141593f;
             constexpr float offset = 0.0001f;
             const float shadow_angle_delta = BruteForce::Math::DegToRad(10.0f);
-            const float sun_inclination_rad = BruteForce::Math::DegToRad(90.0f -sun_inclination);
-            float tang_dir = sin(sun_inclination_rad);
-            float norm_dir = cos(sun_inclination_rad);
 
-            float shadow_tg_1 = norm_dir /(tang_dir + offset);
-            float a2 = atan(tang_dir / (norm_dir + offset)) - shadow_angle_delta;
+            float shadow_tg_1 = sun.y /sqrt(1.0f - sun.y * sun.y + offset);
+            float a2 = acos(sun.y) - shadow_angle_delta;
             a2 = a2 < 0.0f ? 0.0f : a2;
             float shadow_tg_2 = 1.f/(tan(a2) + offset);
 
-            float azimuth_rad = BruteForce::Math::DegToRad(sun_azimuth);
+            
 
 
-            atmosphere.m_SunInfo = { 
-                tang_dir * cos(azimuth_rad),
-                norm_dir,
-                tang_dir * sin(-azimuth_rad),
-                100.0f};
+            atmosphere.m_SunInfo = {
+                sun.x,// tang_dir* cos(azimuth_rad),
+                sun.y,
+                sun.z,//tang_dir * sin(-azimuth_rad),
+                sun_intencivity };
             atmosphere.m_SunShadow.x = shadow_tg_1;
             atmosphere.m_SunShadow.y = shadow_tg_2;
-            atmosphere.m_SunShadow.z = -cos(azimuth_rad);
-            atmosphere.m_SunShadow.w = -sin(-azimuth_rad);
+            atmosphere.m_SunShadow.z = -shadow_dir.x;
+            atmosphere.m_SunShadow.w = -shadow_dir.z;
             atmosphere.m_SunShadowScaler = abs(atmosphere.m_SunShadow.z) + abs(atmosphere.m_SunShadow.w);
             chng = false;
         }

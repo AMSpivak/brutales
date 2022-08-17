@@ -5,6 +5,10 @@ namespace BruteForce
 {
     namespace Math
     {
+        constexpr float GetPiFloat()
+        {
+            return 3.141593f;
+        }
     }
 }
 
