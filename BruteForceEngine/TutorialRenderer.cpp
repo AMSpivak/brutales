@@ -159,6 +159,14 @@ void TutorialRenderer::Resize(BruteForce::Device& device)
 void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue)
 {
     {
+        int width = m_Window->GetWidth();
+        int height = m_Window->GetHeight();
+        float jx = 0.5f / width;
+        float jy = 0.5f / height;
+        m_Camera.SetJitter(0.0f, (m_CurrentBackBufferIndex & 1)? jy: -jy, true);
+    }
+
+    {
         auto smart_compute_command_list = m_ComputeSmartCommandQueue.GetCommandList();
 
         BruteForce::Compute::PrepareComputeHelper c_helper {
