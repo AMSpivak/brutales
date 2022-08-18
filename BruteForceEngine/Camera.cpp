@@ -57,6 +57,9 @@ namespace BruteForce
 	void Camera::RecalculateProjection()
 	{
 		m_Projection = Math::MatrixPerspectiveFovLH(BruteForce::Math::DegToRad(m_Fov), m_AspectRatio, m_Near, m_Far);
+		Math::VectorAdd(m_Projection.r[2],{m_JitterX, m_JitterY, 0.f,0.f});
+		//m_Projection//.m[2][0] = 0.0f;
+		//m_Projection//.m[2][1] = 0.0f;
 	}
 
 	void BruteForce::Camera::SetFov(float fov, bool renew_matrixes)
@@ -82,6 +85,17 @@ namespace BruteForce
 	void Camera::SetAspectRatio(float aspect, bool renew_matrixes)
 	{
 		m_AspectRatio = aspect;
+		if (renew_matrixes)
+		{
+			RecalculateProjection();
+			m_ViewProjection = Math::Multiply(m_View, m_Projection);
+		}
+	}
+
+	void Camera::SetJitter(float jx, float jy, bool renew_matrixes)
+	{
+		m_JitterX = jx;
+		m_JitterY = jy;
 		if (renew_matrixes)
 		{
 			RecalculateProjection();

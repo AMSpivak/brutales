@@ -18,11 +18,13 @@ namespace BruteForce
         float m_AspectRatio;
         float m_Near;
         float m_Far;
+        float m_JitterX;
+        float m_JitterY;
         void RecalculateView();
         //void RecalculateView(const BruteForce::Math::Vector& focusPoint, const BruteForce::Math::Vector& upDirection);
         void RecalculateProjection();
     public:
-        Camera() :m_Fov{ 45.0 }, m_AspectRatio{ 1.0f }, m_Near{ 0.1f }, m_Far{ 1000.0f },
+        Camera() :m_Fov{ 45.0 }, m_AspectRatio{ 1.0f }, m_Near{ 0.1f }, m_Far{ 1000.0f }, m_JitterX{ 0.0f }, m_JitterY{ 0.0f },
             m_Position{ 0.0f, 0.0f, -10.0f, 0.0 }, m_FocusPoint{ 0.0f, 0.0f, 1.0f, 0.0 }, m_UpDirection{ 0.0f, 1.0f, 0.0f, 0.0 }, m_RightDirection{ 1.0f, 0.0f, 0.0f, 0.0 },
             m_Angles{ 0.0f, 0.0f, 0.0f, 0.0f}
         {
@@ -37,6 +39,7 @@ namespace BruteForce
         void SetFov(float fov, bool renew_matrixes);
         void SetPosition(const Math::Vec3Float& position, bool renew_matrixes);
         void SetAspectRatio(float aspect, bool renew_matrixes);
+        void SetJitter(float jx, float jy, bool renew_matrixes);
         const Math::Matrix* GetCameraMatrixPointer()  const{ return &m_ViewProjection; }
         void RotateView(const BruteForce::Math::Vector& rotationAxis, float angle);
         void RotateView(float angle_x, float angle_y, float angle_z);
