@@ -164,6 +164,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         float jx = 0.5f / width;
         float jy = 0.5f / height;
         m_Camera.SetJitter(0.0f, (m_CurrentBackBufferIndex & 1)? jy: -jy, true);
+        m_Camera.RecalculateMatrixes();
     }
 
     {

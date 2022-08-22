@@ -322,8 +322,15 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
             ::TranslateMessage(&msg);
             ::DispatchMessage(&msg);
         }
-        Update(); 
-        Render(p_Renderer->m_SmartCommandQueue, pWindow);
+
+        /*if(msg.message != WM_)
+        {
+        }
+        else*/
+        {
+            Update();
+            Render(p_Renderer->m_SmartCommandQueue, pWindow);
+        }
     }
     delete(test_controller);
     delete(p_Renderer);

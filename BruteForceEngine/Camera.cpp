@@ -4,12 +4,13 @@ namespace BruteForce
 {
 	void Camera::RecalculateView()
 	{
-		m_View = Math::MatrixLookAtLH(m_Position, m_FocusPoint, m_UpDirection);
+		m_View = Math::MatrixLookAtLH(m_Position, Math::VectorAdd(m_Position, m_FocusPoint), m_UpDirection);
 	}
 	void Camera::RecalculateView(const BruteForce::Math::Vector& focusPoint, const BruteForce::Math::Vector& upDirection)
 	{
 		m_FocusPoint = focusPoint;
 		m_UpDirection = upDirection;
+		m_RightDirection = Math::MatrixVector3Cross(m_UpDirection, m_FocusPoint);
 		RecalculateView();
 	}
 
@@ -18,7 +19,7 @@ namespace BruteForce
 		Math::Matrix M = Math::MatrixRotationAxis(rotationAxis, BruteForce::Math::DegToRad(angle));
 		m_FocusPoint = Math::MatrixVectorMul(M, m_FocusPoint);
 
-		m_View = Math::MatrixLookAtLH(m_Position, Math::VectorAdd(m_Position, m_FocusPoint), m_UpDirection);
+		RecalculateView();
 		m_ViewProjection = Math::Multiply(m_View, m_Projection);
 	}
 
@@ -29,10 +30,9 @@ namespace BruteForce
 		m_RightDirection = Math::MatrixVector3Cross(m_UpDirection, m_FocusPoint);
 		M = Math::MatrixRotationAxis(m_RightDirection, angle_x);
 		m_FocusPoint = Math::MatrixVectorMul(M, m_FocusPoint);
-		/*Math::Matrix M = Math::MatrixRotationRollPitchYaw(Math::Vector{ angle_x, angle_y, 0.0f , 0.0f });
-		m_FocusPoint = Math::MatrixVectorMul(M, m_FocusPoint);*/
 
-		m_View = Math::MatrixLookAtLH(m_Position, Math::VectorAdd(m_Position, m_FocusPoint), m_UpDirection);
+
+		RecalculateView();
 		m_ViewProjection = Math::Multiply(m_View, m_Projection);
 	}
 
@@ -52,14 +52,14 @@ namespace BruteForce
 		{
 			m_Position = Math::VectorAdd(m_Position, Math::MatrixVectorScale(Math::MatrixVector3Cross(m_FocusPoint, m_UpDirection) , -x));
 		}
+
+		m_Updated = false;
 	}
 
 	void Camera::RecalculateProjection()
 	{
 		m_Projection = Math::MatrixPerspectiveFovLH(BruteForce::Math::DegToRad(m_Fov), m_AspectRatio, m_Near, m_Far);
 		m_Projection.r[2] = Math::VectorAdd(m_Projection.r[2],{m_JitterX, m_JitterY, 0.f,0.f});
-		//m_Projection//.m[2][0] = 0.0f;
-		//m_Projection//.m[2][1] = 0.0f;
 	}
 
 	void BruteForce::Camera::SetFov(float fov, bool renew_matrixes)
@@ -70,6 +70,10 @@ namespace BruteForce
 			RecalculateProjection();
 			m_ViewProjection = Math::Multiply(m_View, m_Projection);
 		}
+		else
+		{
+			m_Updated = false;
+		}
 	}
 
 	void Camera::SetPosition(const Math::Vec3Float& position, bool renew_matrixes)
@@ -77,8 +81,12 @@ namespace BruteForce
 		m_Position = { position.x, position.y, position.z, 0.0f};
 		if (renew_matrixes)
 		{
-			RecalculateProjection();
+			RecalculateView();
 			m_ViewProjection = Math::Multiply(m_View, m_Projection);
+		}
+		else
+		{
+			m_Updated = false;
 		}
 	}
 
@@ -89,6 +97,10 @@ namespace BruteForce
 		{
 			RecalculateProjection();
 			m_ViewProjection = Math::Multiply(m_View, m_Projection);
+		}
+		else
+		{
+			m_Updated = false;
 		}
 	}
 
@@ -101,10 +113,49 @@ namespace BruteForce
 			RecalculateProjection();
 			m_ViewProjection = Math::Multiply(m_View, m_Projection);
 		}
+		else
+		{
+			m_Updated = false;
+		}
 	}
 
-	Math::Matrix Camera::GetViewProjection()
+	void Camera::RecalculateMatrixes()
 	{
-		return Math::Matrix();
+		if (!m_Updated)
+		{
+			RecalculateView();
+			RecalculateProjection();
+			m_ViewProjection = Math::Multiply(m_View, m_Projection);
+			m_Updated = true;
+		}
+	}
+
+	//const Math::Matrix& Camera::GetViewProjection()
+	//{
+	//	RecalculateMatrixes();
+	//	return m_ViewProjection;
+	//}
+
+	const Math::Matrix* Camera::GetCameraMatrixPointer()//  const
+	{
+		RecalculateMatrixes();
+		return &m_ViewProjection;
+	}
+	const Math::Matrix* Camera::GetInverseCameraMatrixPointer()//  const
+	{
+		RecalculateMatrixes();
+		return &m_InverseViewProjection;
+	}
+
+	const Math::Matrix* Camera::GetCameraMatrixPointer()  const
+	{
+		assert(m_Updated);
+		return &m_ViewProjection;
+	}
+
+	const Math::Matrix* Camera::GetInverseCameraMatrixPointer()  const
+	{
+		assert(m_Updated);
+		return &m_InverseViewProjection;
 	}
 }

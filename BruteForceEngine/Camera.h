@@ -6,9 +6,12 @@ namespace BruteForce
 {
     class Camera
     {
+    private:
+
         Math::Matrix m_Projection;
         Math::Matrix m_View;
         Math::Matrix m_ViewProjection;
+        Math::Matrix m_InverseViewProjection;
         Math::Vector m_Position;
         Math::Vector m_FocusPoint;
         Math::Vector m_UpDirection;
@@ -20,13 +23,14 @@ namespace BruteForce
         float m_Far;
         float m_JitterX;
         float m_JitterY;
+        bool m_Updated;
         void RecalculateView();
         //void RecalculateView(const BruteForce::Math::Vector& focusPoint, const BruteForce::Math::Vector& upDirection);
         void RecalculateProjection();
     public:
         Camera() :m_Fov{ 45.0 }, m_AspectRatio{ 1.0f }, m_Near{ 0.1f }, m_Far{ 1000.0f }, m_JitterX{ 0.0f }, m_JitterY{ 0.0f },
             m_Position{ 0.0f, 0.0f, -10.0f, 0.0 }, m_FocusPoint{ 0.0f, 0.0f, 1.0f, 0.0 }, m_UpDirection{ 0.0f, 1.0f, 0.0f, 0.0 }, m_RightDirection{ 1.0f, 0.0f, 0.0f, 0.0 },
-            m_Angles{ 0.0f, 0.0f, 0.0f, 0.0f}
+            m_Angles{ 0.0f, 0.0f, 0.0f, 0.0f }, m_Updated{true}
         {
             m_Projection = BruteForce::Math::MatrixPerspectiveFovLH(BruteForce::Math::DegToRad(m_Fov), m_AspectRatio, m_Near, m_Far);
             RecalculateView();
@@ -40,11 +44,15 @@ namespace BruteForce
         void SetPosition(const Math::Vec3Float& position, bool renew_matrixes);
         void SetAspectRatio(float aspect, bool renew_matrixes);
         void SetJitter(float jx, float jy, bool renew_matrixes);
-        const Math::Matrix* GetCameraMatrixPointer()  const{ return &m_ViewProjection; }
+        const Math::Matrix* GetCameraMatrixPointer();//  const;
+        const Math::Matrix* GetInverseCameraMatrixPointer();//  const;
+        const Math::Matrix* GetCameraMatrixPointer() const;
+        const Math::Matrix* GetInverseCameraMatrixPointer() const;
         void RotateView(const BruteForce::Math::Vector& rotationAxis, float angle);
         void RotateView(float angle_x, float angle_y, float angle_z);
         void MoveView(float x, float y, float z);
-        Math::Matrix GetViewProjection();
+        void RecalculateMatrixes();
+        //const Math::Matrix& GetViewProjection();
         const Math::Vector& GetPosition() const { return  m_Position; };
     };
 }
