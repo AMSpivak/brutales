@@ -81,6 +81,9 @@
     <ClCompile Include="SkyAstronomy.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="DXMemoryAllocator\D3D12MemAlloc.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VideoDriverDX12.h">
@@ -210,6 +213,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="SkyAstronomy.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="DXMemoryAllocator\D3D12MemAlloc.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
