@@ -186,6 +186,8 @@ namespace BruteForce
             SmartCommandQueue smart_queue(device, BruteForce::CommandListTypeDirect);
             auto commandList = smart_queue.GetCommandList();
 
+            BruteForce::CreateBufferResource(device, &geometry.m_VertexBuffer, num_vertex, sizeof(vertex_type));
+
             BruteForce::pResource intermediateVertexBuffer;
             BruteForce::UpdateBufferResource(device, commandList,
                 &geometry.m_VertexBuffer, &intermediateVertexBuffer,
@@ -195,6 +197,9 @@ namespace BruteForce
             geometry.m_VertexBufferView.SizeInBytes = static_cast<UINT>(sizeof(vertex_type) * num_vertex);
             geometry.m_VertexBufferView.StrideInBytes = static_cast<UINT>(sizeof(vertex_type));
 
+
+            
+            BruteForce::CreateBufferResource(device, &geometry.m_IndexBuffer, num_indexes, sizeof(WORD));
 
             BruteForce::pResource intermediateIndexBuffer;
             BruteForce::UpdateBufferResource(device, commandList,

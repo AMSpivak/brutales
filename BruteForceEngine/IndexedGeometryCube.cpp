@@ -30,9 +30,10 @@ namespace BruteForce
     {
         void CreateCube(Device& device, IndexedGeometry& geometry)
         {
+            BruteForce::CreateBufferResource(device, &geometry.m_VertexBuffer, _countof(cube_Vertices), sizeof(BruteForce::VertexPosColor));
+
             SmartCommandQueue smart_queue(device, BruteForce::CommandListTypeDirect);
             auto commandList = smart_queue.GetCommandList();
-
             BruteForce::pResource intermediateVertexBuffer;
             BruteForce::UpdateBufferResource(device, commandList,
                 &geometry.m_VertexBuffer, &intermediateVertexBuffer,
@@ -41,6 +42,8 @@ namespace BruteForce
             geometry.m_VertexBufferView.BufferLocation = geometry.m_VertexBuffer->GetGPUVirtualAddress();
             geometry.m_VertexBufferView.SizeInBytes = sizeof(cube_Vertices);
             geometry.m_VertexBufferView.StrideInBytes = sizeof(VertexPosColor);
+
+            BruteForce::CreateBufferResource(device, &geometry.m_IndexBuffer, _countof(cube_Indicies), sizeof(WORD));
 
             BruteForce::pResource intermediateIndexBuffer;
             BruteForce::UpdateBufferResource(device, commandList,

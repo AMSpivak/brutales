@@ -4,12 +4,9 @@
 
 namespace BruteForce
 {
-    void UpdateBufferResource(
-        Device& device,
-        GraphicsCommandList commandList,
+    void CreateBufferResource(Device& device,
         pResource* pDestinationResource,
-        pResource* pIntermediateResource,
-        size_t numElements, size_t elementSize, const void* bufferData,
+        size_t numElements, size_t elementSize,
         ResourceFlags flags)
     {
         size_t bufferSize = numElements * elementSize;
@@ -23,6 +20,16 @@ namespace BruteForce
             D3D12_RESOURCE_STATE_COPY_DEST,
             nullptr,
             IID_PPV_ARGS(pDestinationResource)));
+    }
+
+    void UpdateBufferResource(
+        Device& device,
+        GraphicsCommandList commandList,
+        pResource* pDestinationResource,
+        pResource* pIntermediateResource,
+        size_t numElements, size_t elementSize, const void* bufferData)
+    {
+        size_t bufferSize = numElements * elementSize;
 
         if (bufferData)
         {
@@ -54,10 +61,9 @@ namespace BruteForce
         SmartCommandList commandList,
         pResource* pDestinationResource,
         pResource* pIntermediateResource,
-        size_t numElements, size_t elementSize, const void* bufferData,
-        ResourceFlags flags)
+        size_t numElements, size_t elementSize, const void* bufferData)
     {
         UpdateBufferResource(device, commandList.command_list, pDestinationResource, pIntermediateResource,
-            numElements, elementSize, bufferData, flags);
+            numElements, elementSize, bufferData);
     }
 }
