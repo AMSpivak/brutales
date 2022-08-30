@@ -21,29 +21,6 @@ namespace BruteForce
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path{ settings.GetExecuteDirWchar() };
 
-            {
-                D3D12_DESCRIPTOR_HEAP_DESC descHeapSampler = {};
-                descHeapSampler.NumDescriptors = 1;
-                descHeapSampler.Type = BruteForce::DescriptorHeapSampler;
-                descHeapSampler.Flags = BruteForce::DescriptorHeapShaderVisible;
-                ThrowIfFailed(device->CreateDescriptorHeap(&descHeapSampler, __uuidof(ID3D12DescriptorHeap), (void**)&m_SamplerHeap));
-                m_SamplerHeap->SetName(L"Sampler heap");
-
-                BruteForce::SamplerDesc samplerDesc;
-                ZeroMemory(&samplerDesc, sizeof(samplerDesc));
-                samplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;// D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-                samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-                samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-                samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-                samplerDesc.MinLOD = 0;
-                samplerDesc.MaxLOD = 0.0;
-                samplerDesc.MipLODBias = 0.0f;
-                samplerDesc.MaxAnisotropy = 1;
-                samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-                auto sampler_handle = m_SamplerHeap->GetCPUDescriptorHandleForHeapStart();
-                device->CreateSampler(&samplerDesc, sampler_handle);
-            }
-
             BruteForce::DataBlob vertexShaderBlob;
             ThrowIfFailed(D3DReadFileToBlob((content_path + L"ScreenSpaceVertexShader.cso").c_str(), &vertexShaderBlob));
             BruteForce::DataBlob pixelShaderBlob;
@@ -73,13 +50,20 @@ namespace BruteForce
             CD3DX12_DESCRIPTOR_RANGE1 descRangeSamp;
             descRangeSamp.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);
 
-            CD3DX12_ROOT_PARAMETER1 rootParameters[2];
-            rootParameters[0].InitAsDescriptorTable(1, &descRange, D3D12_SHADER_VISIBILITY_PIXEL);
-            rootParameters[1].InitAsDescriptorTable(1, &descRangeSamp, D3D12_SHADER_VISIBILITY_ALL);
+            CD3DX12_ROOT_PARAMETER1 rootParameters;
+            rootParameters.InitAsDescriptorTable(1, &descRange, D3D12_SHADER_VISIBILITY_PIXEL);
 
             CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
 
-            rootSignatureDescription.Init_1_1(_countof(rootParameters), rootParameters, 0, nullptr, rootSignatureFlags);
+            CD3DX12_STATIC_SAMPLER_DESC linearClampSampler(
+                0,
+                D3D12_FILTER_ANISOTROPIC,//D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+                D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+                D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+                D3D12_TEXTURE_ADDRESS_MODE_WRAP
+            );
+
+            rootSignatureDescription.Init_1_1(1, &rootParameters, 1, &linearClampSampler, rootSignatureFlags);
 
             BruteForce::DataBlob rootSignatureBlob;
             BruteForce::DataBlob errorBlob;
@@ -130,13 +114,11 @@ namespace BruteForce
             smart_command_list.SetPipelineState(m_PipelineState);
             smart_command_list.SetGraphicsRootSignature(m_RootSignature);
 
-            ID3D12DescriptorHeap* ppHeaps[] = { render_dest.HeapManager.GetDescriptorHeapPointer(), m_SamplerHeap.Get()};
+            ID3D12DescriptorHeap* ppHeaps[] = { render_dest.HeapManager.GetDescriptorHeapPointer()/*, m_SamplerHeap.Get()*/};
             commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
             commandList->SetGraphicsRootDescriptorTable(0,
                 render_dest.HeapManager.GetGpuDescriptorHandle());
-            commandList->SetGraphicsRootDescriptorTable(1,
-                m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());
 
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             commandList->IASetVertexBuffers(0, 1, NULL);

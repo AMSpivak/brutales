@@ -8,11 +8,7 @@ namespace BruteForce
         class ScreenSpaceToRt : public RenderSubsystem
         {
         private:
-            //DescriptorHeap m_SVRHeap;
-
-            //DescriptorHeap m_SrvHeapPtr;
             std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvDescriptors;
-            DescriptorHeap m_SamplerHeap;
         public:
             ScreenSpaceToRt();
             virtual ~ScreenSpaceToRt();

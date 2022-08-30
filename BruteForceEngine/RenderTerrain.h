@@ -20,7 +20,7 @@ namespace BruteForce
             #include "TerrainVertexCB.h"
             ConstantBuffer<TerrainVertexCB>* m_TerrainBuffers;
             std::vector<std::shared_ptr<Textures::Texture>> m_textures;
-            DescriptorHeap m_SVRHeap;
+            //DescriptorHeap m_SVRHeap;
             DescriptorHeap m_SamplerHeap;
             IndexedGeometry m_plane;
             UINT PreparePlanesCB(const Math::Vec4Float &cam, uint32_t index);
