@@ -218,6 +218,9 @@
     <ClInclude Include="DXMemoryAllocator\D3D12MemAlloc.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="SkyPixelCB.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicVertexShader.hlsl">

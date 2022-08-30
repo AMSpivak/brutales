@@ -1,10 +1,15 @@
+struct FrameInfo
+{
+    uint frame_index;
+};
+ConstantBuffer<FrameInfo> FrameInfoCB : register(b0);
 
 struct InvModelViewProjection
 {
     matrix IMVP;
 };
 
-ConstantBuffer<InvModelViewProjection> InvModelViewProjectionCB : register(b0);
+ConstantBuffer<InvModelViewProjection> InvModelViewProjectionCB : register(b1);
 struct VertexShaderOutput
 {
     float4 Position : SV_Position;

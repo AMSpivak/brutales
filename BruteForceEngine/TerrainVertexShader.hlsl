@@ -10,7 +10,7 @@ struct ModelViewProjection
     matrix MVP;
 };
 
-ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b2);
+ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b1);
 
 #include "TerrainVertexCB.h"
 

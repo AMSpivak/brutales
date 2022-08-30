@@ -1,3 +1,11 @@
+struct FrameInfo
+{
+	uint frame_index;
+};
+ConstantBuffer<FrameInfo> FrameInfoCB : register(b0);
+
+#include "SkyPixelCB.h"
+
 
 //Kosua20
 float Hash(float n)

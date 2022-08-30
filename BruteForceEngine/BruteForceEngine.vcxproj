@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -218,6 +218,7 @@
     <ClInclude Include="PlatformDX12.h" />
     <ClInclude Include="ShaderCppTypesRedefine.h" />
     <ClInclude Include="SkyAstronomy.h" />
+    <ClInclude Include="SkyPixelCB.h" />
     <ClInclude Include="TerrainVertexCB.h" />
     <ClInclude Include="TexturePlat.h" />
     <ClInclude Include="Renderer.h" />
