@@ -12,11 +12,14 @@
 #include <Windows.h>
 // D3D12 extension library.
 #include "d3dx12.h"
+#include "DXMemoryAllocator\D3D12MemAlloc.h"
 
 namespace BruteForce
 {
 	using Adapter = Microsoft::WRL::ComPtr<IDXGIAdapter4>;
 	using Device = Microsoft::WRL::ComPtr<ID3D12Device2>;
+	using GpuAllocator = Microsoft::WRL::ComPtr < D3D12MA::Allocator>;
+
 	using CommandQueue = Microsoft::WRL::ComPtr<ID3D12CommandQueue>;
 	using WindowHandle = HWND;
 

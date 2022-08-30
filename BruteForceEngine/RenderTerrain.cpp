@@ -268,8 +268,8 @@ namespace BruteForce
             commandList->RSSetScissorRects(1, render_dest.m_ScissorRect);
             commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, render_dest.dsv);
 
-            auto offset = sizeof(BruteForce::Math::Matrix) / 4;
-            commandList->SetGraphicsRoot32BitConstants(3, static_cast<UINT>(offset), render_dest.camera.GetCameraMatrixPointer(), 0);
+            auto const_size = sizeof(BruteForce::Math::Matrix) / 4;
+            commandList->SetGraphicsRoot32BitConstants(3, static_cast<UINT>(const_size), render_dest.camera.GetCameraMatrixPointer(), 0);
             commandList->SetGraphicsRoot32BitConstants(2, 1, &buff_index, 0);
             commandList->DrawIndexedInstanced(static_cast<UINT>(m_plane.m_IndexesCount), counter, 0, 0, 0);
             return smart_command_list;

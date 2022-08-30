@@ -57,7 +57,7 @@ namespace BruteForce
 	Adapter GetAdapter(bool useWarp);
 	Device CreateDevice(Adapter &adapter);
 	DescriptorHeap CreateDescriptorHeap(Device& device, DescriptorHeapType type, uint32_t numDescriptors);
-
+	GpuAllocator CreateGpuAllocator(Adapter& adapter, Device& device);
 	void EnableDebugLayer();
 	void ReportLiveObjects(Device& device);
 	void UpdateRenderTargetViews(Device& Device, SwapChain& swapChain, DescriptorHeap& descriptorHeap, Resource* BackBuffers, uint8_t NumFrames);
