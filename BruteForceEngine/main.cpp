@@ -298,6 +298,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
     BruteForce::Adapter adapter = BruteForce::GetAdapter(g_UseWarp);
     g_Device = BruteForce::CreateDevice(adapter);
+    BruteForce::GpuAllocator gpu_allocator = BruteForce::CreateGpuAllocator(adapter, g_Device);
     //BruteForce::ReportLiveObjects(g_Device);
     
     BruteForce::VideoDriverDX12 m_driver;

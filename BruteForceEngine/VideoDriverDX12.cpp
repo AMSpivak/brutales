@@ -347,6 +347,16 @@ namespace BruteForce
         return descriptorHeap;
     }
 
+    GpuAllocator CreateGpuAllocator(Adapter& adapter, Device& device)
+    {
+        GpuAllocator allocator;
+        D3D12MA::ALLOCATOR_DESC allocatorDesc = {};
+        allocatorDesc.pDevice = device.Get();
+        allocatorDesc.pAdapter = adapter.Get();
+        ThrowIfFailed(D3D12MA::CreateAllocator(&allocatorDesc, allocator.GetAddressOf()));
+        return allocator;
+    }
+
     void EnableDebugLayer()
     {
 #if defined(_DEBUG)
