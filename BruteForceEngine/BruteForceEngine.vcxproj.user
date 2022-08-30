@@ -8,4 +8,7 @@
     <LocalDebuggerWorkingDirectory>$(ProjectDir)/../Debug/</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <NXTargetName>Default</NXTargetName>
+  </PropertyGroup>
 </Project>
