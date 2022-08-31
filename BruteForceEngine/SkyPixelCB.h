@@ -1,6 +1,7 @@
 #ifndef SKY_PIXEL_CB_H
 #define SKY_PIXEL_CB_H
-#include "ShaderCommon.h"
+
+#include "ShaderCppTypesRedefine.h"
 
 struct SkyPixelCB
 {

@@ -133,6 +133,7 @@ namespace BruteForce
 		using Vec4Float = DirectX::XMFLOAT4;
 		using Vec3Float = DirectX::XMFLOAT3;
 		using Vec2Float = DirectX::XMFLOAT2;
+		using Vec2Int = DirectX::XMINT2;
 		using Vector = DirectX::XMVECTOR;
 
 		inline void Store(Vec4Float* dst, const Vector& src )
@@ -194,6 +195,10 @@ namespace BruteForce
 		inline Matrix/*&&*/ Multiply(const Matrix& a, const Matrix& b)
 		{
 			return DirectX::XMMatrixMultiply(a, b);
+		}
+		inline Matrix/*&&*/ Inverse(const Matrix& m)
+		{
+			return DirectX::XMMatrixInverse(nullptr, m);
 		}
 		inline float DegToRad(float deg) { return DirectX::XMConvertToRadians(deg); }
 		inline Matrix MatrixLookAtLH(const Vector& Eye, const  Vector& Focus, const Vector& Up) { return DirectX::XMMatrixLookAtLH(Eye, Focus, Up); }

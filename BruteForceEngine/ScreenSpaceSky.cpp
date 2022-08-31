@@ -1,25 +1,56 @@
-#include "ScreenSpaceToRT.h"
+#include "ScreenSpaceSky.h"
 #include "Settings.h"
 #include "Helpers.h"
 #include "Resources.h"
+#include "GameEnvironment.h"
 
 namespace BruteForce
 {
     namespace Render
     {
-        void ScreenSpaceToRt::Update(float delta_time, uint8_t frame_index)
+        ScreenSpaceSky::~ScreenSpaceSky()
+        {
+            if (m_SkyBuffers)
+            {
+                delete[] m_SkyBuffers;
+            }
+        }
+        void ScreenSpaceSky::Update(float delta_time, uint8_t frame_index)
         {
         }
 
-        void ScreenSpaceToRt::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue, DescriptorHeapManager& descriptor_heap_manager)
+        void ScreenSpaceSky::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue, DescriptorHeapManager& descriptor_heap_manager)
         {
+
+            if (m_SkyBuffers)
+            {
+                delete[] m_SkyBuffers;
+            }
+
+            m_SkyBuffers = new ConstantBuffer<SkyPixelCB>[frames_count];
+
+            {
+                CbvRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(frames_count), BruteForce::DescriptorRangeTypeCvb, "SkyCBVs");
+                auto& srv_handle = CbvRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(frames_count), CbvRange);
+
+                for (int i = 0; i < frames_count; i++)
+                {
+                    CreateUploadGPUBuffer(device, m_SkyBuffers[i], srv_handle);
+
+                    m_SkyBuffers[i].Map();
+                    m_SkyBuffers[i].Update();
+
+                    srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+                }
+            }
+
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path{ settings.GetExecuteDirWchar() };
 
             BruteForce::DataBlob vertexShaderBlob;
-            ThrowIfFailed(D3DReadFileToBlob((content_path + L"ScreenSpaceVertexShader.cso").c_str(), &vertexShaderBlob));
+            ThrowIfFailed(D3DReadFileToBlob((content_path + L"SkyVertexShader.cso").c_str(), &vertexShaderBlob));
             BruteForce::DataBlob pixelShaderBlob;
-            ThrowIfFailed(D3DReadFileToBlob((content_path + L"ToneMapPixelShader.cso").c_str(), &pixelShaderBlob));
+            ThrowIfFailed(D3DReadFileToBlob((content_path + L"SkyPixelShader.cso").c_str(), &pixelShaderBlob));
 
             D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
             featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
@@ -34,16 +65,13 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-            CD3DX12_DESCRIPTOR_RANGE1 descRange;
+            DescriptorRange descRange[1];
+            CbvRange->Fill(descRange[0], 17);
 
-            RTSrvDescriptors = descriptor_heap_manager.GetManagedRange("RenderTargetsSrvs");
-            assert(RTSrvDescriptors);
-
-            RTSrvDescriptors->Fill(descRange, 0);
-            descRange.NumDescriptors = 1;
-
-            CD3DX12_ROOT_PARAMETER1 rootParameters;
-            rootParameters.InitAsDescriptorTable(1, &descRange, D3D12_SHADER_VISIBILITY_PIXEL);
+            CD3DX12_ROOT_PARAMETER1 rootParameters[3];
+            rootParameters[1].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 1, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+            rootParameters[0].InitAsConstants(1, 0, 0, D3D12_SHADER_VISIBILITY_ALL);
+            rootParameters[2].InitAsDescriptorTable(_countof(descRange), descRange, D3D12_SHADER_VISIBILITY_PIXEL);
 
             CD3DX12_STATIC_SAMPLER_DESC linearClampSampler(
                 0,
@@ -55,7 +83,7 @@ namespace BruteForce
 
             CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
 
-            rootSignatureDescription.Init_1_1(1, &rootParameters, 1, &linearClampSampler, rootSignatureFlags);
+            rootSignatureDescription.Init_1_1(_countof(rootParameters), rootParameters, 1, &linearClampSampler, rootSignatureFlags);
 
             BruteForce::DataBlob rootSignatureBlob;
             BruteForce::DataBlob errorBlob;
@@ -94,19 +122,28 @@ namespace BruteForce
                 sizeof(PipelineStateStream), &pipelineStateStream
             };
             ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
-            m_PipelineState->SetName(L"Tone mapping PSO");
+            m_PipelineState->SetName(L"Sky PSO");
         }
 
-        SmartCommandList& ScreenSpaceToRt::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)
+        SmartCommandList& ScreenSpaceSky::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)
         {
+            uint32_t buff_index = render_dest.frame_index;
+
+            const auto& sun_info = GlobalLevelInfo::ReadGlobalAtmosphereInfo();
+            m_SkyBuffers[buff_index].m_CpuBuffer->LightDir = sun_info.m_SunInfo;
+            m_SkyBuffers[buff_index].m_CpuBuffer->LightColor = { sun_info.m_SunInfo.w, sun_info.m_SunInfo.w, sun_info.m_SunInfo.w, sun_info.m_SunInfo.w };
+            m_SkyBuffers[buff_index].m_CpuBuffer->SkyColor = { sun_info.m_SunInfo.w *0.06f, sun_info.m_SunInfo.w * 0.06f, sun_info.m_SunInfo.w * 0.08f, sun_info.m_SunInfo.w };
+
+            m_SkyBuffers[buff_index].Update();
+
             auto& commandList = smart_command_list.command_list;
             smart_command_list.SetPipelineState(m_PipelineState);
             smart_command_list.SetGraphicsRootSignature(m_RootSignature);
 
-            ID3D12DescriptorHeap* ppHeaps[] = { render_dest.HeapManager.GetDescriptorHeapPointer()/*, m_SamplerHeap.Get()*/};
+            ID3D12DescriptorHeap* ppHeaps[] = { render_dest.HeapManager.GetDescriptorHeapPointer() };
             commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
-            commandList->SetGraphicsRootDescriptorTable(0,
+            commandList->SetGraphicsRootDescriptorTable(2,
                 render_dest.HeapManager.GetGpuDescriptorHandle());
 
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -115,6 +152,10 @@ namespace BruteForce
             commandList->RSSetViewports(1, render_dest.m_Viewport);
             commandList->RSSetScissorRects(1, render_dest.m_ScissorRect);
             commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, NULL);
+
+            auto const_size = sizeof(BruteForce::Math::Matrix) / 4;
+            commandList->SetGraphicsRoot32BitConstants(1, static_cast<UINT>(const_size), render_dest.camera.GetInverseCameraMatrixPointer(), 0);
+            commandList->SetGraphicsRoot32BitConstants(0, 1, &buff_index, 0);
 
             commandList->DrawInstanced(3, 1, 0, 0);
             return smart_command_list;

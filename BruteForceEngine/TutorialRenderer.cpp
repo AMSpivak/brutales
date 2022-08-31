@@ -3,6 +3,7 @@
 #include "IndexedGeometryGenerator.h"
 #include "RenderInstanced.h"
 #include "RenderTerrain.h"
+#include "ScreenSpaceSky.h"
 #include "ComputeTerrainShadow.h"
 
 #include <DirectXMath.h>
@@ -69,6 +70,8 @@ TutorialRenderer::TutorialRenderer(BruteForce::Device& device,
     constexpr UINT sun_shadows = 1;
     //SunShadowSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, sun_shadows, BruteForce::DescriptorRangeTypeSrv, "SunShadowsSrvs");
     //SunShadowUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, sun_shadows, BruteForce::DescriptorRangeTypeUav, "SunShadowsUavs");
+    m_RenderSystems.push_back(std::make_shared<BruteForce::Render::ScreenSpaceSky>());
+
     m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderTerrain>());
     //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderInstanced>());
     m_CalcSystems.push_back(std::make_shared<BruteForce::Compute::ComputeTerrainShadow>());

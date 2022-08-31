@@ -6,7 +6,7 @@ ConstantBuffer<FrameInfo> FrameInfoCB : register(b0);
 
 #include "SkyPixelCB.h"
 
-
+ConstantBuffer<SkyPixelCB> SkyPixelsCB[3] : register(b17);
 //Kosua20
 float Hash(float n)
 {
@@ -20,10 +20,6 @@ float Noise3d(float3 v)
 	return frac(xh + yh + zh);
 }
 
-float3 LightDir;
-float3 LightColor;
-float3 SkyColor;
-
 struct PixelShaderInput
 {
     float4 Position : SV_Position;
@@ -36,10 +32,10 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 	float l = smoothstep(0.0,0.3, IN.Normal.y);
 	float l_earth = smoothstep(-0.05,0.0, IN.Normal.y);
 
-	float3 sun = 3 * LightColor;//vec3(5.9,5.0,6.0);
+	float3 sun = 3 * SkyPixelsCB[FrameInfoCB.frame_index].LightColor.xyz;//vec3(5.9,5.0,6.0);
 
 
-	float3 sun_dir = normalize(LightDir);
+	float3 sun_dir = normalize(SkyPixelsCB[FrameInfoCB.frame_index].LightDir.xyz);
 	float3 EarthColor = 0.5 * float3(0.5,0.3,0.02) * max(sun_dir.y, 0.0);
 
 	float to_sun = dot(normalize(IN.Normal.xyz),sun_dir);
@@ -52,7 +48,7 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 	//vec3 sky = vec3(1.0,1.0,1.1) *(1.0 -sun_l) + sun_l*sun;
 
 	//vec3 sky = vec3(0.0,0.6,1.0) *(1.0 -sun_l) + sun_l*sun;
-	float3 sky = SkyColor * (1.0 - sun_l) + sun_l * sun;
+	float3 sky = SkyPixelsCB[FrameInfoCB.frame_index].SkyColor.xyz * (1.0 - sun_l) + sun_l * sun;
 	sun_l = smoothstep(1.0 - 0.0005 * (6.0f - 5.0f * l),1.0,to_sun) * 0.9;
 	sky = sky * (1.0 - sun_l) + sun_l * sun;
 	float atm = (1.0 - l);
@@ -65,4 +61,5 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 	float3 sky_color = lerp(night,day,night_intens);
 	
 	return float4(lerp(EarthColor * a_earth, sky_color, l_earth), 1.0);
+	//return float4(0,0,100, 1.0);
 }

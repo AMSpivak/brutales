@@ -1,7 +1,7 @@
 #ifndef TERRAIN_SHADOW_CB_H
 #define TERRAIN_SHADOW_CB_H
-#include "ShaderCommon.h"
-
+//#include "ShaderCommon.h"
+#include "ShaderCppTypesRedefine.h"
 struct TerrainShadowCB
 {
     float4 LightSpace1; // x,y - direction x; z,w - offset

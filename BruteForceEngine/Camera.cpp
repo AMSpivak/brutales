@@ -126,6 +126,7 @@ namespace BruteForce
 			RecalculateView();
 			RecalculateProjection();
 			m_ViewProjection = Math::Multiply(m_View, m_Projection);
+			m_InverseViewProjection = Math::Inverse(m_ViewProjection);
 			m_Updated = true;
 		}
 	}
