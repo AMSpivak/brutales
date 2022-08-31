@@ -18,9 +18,9 @@ namespace BruteForce
 	{
 		Math::Matrix M = Math::MatrixRotationAxis(rotationAxis, BruteForce::Math::DegToRad(angle));
 		m_FocusPoint = Math::MatrixVectorMul(M, m_FocusPoint);
-
-		RecalculateView();
-		m_ViewProjection = Math::Multiply(m_View, m_Projection);
+		m_Updated = false;
+		//RecalculateView();
+		//m_ViewProjection = Math::Multiply(m_View, m_Projection);
 	}
 
 	void Camera::RotateView(float angle_x, float angle_y, float angle_z)
@@ -31,9 +31,9 @@ namespace BruteForce
 		M = Math::MatrixRotationAxis(m_RightDirection, angle_x);
 		m_FocusPoint = Math::MatrixVectorMul(M, m_FocusPoint);
 
-
-		RecalculateView();
-		m_ViewProjection = Math::Multiply(m_View, m_Projection);
+		m_Updated = false;
+		//RecalculateView();
+		//m_ViewProjection = Math::Multiply(m_View, m_Projection);
 	}
 
 	void Camera::MoveView(float x, float y, float z)
