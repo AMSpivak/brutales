@@ -69,7 +69,7 @@ namespace BruteForce
             CbvRange->Fill(descRange[0], 17);
 
             CD3DX12_ROOT_PARAMETER1 rootParameters[3];
-            rootParameters[1].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 1, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+            rootParameters[1].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 1, 0, D3D12_SHADER_VISIBILITY_ALL);
             rootParameters[0].InitAsConstants(1, 0, 0, D3D12_SHADER_VISIBILITY_ALL);
             rootParameters[2].InitAsDescriptorTable(_countof(descRange), descRange, D3D12_SHADER_VISIBILITY_PIXEL);
 
@@ -132,7 +132,7 @@ namespace BruteForce
             const auto& sun_info = GlobalLevelInfo::ReadGlobalAtmosphereInfo();
             m_SkyBuffers[buff_index].m_CpuBuffer->LightDir = sun_info.m_SunInfo;
             m_SkyBuffers[buff_index].m_CpuBuffer->LightColor = { sun_info.m_SunInfo.w, sun_info.m_SunInfo.w, sun_info.m_SunInfo.w, sun_info.m_SunInfo.w };
-            m_SkyBuffers[buff_index].m_CpuBuffer->SkyColor = { sun_info.m_SunInfo.w *0.06f, sun_info.m_SunInfo.w * 0.06f, sun_info.m_SunInfo.w * 0.08f, sun_info.m_SunInfo.w };
+            m_SkyBuffers[buff_index].m_CpuBuffer->SkyColor = { 0.1f, 0.4f, 0.9f, sun_info.m_SunInfo.w };
 
             m_SkyBuffers[buff_index].Update();
 
