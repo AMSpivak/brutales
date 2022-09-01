@@ -187,6 +187,11 @@ namespace BruteForce
 			return DirectX::XMMatrixRotationRollPitchYawFromVector(rpy);
 		}
 
+		inline Vector MatrixVectorMix(const Vector& a, const Vector& b, float a_part)
+		{
+			return VectorAdd(MatrixVectorScale(a, a_part), MatrixVectorScale(b, 1.0f - a_part));
+		}
+
 		inline Matrix MatrixTranslation(float OffsetX, float OffsetY, float OffsetZ)
 		{
 			return DirectX::XMMatrixTranslation(OffsetX, OffsetY, OffsetZ);

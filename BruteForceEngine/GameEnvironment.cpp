@@ -24,6 +24,7 @@ namespace BruteForce
         AtmosphereInfo gAtmosphereInfo = {
             {0.000f, 1.0f, 1.0f,  100.0f },
             {1.000f, 1.01f, 0.0f,  0.0f },
+            {1.0f, 1.0f, 1.0f,  0.0f },
             1.0f
         };
 

@@ -131,9 +131,10 @@ namespace BruteForce
 
             const auto& sun_info = GlobalLevelInfo::ReadGlobalAtmosphereInfo();
             m_SkyBuffers[buff_index].m_CpuBuffer->LightDir = sun_info.m_SunInfo;
-            m_SkyBuffers[buff_index].m_CpuBuffer->LightColor = { sun_info.m_SunInfo.w, sun_info.m_SunInfo.w, sun_info.m_SunInfo.w, sun_info.m_SunInfo.w };
+            m_SkyBuffers[buff_index].m_CpuBuffer->LightColor = sun_info.m_SunColor; 
+            m_SkyBuffers[buff_index].m_CpuBuffer->LightColor.w = sun_info.m_SunInfo.w ;
             m_SkyBuffers[buff_index].m_CpuBuffer->SkyColor = { 0.1f, 0.4f, 0.9f, sun_info.m_SunInfo.w };
-
+            Math::Store(&(m_SkyBuffers[buff_index].m_CpuBuffer->CamPosition), render_dest.camera.GetPosition());
             m_SkyBuffers[buff_index].Update();
 
             auto& commandList = smart_command_list.command_list;

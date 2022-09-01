@@ -9,6 +9,8 @@ namespace BruteForce
         {
             return 3.141593f;
         }
+
+        float Smoothstep(float edge0, float edge1, float x);
     }
 }
 

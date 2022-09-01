@@ -59,7 +59,7 @@ namespace BruteForce
             m_TerrainBuffers[index].m_CpuBuffer->m_SunShadow = { sun_info.m_SunShadow.z, -sun_info.m_SunShadow.w,
                  1.0f / sun_info.m_SunShadowScaler,
                 0.0f};
-
+            m_TerrainBuffers[index].m_CpuBuffer->m_SunColor = sun_info.m_SunColor;
             m_TerrainBuffers[index].Update();
             
             return counter;

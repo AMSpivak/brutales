@@ -11,6 +11,8 @@ namespace BruteForce
         Math::Matrix m_Projection;
         Math::Matrix m_View;
         Math::Matrix m_ViewProjection;
+        Math::Matrix m_Translation;
+        Math::Matrix m_TranslationViewProjection;
         Math::Matrix m_InverseViewProjection;
         Math::Vector m_Position;
         Math::Vector m_FocusPoint;

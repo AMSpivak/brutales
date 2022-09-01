@@ -8,5 +8,6 @@ struct SkyPixelCB
     float4 LightDir;
     float4 LightColor;
     float4 SkyColor;
+    float4 CamPosition;
 };
 #endif

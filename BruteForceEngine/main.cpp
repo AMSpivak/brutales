@@ -181,23 +181,37 @@ void Update()
             BruteForce::Math::Store(&sun, Sky.SunDirection);
 
             BruteForce::Math::Vec4Float shadow_dir;
-            BruteForce::Math::Store(&shadow_dir, BruteForce::Math::Vector3Norm({ sun.x, 0.0f, sun.z, 0.0f}));
+            BruteForce::Math::Store(&shadow_dir, BruteForce::Math::Vector3Norm({ sun.x, 0.0f, sun.z, 0.0f }));
 
             //float sun_azimuth = sun_info.Azimuth;
             float sun_intencivity = 100.0f;
-            if (sun.y < 0.0f)
+            /*if (sun.y < 0.0f)
             {
                 sun_intencivity = 10.0f;
-            }
+            }*/
 
-            sun.y = sun.y < 0.0f ? 0.0f : sun.y;
+            //BruteForce::Math::Vector red_light = { 0.6f, 0.05f, 0.0f, 0.0f };
+            BruteForce::Math::Vector red_light = {0.6f, 0.15f, 0.0f, 0.0f };
+            BruteForce::Math::Vector yellow_light = { 0.8f, 0.2f, 0.0f, 0.0f };
+            BruteForce::Math::Vector day_light = { 1.0f, 1.0f, 1.0f, 0.0f };
+            BruteForce::Math::Vector nigth_light = { 0.2f, 0.1f, 0.6f, 0.0f };
+
+            float mix_yellow = BruteForce::Math::Smoothstep(0.15f, 0.45f, sun.y);
+            float mix_red = BruteForce::Math::Smoothstep(0.1f, 0.35f, sun.y);
+            float mix_night = BruteForce::Math::Smoothstep(-0.2f, -0.05f, sun.y);
+
+            day_light = BruteForce::Math::MatrixVectorMix(day_light, yellow_light, mix_yellow);
+            day_light = BruteForce::Math::MatrixVectorMix(day_light, red_light, mix_red);
+            day_light = BruteForce::Math::MatrixVectorMix(day_light, nigth_light, mix_night);
+            
+            float sun_h = sun.y < 0.0f ? 0.0f : sun.y;
 
             auto& atmosphere = BruteForce::GlobalLevelInfo::GetGlobalAtmosphereInfo();
             constexpr float offset = 0.0001f;
             const float shadow_angle_delta = BruteForce::Math::DegToRad(10.0f);
 
-            float shadow_tg_1 = sun.y /sqrt(1.0f - sun.y * sun.y + offset);
-            float a2 = acos(sun.y) - shadow_angle_delta;
+            float shadow_tg_1 = sun_h /sqrt(1.0f - sun_h * sun_h + offset);
+            float a2 = acos(sun_h) - shadow_angle_delta;
             a2 = a2 < 0.0f ? 0.0f : a2;
             float shadow_tg_2 = 1.f/(tan(a2) + offset);
 
@@ -214,6 +228,7 @@ void Update()
             atmosphere.m_SunShadow.z = -shadow_dir.x;
             atmosphere.m_SunShadow.w = -shadow_dir.z;
             atmosphere.m_SunShadowScaler = abs(atmosphere.m_SunShadow.z) + abs(atmosphere.m_SunShadow.w);
+            BruteForce::Math::Store(&(atmosphere.m_SunColor), day_light);
             chng = false;
         }
     }

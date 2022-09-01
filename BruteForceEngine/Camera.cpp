@@ -4,7 +4,8 @@ namespace BruteForce
 {
 	void Camera::RecalculateView()
 	{
-		m_View = Math::MatrixLookAtLH(m_Position, Math::VectorAdd(m_Position, m_FocusPoint), m_UpDirection);
+		//m_View = Math::MatrixLookAtLH(m_Position, Math::VectorAdd(m_Position, m_FocusPoint), m_UpDirection);
+		m_View = Math::MatrixLookAtLH({ 0.0f,0.0f,0.0f,0.0f }, m_FocusPoint, m_UpDirection);
 	}
 	void Camera::RecalculateView(const BruteForce::Math::Vector& focusPoint, const BruteForce::Math::Vector& upDirection)
 	{
@@ -79,12 +80,12 @@ namespace BruteForce
 	void Camera::SetPosition(const Math::Vec3Float& position, bool renew_matrixes)
 	{
 		m_Position = { position.x, position.y, position.z, 0.0f};
-		if (renew_matrixes)
+		/*if (renew_matrixes)
 		{
 			RecalculateView();
 			m_ViewProjection = Math::Multiply(m_View, m_Projection);
 		}
-		else
+		else*/
 		{
 			m_Updated = false;
 		}
@@ -93,12 +94,12 @@ namespace BruteForce
 	void Camera::SetAspectRatio(float aspect, bool renew_matrixes)
 	{
 		m_AspectRatio = aspect;
-		if (renew_matrixes)
+		/*if (renew_matrixes)
 		{
 			RecalculateProjection();
 			m_ViewProjection = Math::Multiply(m_View, m_Projection);
 		}
-		else
+		else*/
 		{
 			m_Updated = false;
 		}
@@ -108,12 +109,12 @@ namespace BruteForce
 	{
 		m_JitterX = jx;
 		m_JitterY = jy;
-		if (renew_matrixes)
+		/*if (renew_matrixes)
 		{
 			RecalculateProjection();
 			m_ViewProjection = Math::Multiply(m_View, m_Projection);
 		}
-		else
+		else*/
 		{
 			m_Updated = false;
 		}
@@ -123,9 +124,13 @@ namespace BruteForce
 	{
 		if (!m_Updated)
 		{
+			Math::Vec4Float pos;
+			Math::Store(&pos, m_Position);
+			m_Translation = Math::MatrixTranslation(-pos.x,-pos.y,-pos.z);
 			RecalculateView();
 			RecalculateProjection();
 			m_ViewProjection = Math::Multiply(m_View, m_Projection);
+			m_TranslationViewProjection = Math::Multiply(m_Translation, m_ViewProjection);
 			m_InverseViewProjection = Math::Inverse(m_ViewProjection);
 			m_Updated = true;
 		}
@@ -140,7 +145,7 @@ namespace BruteForce
 	const Math::Matrix* Camera::GetCameraMatrixPointer()//  const
 	{
 		RecalculateMatrixes();
-		return &m_ViewProjection;
+		return &m_TranslationViewProjection;
 	}
 	const Math::Matrix* Camera::GetInverseCameraMatrixPointer()//  const
 	{
@@ -151,7 +156,7 @@ namespace BruteForce
 	const Math::Matrix* Camera::GetCameraMatrixPointer()  const
 	{
 		assert(m_Updated);
-		return &m_ViewProjection;
+		return &m_TranslationViewProjection;
 	}
 
 	const Math::Matrix* Camera::GetInverseCameraMatrixPointer()  const

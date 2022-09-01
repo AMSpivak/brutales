@@ -56,7 +56,7 @@ float4 main(PixelShaderInput IN) : SV_Target
     shadows.x = smoothstep(shadows.y, shadows.x, shadows.z);// IN.WorldPosition.y);
     //shadows.x = 1.0 - shadows.x * shadows.x;
     light *= 0.3 + 0.7 * light_diffuse * shadows.x;// *shadows.x;
-    return float4(light * tex[materials.r].Sample(sampl, IN.WorldPosition.xz).xyz, 1.0f);
+    return float4(light * tex[materials.r].Sample(sampl, IN.WorldPosition.xz).xyz * PlanesCB[FrameInfoCB.frame_index].m_SunColor.xyz, 1.0f);
     //return float4(100.0f * (IN.Normal), 1.0f);
     
     //return float4(0.5f * IN.Normal + float3(0.5f,0.5f,0.5f), 1.0f);
