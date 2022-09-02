@@ -133,6 +133,11 @@ namespace BruteForce
             m_SkyBuffers[buff_index].m_CpuBuffer->LightDir = sun_info.m_SunInfo;
             m_SkyBuffers[buff_index].m_CpuBuffer->LightColor = sun_info.m_SunColor; 
             m_SkyBuffers[buff_index].m_CpuBuffer->LightColor.w = sun_info.m_SunInfo.w ;
+
+            m_SkyBuffers[buff_index].m_CpuBuffer->MoonDirection = sun_info.m_MoonInfo;
+            m_SkyBuffers[buff_index].m_CpuBuffer->MoonColor = sun_info.m_MoonColor;
+            m_SkyBuffers[buff_index].m_CpuBuffer->MoonColor.w = sun_info.m_MoonInfo.w;
+
             m_SkyBuffers[buff_index].m_CpuBuffer->SkyColor = { 0.1f, 0.4f, 0.9f, sun_info.m_SunInfo.w };
             Math::Store(&(m_SkyBuffers[buff_index].m_CpuBuffer->CamPosition), render_dest.camera.GetPosition());
             m_SkyBuffers[buff_index].Update();

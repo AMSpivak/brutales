@@ -54,7 +54,7 @@ namespace BruteForce
             m_TerrainBuffers[index].m_CpuBuffer->m_TerrainScaler = terrain_scaler;
 
             const auto& sun_info = GlobalLevelInfo::ReadGlobalAtmosphereInfo();
-            m_TerrainBuffers[index].m_CpuBuffer->m_SunInfo = sun_info.m_SunInfo;
+            m_TerrainBuffers[index].m_CpuBuffer->m_SunInfo = sun_info.m_Moonlight ? sun_info.m_MoonInfo: sun_info.m_SunInfo;
 
             m_TerrainBuffers[index].m_CpuBuffer->m_SunShadow = { sun_info.m_SunShadow.z, -sun_info.m_SunShadow.w,
                  1.0f / sun_info.m_SunShadowScaler,

@@ -12,8 +12,13 @@ namespace BruteForce
             //Math::Vec4Float m_PlanesPositions[1024];
             Math::Vec4Float m_SunInfo; // x,y,z - position, w - intensivity 
             Math::Vec4Float m_SunShadow; // x,y - 1,2 shadow decrease, z, w - lateral sun light direction 
-            Math::Vec4Float m_SunColor; // x,y - 1,2 shadow decrease, z, w - lateral sun light direction 
+            Math::Vec4Float m_SunColor; // x,y,z - color, w - intensivity 
+            Math::Vec4Float m_MoonInfo; // x,y,z - position, w - intensivity 
+            Math::Vec4Float m_MoonColor; // x,y,z - color, w - intensivity 
+
+
             float m_SunShadowScaler;
+            bool m_Moonlight;
             //uint32_t m_PlanesCount;
         };
         struct TerrainInfo

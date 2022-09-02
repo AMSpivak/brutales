@@ -9,5 +9,7 @@ struct SkyPixelCB
     float4 LightColor;
     float4 SkyColor;
     float4 CamPosition;
+    float4 MoonDirection;
+    float4 MoonColor;
 };
 #endif

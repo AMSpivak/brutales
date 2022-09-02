@@ -179,9 +179,24 @@ void Update()
             SkyInfo Sky = GetSkyInfo(day_of_year, day_hour, latitude, moon_sun_latitude);
             BruteForce::Math::Vec4Float sun;
             BruteForce::Math::Store(&sun, Sky.SunDirection);
+            BruteForce::Math::Vec4Float moon;
+            BruteForce::Math::Store(&moon, Sky.MoonDirection);
+
+            BruteForce::Math::Vec4Float main_sky_light = sun;
+
+            constexpr float moon_edge = -0.05f;
+            bool moonlight = false;
+
+            if (sun.y < moon_edge)
+            {
+                main_sky_light = moon;
+                moonlight = true;
+            }
+
+            float sun_h = main_sky_light.y < 0.0f ? 0.0f : main_sky_light.y;
 
             BruteForce::Math::Vec4Float shadow_dir;
-            BruteForce::Math::Store(&shadow_dir, BruteForce::Math::Vector3Norm({ sun.x, 0.0f, sun.z, 0.0f }));
+            BruteForce::Math::Store(&shadow_dir, BruteForce::Math::Vector3Norm({ main_sky_light.x, 0.0f, main_sky_light.z, 0.0f }));
 
             //float sun_azimuth = sun_info.Azimuth;
             float sun_intencivity = 100.0f;
@@ -194,17 +209,17 @@ void Update()
             BruteForce::Math::Vector red_light = {0.6f, 0.15f, 0.0f, 0.0f };
             BruteForce::Math::Vector yellow_light = { 0.8f, 0.2f, 0.0f, 0.0f };
             BruteForce::Math::Vector day_light = { 1.0f, 1.0f, 1.0f, 0.0f };
-            BruteForce::Math::Vector nigth_light = { 0.2f, 0.1f, 0.6f, 0.0f };
+            BruteForce::Math::Vector nigth_light = { 0.05f, 0.1f, 0.9f, 0.0f };
 
             float mix_yellow = BruteForce::Math::Smoothstep(0.15f, 0.45f, sun.y);
             float mix_red = BruteForce::Math::Smoothstep(0.1f, 0.35f, sun.y);
-            float mix_night = BruteForce::Math::Smoothstep(-0.2f, -0.05f, sun.y);
+            float mix_night = BruteForce::Math::Smoothstep(-0.3f, moon_edge, sun.y);
 
             day_light = BruteForce::Math::MatrixVectorMix(day_light, yellow_light, mix_yellow);
             day_light = BruteForce::Math::MatrixVectorMix(day_light, red_light, mix_red);
             day_light = BruteForce::Math::MatrixVectorMix(day_light, nigth_light, mix_night);
             
-            float sun_h = sun.y < 0.0f ? 0.0f : sun.y;
+            
 
             auto& atmosphere = BruteForce::GlobalLevelInfo::GetGlobalAtmosphereInfo();
             constexpr float offset = 0.0001f;
@@ -216,19 +231,30 @@ void Update()
             float shadow_tg_2 = 1.f/(tan(a2) + offset);
 
             
-
+            float moon_intencivity = sun_intencivity;// *0.5f;
 
             atmosphere.m_SunInfo = {
                 sun.x,// tang_dir* cos(azimuth_rad),
                 sun.y,
                 sun.z,//tang_dir * sin(-azimuth_rad),
                 sun_intencivity };
+            atmosphere.m_MoonInfo = {
+                moon.x,// tang_dir* cos(azimuth_rad),
+                moon.y,
+                moon.z,//tang_dir * sin(-azimuth_rad),
+                moon_intencivity };
+            atmosphere.m_MoonColor = {
+                0.85f,// tang_dir* cos(azimuth_rad),
+                0.9f,
+                1.0f,//tang_dir * sin(-azimuth_rad),
+                moon_intencivity };
             atmosphere.m_SunShadow.x = shadow_tg_1;
             atmosphere.m_SunShadow.y = shadow_tg_2;
             atmosphere.m_SunShadow.z = -shadow_dir.x;
             atmosphere.m_SunShadow.w = -shadow_dir.z;
             atmosphere.m_SunShadowScaler = abs(atmosphere.m_SunShadow.z) + abs(atmosphere.m_SunShadow.w);
             BruteForce::Math::Store(&(atmosphere.m_SunColor), day_light);
+            atmosphere.m_Moonlight = moonlight;
             chng = false;
         }
     }
