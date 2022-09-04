@@ -110,6 +110,7 @@ void Update()
     static double elapsedSeconds = 0.0;
     static std::chrono::high_resolution_clock clock;
     static auto t0 = clock.now();
+    static auto t_up = clock.now();
 
     frameCounter++;
     auto t1 = clock.now();
@@ -117,6 +118,7 @@ void Update()
     t0 = t1;
     elapsedSeconds += deltaTime.count() * 1e-9;
     float msecs = 0.000001f * deltaTime.count();
+    
 
 
     if (test_controller && test_camera)
@@ -158,6 +160,15 @@ void Update()
         static float day_hour = 0.5f;
         static bool chng = true;
 
+        float msecs_up = (0.000001f * (t1 - t_up).count());
+        if (msecs_up > 12)
+        {
+            day_hour += msecs * 0.00001f;
+            t_up = t1;
+            chng = true;
+
+        }
+
         if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::DbgInrease))
         {
             day_hour += msecs * 0.0001f;
@@ -170,11 +181,24 @@ void Update()
         }
         if (chng)
         {
-            day_hour = day_hour < 0.0f ? 0.0f : day_hour > 1.0f ? 1.0f : day_hour;
+            //day_hour = day_hour < 0.0f ? 0.0f : day_hour > 1.0f ? 1.0f : day_hour;
 
-            constexpr int day_of_year = 170;
-            constexpr float latitude = 30.f;
-            constexpr float moon_sun_latitude = 30.f;
+            static int day_of_year = 170;
+            if (day_hour < 0.0f)
+            {
+                --day_of_year;
+                day_hour += 1.0f;
+            }
+
+            if (day_hour > 0.0f)
+            {
+                ++day_of_year;
+                day_hour -= 1.0f;
+            }
+
+            //constexpr int day_of_year = 170;
+            constexpr float latitude = 50.f;
+            constexpr float moon_sun_latitude = 180.f;
 
             SkyInfo Sky = GetSkyInfo(day_of_year, day_hour, latitude, moon_sun_latitude);
             BruteForce::Math::Vec4Float sun;
@@ -186,11 +210,12 @@ void Update()
 
             constexpr float moon_edge = -0.05f;
             bool moonlight = false;
-
+            float moon_mul = 1.0f;
             if (sun.y < moon_edge)
             {
                 main_sky_light = moon;
                 moonlight = true;
+                moon_mul = 1.0f - BruteForce::Math::Smoothstep(-0.3f, moon_edge, sun.y);
             }
 
             float sun_h = main_sky_light.y < 0.0f ? 0.0f : main_sky_light.y;
@@ -242,7 +267,7 @@ void Update()
                 moon.x,// tang_dir* cos(azimuth_rad),
                 moon.y,
                 moon.z,//tang_dir * sin(-azimuth_rad),
-                moon_intencivity };
+                moon_intencivity * moon_mul };
             atmosphere.m_MoonColor = {
                 0.85f,// tang_dir* cos(azimuth_rad),
                 0.9f,
@@ -277,6 +302,8 @@ void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Win
 {
 
     p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
+    p_Renderer->SwapFrame();
+
     //auto smart_command_list = in_SmartCommandQueue.GetCommandList();
     //auto& backBuffer = p_Renderer->GetCurrentBackBufferRef();
     {
@@ -294,7 +321,7 @@ void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Win
         //p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
 
     }
-    p_Renderer->SwapFrame();
+    //p_Renderer->SwapFrame();
     //p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
 }
 

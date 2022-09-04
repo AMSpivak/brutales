@@ -82,7 +82,7 @@ SkyInfo GetSkyInfo(int day_of_year, float day_hour, float latitude, float start_
     constexpr float moon_distance = 384.0f + earth_rad; //1000 km
     XMMATRIX moon_lat_matrix = XMMatrixMultiply(XMMatrixTranslation( 0.0f, 0.0f, -earth_rad/ moon_distance),XMMatrixRotationX(-(latitude - 90.0f) * deg_to_rad));
     float day_rad = day_hour * 2.0f * pi_f;
-    XMMATRIX day_matrix = XMMatrixRotationY(-day_rad);
+    XMMATRIX day_matrix = XMMatrixRotationY(day_rad);
     constexpr float sun_declination = (23.44f) * deg_to_rad; // (23.44f) - Astronomic parameter
     constexpr float moon_declination = (25.00f) * deg_to_rad; // (23.44f) - Astronomic parameter
     constexpr float winter_solstice = -10.0f; // winter solstice at 22 December
