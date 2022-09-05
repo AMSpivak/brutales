@@ -325,37 +325,9 @@ void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Win
     //p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
 }
 
-void Resize(uint32_t width, uint32_t height, BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Window * pWindow)
+void Resize(uint32_t width, uint32_t height, BruteForce::Window * pWindow)
 {
-    if (g_ClientWidth != width || g_ClientHeight != height)
-    {
-        // Don't allow 0 size swap chain back buffers.
-        g_ClientWidth = std::max(1u, width);
-        g_ClientHeight = std::max(1u, height);
-
-        //// Flush the GPU queue to make sure the swap chain's back buffers
-        //// are not being referenced by an in-flight command list.
-        //in_SmartCommandQueue.Flush();
-
-        //for (int i = 0; i < p_Renderer->GetBuffersCount(); ++i)
-        //{
-        //    // Any references to the back buffers must be released
-        //    // before the swap chain can be resized.
-        //    p_Renderer->m_BackBuffers[i].Reset();
-        //    p_Renderer->m_FrameFenceValues[i] = p_Renderer->m_FrameFenceValues[p_Renderer->m_CurrentBackBufferIndex];
-        //}
-
-        //auto& refSwapChain = pWindow->GetSwapChainReference();
-
-        //BruteForce::SwapChainDesc swapChainDesc = {};
-        //ThrowIfFailed(refSwapChain->GetDesc(&swapChainDesc));
-        //ThrowIfFailed(refSwapChain->ResizeBuffers(p_Renderer->GetBuffersCount(), g_ClientWidth, g_ClientHeight,
-        //    swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
-
-        //p_Renderer->m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
-        //BruteForce::UpdateRenderTargetViews(g_Device, refSwapChain, p_Renderer->m_BackBuffersDHeap, p_Renderer->m_BackBuffers, p_Renderer->GetBuffersCount());
-        p_Renderer->Resize();
-    }
+    p_Renderer->Resize();
 }
 
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
@@ -372,7 +344,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     BruteForce::VideoDriverDX12 m_driver;
     pWindow = m_driver.CreateWindow(L"DX12WindowClass", L"Learning DirectX 12",
         g_ClientWidth, g_ClientHeight);
-    
+    //pWindow->SetFullscreen(true);
     p_HeapManager = new BruteForce::DescriptorHeapManager();
     p_Renderer = new TutorialRenderer(g_Device, pWindow, false, BruteForce::TargetFormat_R8G8B8A8_Unorm,*p_HeapManager);
 
@@ -380,7 +352,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     test_controller = new BruteForce::Controller::ControllerWinKey();
     test_camera = p_Renderer->GetCameraPtr();
     //pWindow->SetOnPaint([] {Update(); Render(p_Renderer->m_SmartCommandQueue, pWindow); });
-    pWindow->SetOnResize([](uint32_t width, uint32_t height, BruteForce::Window * pwindow) {Resize(width, height, p_Renderer->m_SmartCommandQueue, pwindow); });
+    pWindow->SetOnResize(Resize);
     pWindow->Show();
     //pWindow->SetFullscreen(true);
     MSG msg = {};
