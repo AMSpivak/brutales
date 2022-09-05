@@ -9,6 +9,7 @@
 #include "EngineGpuFence.h"
 #include "EngineGpuCommands.h"
 #include "Camera.h"
+#include "Helpers.h"
 
 namespace BruteForce
 {
@@ -54,6 +55,34 @@ namespace BruteForce
         ~Renderer() 
         {
             //ReportLiveObjects();
+        }
+
+        void Resize()
+        {
+            uint32_t width = m_Window->GetWidth();
+            uint32_t height = m_Window->GetHeight();
+            // Flush the GPU queue to make sure the swap chain's back buffers
+            // are not being referenced by an in-flight command list.
+            m_SmartCommandQueue.Flush();
+
+            for (int i = 0; i < GetBuffersCount(); ++i)
+            {
+                // Any references to the back buffers must be released
+                // before the swap chain can be resized.
+                m_BackBuffers[i].Reset();
+                m_FrameFenceValues[i] = m_FrameFenceValues[m_CurrentBackBufferIndex];
+            }
+
+            auto& refSwapChain = m_Window->GetSwapChainReference();
+
+            BruteForce::SwapChainDesc swapChainDesc = {};
+            ThrowIfFailed(refSwapChain->GetDesc(&swapChainDesc));
+            ThrowIfFailed(refSwapChain->ResizeBuffers(GetBuffersCount(), width, height,
+                swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
+
+            m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
+            BruteForce::UpdateRenderTargetViews(m_Device, refSwapChain,m_BackBuffersDHeap, m_BackBuffers, GetBuffersCount());
+            
         }
 
         const uint8_t GetBuffersCount() { return m_NumFrames; }

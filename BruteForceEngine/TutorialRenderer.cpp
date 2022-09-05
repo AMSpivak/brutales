@@ -109,7 +109,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
     m_ToneMapper.LoadContent(device, m_NumFrames, desc_rt, m_CopyCommandQueue, m_SRV_Heap);
     m_ContentLoaded = true;
 
-    Resize(device);
+    Resize();
 
     return true;
 }
@@ -120,10 +120,13 @@ void TutorialRenderer::Update(float delta_time, BruteForce::SmartCommandQueue& c
 }
 
 
-void TutorialRenderer::Resize(BruteForce::Device& device)
+void TutorialRenderer::Resize()
 {
+    MyRenderer::Resize();
+
     int width = m_Window->GetWidth();
     int height = m_Window->GetHeight();
+    
     m_Viewport = BruteForce::CreateViewport(0.0f, 0.0f,
         static_cast<float>(width), static_cast<float>(height));
 
@@ -133,28 +136,20 @@ void TutorialRenderer::Resize(BruteForce::Device& device)
         height = std::max(1, height);
         m_Camera.SetAspectRatio(m_Window->GetWidth() / static_cast<float>(m_Window->GetHeight()), true);
 
-        m_DepthBuffer.Assign(device, width, height, BruteForce::TargetFormat_D32_Float);
+        m_DepthBuffer.Assign(m_Device, width, height, BruteForce::TargetFormat_D32_Float);
         BruteForce::DescriptorHandle d_handle = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
-        m_DepthBuffer.CreateSrv(device, d_handle);
+        m_DepthBuffer.CreateSrv(m_Device, d_handle);
 
         BruteForce::DescriptorHandle rt_handle = m_RTHeap->GetCPUDescriptorHandleForHeapStart();
         BruteForce::DescriptorHandle srv_handle = RTSrvDescriptors->m_CpuHandle;
 
-        /*for (uint8_t i = 0; i < RendererNumFrames; i++)
-        {*/
-            //m_RTTextures[0].Assign(device, width, height, render_format);
-            //m_RTTextures[0].CreateViews(device, srv_handle, rt_handle);
         BruteForce::Textures::TexMetadata metadata;
         metadata.format = render_format;
         metadata.width = width;
         metadata.height = height;
-        BruteForce::Textures::CreateTexture(m_RTTextures[0], metadata, device, true, false);
-        m_RTTextures[0].CreateSrv(device, srv_handle);
-        m_RTTextures[0].CreateRtv(device, rt_handle);
-
-        /*    rt_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
-            srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
-        }*/
+        BruteForce::Textures::CreateTexture(m_RTTextures[0], metadata, m_Device, true, false);
+        m_RTTextures[0].CreateSrv(m_Device, srv_handle);
+        m_RTTextures[0].CreateRtv(m_Device, rt_handle);
     }
 }
 

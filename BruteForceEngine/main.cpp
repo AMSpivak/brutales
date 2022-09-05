@@ -333,28 +333,28 @@ void Resize(uint32_t width, uint32_t height, BruteForce::SmartCommandQueue& in_S
         g_ClientWidth = std::max(1u, width);
         g_ClientHeight = std::max(1u, height);
 
-        // Flush the GPU queue to make sure the swap chain's back buffers
-        // are not being referenced by an in-flight command list.
-        in_SmartCommandQueue.Flush();
+        //// Flush the GPU queue to make sure the swap chain's back buffers
+        //// are not being referenced by an in-flight command list.
+        //in_SmartCommandQueue.Flush();
 
-        for (int i = 0; i < p_Renderer->GetBuffersCount(); ++i)
-        {
-            // Any references to the back buffers must be released
-            // before the swap chain can be resized.
-            p_Renderer->m_BackBuffers[i].Reset();
-            p_Renderer->m_FrameFenceValues[i] = p_Renderer->m_FrameFenceValues[p_Renderer->m_CurrentBackBufferIndex];
-        }
+        //for (int i = 0; i < p_Renderer->GetBuffersCount(); ++i)
+        //{
+        //    // Any references to the back buffers must be released
+        //    // before the swap chain can be resized.
+        //    p_Renderer->m_BackBuffers[i].Reset();
+        //    p_Renderer->m_FrameFenceValues[i] = p_Renderer->m_FrameFenceValues[p_Renderer->m_CurrentBackBufferIndex];
+        //}
 
-        auto& refSwapChain = pWindow->GetSwapChainReference();
+        //auto& refSwapChain = pWindow->GetSwapChainReference();
 
-        BruteForce::SwapChainDesc swapChainDesc = {};
-        ThrowIfFailed(refSwapChain->GetDesc(&swapChainDesc));
-        ThrowIfFailed(refSwapChain->ResizeBuffers(p_Renderer->GetBuffersCount(), g_ClientWidth, g_ClientHeight,
-            swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
+        //BruteForce::SwapChainDesc swapChainDesc = {};
+        //ThrowIfFailed(refSwapChain->GetDesc(&swapChainDesc));
+        //ThrowIfFailed(refSwapChain->ResizeBuffers(p_Renderer->GetBuffersCount(), g_ClientWidth, g_ClientHeight,
+        //    swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
 
-        p_Renderer->m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
-        BruteForce::UpdateRenderTargetViews(g_Device, refSwapChain, p_Renderer->m_BackBuffersDHeap, p_Renderer->m_BackBuffers, p_Renderer->GetBuffersCount());
-        p_Renderer->Resize(g_Device);
+        //p_Renderer->m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
+        //BruteForce::UpdateRenderTargetViews(g_Device, refSwapChain, p_Renderer->m_BackBuffersDHeap, p_Renderer->m_BackBuffers, p_Renderer->GetBuffersCount());
+        p_Renderer->Resize();
     }
 }
 
