@@ -338,7 +338,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
     BruteForce::Adapter adapter = BruteForce::GetAdapter(g_UseWarp);
     g_Device = BruteForce::CreateDevice(adapter);
-    BruteForce::GpuAllocator gpu_allocator = BruteForce::CreateGpuAllocator(adapter, g_Device);
+    //BruteForce::GpuAllocator gpu_allocator = BruteForce::CreateGpuAllocator(adapter, g_Device);
     //BruteForce::ReportLiveObjects(g_Device);
     
     BruteForce::VideoDriverDX12 m_driver;
@@ -346,7 +346,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
         g_ClientWidth, g_ClientHeight);
     //pWindow->SetFullscreen(true);
     p_HeapManager = new BruteForce::DescriptorHeapManager();
-    p_Renderer = new TutorialRenderer(g_Device, pWindow, false, BruteForce::TargetFormat_R8G8B8A8_Unorm,*p_HeapManager);
+    p_Renderer = new TutorialRenderer(g_Device, adapter, pWindow, false, BruteForce::TargetFormat_R8G8B8A8_Unorm,*p_HeapManager);
 
     p_Renderer->LoadContent(g_Device);
     test_controller = new BruteForce::Controller::ControllerWinKey();

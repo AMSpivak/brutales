@@ -55,7 +55,7 @@ public:
 
     bool m_ContentLoaded;
 
-    TutorialRenderer(BruteForce::Device& device,
+    TutorialRenderer(BruteForce::Device& device, BruteForce::Adapter& adapter,
         BruteForce::Window* pWindow,
         bool UseWarp, BruteForce::TargetFormat t_format,
         BruteForce::DescriptorHeapManager& SRV_Heap);

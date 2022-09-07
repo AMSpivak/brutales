@@ -34,12 +34,12 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
     }
 }
 
-TutorialRenderer::TutorialRenderer(BruteForce::Device& device,
+TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Adapter& adapter,
     BruteForce::Window* pWindow,
     bool UseWarp, BruteForce::TargetFormat t_format,
     BruteForce::DescriptorHeapManager& SRV_Heap
 )
-    :MyRenderer(device, pWindow, UseWarp, t_format)
+    :MyRenderer(device, adapter,  pWindow, UseWarp, t_format)
     , m_SRV_Heap(SRV_Heap)
     , m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
     , m_time(0.0f)

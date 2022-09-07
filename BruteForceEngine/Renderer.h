@@ -23,6 +23,8 @@ namespace BruteForce
     public:
         // Use WARP adapter
         Device& m_Device;
+        Adapter& m_Adapter;
+        GpuAllocator m_GpuAllocator;
         SmartCommandQueue m_SmartCommandQueue;
         SmartCommandQueue m_ComputeSmartCommandQueue;
         Resource m_BackBuffers[t_NumFrames];
@@ -37,10 +39,12 @@ namespace BruteForce
 
         Viewport m_Viewport;
         ScissorRect m_ScissorRect;
-        Renderer(BruteForce::Device& device, BruteForce::Window* pWindow, bool UseWarp, BruteForce::TargetFormat t_format) : m_Window(pWindow), m_NumFrames(t_NumFrames)
-                , m_Device(device), m_TargetFormat(t_format)
+        Renderer(BruteForce::Device& device, BruteForce::Adapter& adapter, BruteForce::Window* pWindow, bool UseWarp, BruteForce::TargetFormat t_format) : m_Window(pWindow), m_NumFrames(t_NumFrames)
+                , m_Device(device), m_Adapter(adapter),  m_TargetFormat(t_format)
                 , m_SmartCommandQueue(m_Device, BruteForce::CommandListTypeDirect), m_ComputeSmartCommandQueue(m_Device, BruteForce::CommandListTypeCompute)
         {
+            m_GpuAllocator = BruteForce::CreateGpuAllocator(m_Adapter, m_Device);
+
             m_Window->CreateSwapChain(m_SmartCommandQueue, m_NumFrames, m_TargetFormat);
             auto& refSwapChain = m_Window->GetSwapChainReference();
 
