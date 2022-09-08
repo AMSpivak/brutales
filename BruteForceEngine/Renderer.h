@@ -32,11 +32,6 @@ namespace BruteForce
         UINT m_RTVDescriptorSize;
         UINT m_CurrentBackBufferIndex;
         uint64_t m_FrameFenceValues[t_NumFrames] = {};
-        RootSignature m_RootSignature;
-
-        // Pipeline state object.
-        PipelineState m_PipelineState;
-
         Viewport m_Viewport;
         ScissorRect m_ScissorRect;
         Renderer(BruteForce::Device& device, BruteForce::Adapter& adapter, BruteForce::Window* pWindow, bool UseWarp, BruteForce::TargetFormat t_format) : m_Window(pWindow), m_NumFrames(t_NumFrames)
