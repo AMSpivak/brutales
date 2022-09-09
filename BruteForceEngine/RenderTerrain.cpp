@@ -143,7 +143,10 @@ namespace BruteForce
                     BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, device, copy_queue, srv_handle, TargetFormat_R8G8B8A8_UInt);
                 }
 
-                std::vector<std::wstring> tex_names = { { L"Desert_Rock_albedo.dds"}, {L"Desert_Sand_albedo.dds"} };
+                std::vector<std::wstring> tex_names = { 
+                                                        {L"Desert_Sand_albedo.dds"}, {L"Desert_Sand_normal.dds"},
+                                                        { L"Desert_Rock_albedo.dds"}, { L"Desert_Rock_normal.dds"}
+                };
                 size_t textures_count = tex_names.size();
                 TexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(textures_count), BruteForce::DescriptorRangeTypeSrv, "TerrainMaterialTextures");
                 auto& srv_handle = TexturesRange->m_CpuHandle;

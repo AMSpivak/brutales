@@ -26,6 +26,7 @@ struct VertexShaderOutput
     float4 WorldPosition    : WORLD_POSITION;
     float4 Position : SV_Position;
     float3 Normal : NORMAL;
+    float3 Tangent : T_NORMAL;
 
     nointerpolation uint id : InstanceID;
 };
@@ -66,5 +67,9 @@ VertexShaderOutput main(VertexPosColor IN, uint id : SV_InstanceID)
     OUT.WorldPosition = float4(IN.Position, 1.0f);
     OUT.Normal = normalize(cross(terrain_z, terrain_x));
     OUT.id = id;
+
+    float3 tangent = float3(0.0, 0.0, 1.0);
+    tangent = normalize(tangent - dot(tangent, OUT.Normal) * OUT.Normal);
+    OUT.Tangent = tangent;
     return OUT;
 }

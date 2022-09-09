@@ -3,6 +3,7 @@ struct PixelShaderInput
     float4 WorldPosition  : WORLD_POSITION;
     float4 Position : SV_Position;
     float3 Normal : NORMAL;
+    float3 Tangent : T_NORMAL;
 
 
     nointerpolation uint id: InstanceID;
@@ -28,6 +29,7 @@ sampler sampl : register(s0);
 float4 main(PixelShaderInput IN) : SV_Target
 {
     //int material = IN.id;
+    const uint material_offset = 2;
     const float map_scale = 0.0001f;
 //return tex1[material].Sample(sampl, IN.Color.xy);
 //return tex[NonUniformResourceIndex(material)].Sample(sampl[1], IN.Color.xy);
@@ -41,7 +43,13 @@ float4 main(PixelShaderInput IN) : SV_Target
     
     float diff = 0.03f;
     float4 sun_info = PlanesCB[FrameInfoCB.frame_index].m_SunInfo;
-    float light_diffuse = clamp(dot(IN.Normal, normalize(sun_info.xyz)),0.0, 1.0);
+    float3 Normal = tex[materials.r * material_offset + 1].Sample(sampl, IN.WorldPosition.xz).xyz;
+    //float3 Normal = IN.Normal;
+    float3 B_Normal = cross(IN.Normal, IN.Tangent);
+    float3 T_Normal = cross( IN.Normal, B_Normal);
+    Normal = normalize(Normal * 2.0 - 1.0);
+    Normal = Normal.x * T_Normal + Normal.z * IN.Normal + Normal.y * B_Normal;
+    float light_diffuse = clamp(dot(Normal, normalize(sun_info.xyz)),0.0, 1.0);
     float light = sun_info.w;// (IN.Normal.y* (1.0f - diff) + diff)* light_force;
     float2 l_dir = PlanesCB[FrameInfoCB.frame_index].m_SunShadow.xy;
     //float2 pos = IN.WorldPosition.xz * PlanesCB[FrameInfoCB.frame_index].m_TerrainScaler.xz + float2(0.5f, 0.5f);
@@ -56,7 +64,10 @@ float4 main(PixelShaderInput IN) : SV_Target
     shadows.x = smoothstep(shadows.y, shadows.x, shadows.z);// IN.WorldPosition.y);
     //shadows.x = 1.0 - shadows.x * shadows.x;
     light *= 0.3 + 0.7 * light_diffuse * shadows.x;// *shadows.x;
-    return float4(light * tex[materials.r].Sample(sampl, IN.WorldPosition.xz).xyz * PlanesCB[FrameInfoCB.frame_index].m_SunColor.xyz, 1.0f);
+    
+    float3 Color = tex[materials.r * material_offset].Sample(sampl, IN.WorldPosition.xz).xyz;
+    
+    return float4(light * Color * PlanesCB[FrameInfoCB.frame_index].m_SunColor.xyz, 1.0f);
     //return float4(100.0f * (IN.Normal), 1.0f);
     
     //return float4(0.5f * IN.Normal + float3(0.5f,0.5f,0.5f), 1.0f);
