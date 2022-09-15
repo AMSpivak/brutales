@@ -195,7 +195,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         
     auto& SetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
     m_RTTextures[0].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
-    SetRT_cl.ClearRTV(m_RTTextures[0].GetRT(), clearColor);
+    //SetRT_cl.ClearRTV(m_RTTextures[0].GetRT(), clearColor);
     SetRT_cl.ClearDSV(dsv, true, false, 1.0f, 0);
 
     BruteForce::Render::PrepareRenderHelper render_dest{

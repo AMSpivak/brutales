@@ -127,6 +127,7 @@ namespace BruteForce
 
         SmartCommandList& ScreenSpaceSky::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)
         {
+            smart_command_list.BeginEvent(0, "RenderSky");
             uint32_t buff_index = render_dest.frame_index;
 
             const auto& sun_info = GlobalLevelInfo::ReadGlobalAtmosphereInfo();
@@ -164,6 +165,7 @@ namespace BruteForce
             commandList->SetGraphicsRoot32BitConstants(0, 1, &buff_index, 0);
 
             commandList->DrawInstanced(3, 1, 0, 0);
+            smart_command_list.EndEvent();
             return smart_command_list;
         }
     }

@@ -127,6 +127,8 @@ namespace BruteForce
         }
         SmartCommandList& ComputeTerrainShadow::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareComputeHelper& compute_helper)
         {
+            smart_command_list.BeginEvent(0, "ComputeTerrainShadow");
+
             auto terrain_scaler = GlobalLevelInfo::ReadGlobalTerrainInfo().m_TerrainScaler;
 
 
@@ -174,6 +176,7 @@ namespace BruteForce
             command_list->Dispatch(static_cast<UINT>((shadow_size + dispatch_size - 1) / dispatch_size), 1, 1);
             //command_list
             // TODO: insert return statement here
+            smart_command_list.EndEvent();
             return smart_command_list;
         }
     }

@@ -3,7 +3,10 @@
 
 #include "PlatformDefine.h"
 #include "Helpers.h"
-
+#ifdef _DEBUG
+#include <typeinfo>
+#include <windows.h>
+#endif
 namespace BruteForce
 {
 #ifdef PLATFORM_DX12_H
@@ -20,8 +23,13 @@ namespace BruteForce
             ResourceStateRead,
             nullptr,
             IID_PPV_ARGS(&buffer.m_GpuBuffer)));
-
+#ifdef _DEBUG
+        wchar_t* wString = new wchar_t[4096];
+        MultiByteToWideChar(CP_ACP, 0, typeid(buffer).name(), -1, wString, 4096);
+        buffer.m_GpuBuffer->SetName(wString);
+#else
         buffer.m_GpuBuffer->SetName(L"Constant Buffer Upload Resource Heap");
+#endif
         D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
         cbvDesc.BufferLocation = buffer.m_GpuBuffer->GetGPUVirtualAddress();
         cbvDesc.SizeInBytes = static_cast<UINT>(buffer.GetBufferSize());

@@ -99,6 +99,7 @@ namespace BruteForce
 
         SmartCommandList& ScreenSpaceToRt::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)
         {
+            smart_command_list.BeginEvent(0, "ToneMapping");
             auto& commandList = smart_command_list.command_list;
             smart_command_list.SetPipelineState(m_PipelineState);
             smart_command_list.SetGraphicsRootSignature(m_RootSignature);
@@ -117,6 +118,7 @@ namespace BruteForce
             commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, NULL);
 
             commandList->DrawInstanced(3, 1, 0, 0);
+            smart_command_list.EndEvent();
             return smart_command_list;
         }
     }
