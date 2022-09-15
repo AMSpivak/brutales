@@ -21,12 +21,9 @@ ConstantBuffer<FrameInfo> FrameInfoCB : register(b0);
 
 ConstantBuffer<TerrainShadowCB> terrain_shadowCB[3] : register(b1);
  
-// Source mip map.
 Texture2D<float4> SrcTerrain : register(t0);
 
-// Write up to 4 mip map levels.
 RWTexture2D<float4> OutShadow[3] : register(u0);
-
 SamplerState TerrainSampler : register(s0);
 
 #define BLOCK_SIZE 64

@@ -94,7 +94,7 @@ namespace BruteForce
             return m_rtvDescriptor;
         }
 
-        bool FillTextureDescriptor(const DirectX::TexMetadata& metadata, ResourceDesc& textureDesc)
+        bool FillTextureDescriptor(const TexMetadata& metadata, ResourceDesc& textureDesc)
         {
             switch (metadata.dimension)
             {
@@ -110,7 +110,7 @@ namespace BruteForce
                     static_cast<UINT64>(metadata.width),
                     static_cast<UINT>(metadata.height),
                     static_cast<UINT16>(metadata.arraySize));
-                textureDesc.MipLevels = metadata.mipLevels;
+                textureDesc.MipLevels = static_cast<UINT16>(metadata.mipLevels);
                 break;
             case DirectX::TEX_DIMENSION_TEXTURE3D:
                 textureDesc = CD3DX12_RESOURCE_DESC::Tex3D(
@@ -127,13 +127,13 @@ namespace BruteForce
             return true;
         }
 
-        void CreateTexture(Texture& texture, const DirectX::TexMetadata& metadata, Device& device, bool render_target, bool is_uav)
+        void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, GpuAllocator* gpu_allocator)
         {
             texture.m_render_target = render_target;
             ResourceDesc textureDesc = {};
             if (render_target)
             {
-                DirectX::TexMetadata tmp_meta(metadata);
+                TexMetadata tmp_meta(metadata);
                 tmp_meta.dimension = DirectX::TEX_DIMENSION_TEXTURE2D;
                 tmp_meta.arraySize = 1;
                 tmp_meta.mipLevels = 1;
@@ -169,17 +169,19 @@ namespace BruteForce
                 //pClearValue = nullptr;
             }
  
-
-            ThrowIfFailed(device->CreateCommittedResource(
-                &props,
-                HeapFlagsNone,
-                &textureDesc,
-                texture.m_state,
-                pClearValue,
-                IID_PPV_ARGS(&texture.m_resource)));
+            if (gpu_allocator == nullptr)
+            {
+                ThrowIfFailed(device->CreateCommittedResource(
+                    &props,
+                    HeapFlagsNone,
+                    &textureDesc,
+                    texture.m_state,
+                    pClearValue,
+                    IID_PPV_ARGS(&texture.m_resource)));
+            }
         }
 
-        void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue)
+        void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, TextureLoadHlpr& helper)
         {
             std::filesystem::path filePath(fileName);
             if (!std::filesystem::exists(filePath))
@@ -190,7 +192,7 @@ namespace BruteForce
             std::lock_guard<std::mutex> lock(texture.m_mutex);
 
             {
-                DirectX::TexMetadata metadata;
+                TexMetadata metadata;
                 DirectX::ScratchImage scratchImage;
 
                 if (filePath.extension() == ".dds")
@@ -229,7 +231,7 @@ namespace BruteForce
                     metadata.format = MakeSRGB(metadata.format);
                 }*/
 
-                CreateTexture(texture, metadata, device, false, false);
+                CreateTexture(texture, metadata, helper.m_device, false, false);
 
                 std::vector<D3D12_SUBRESOURCE_DATA> subresources(scratchImage.GetImageCount());
                 const DirectX::Image* pImages = scratchImage.GetImages();
@@ -242,7 +244,7 @@ namespace BruteForce
                 }
                 texture.m_Mips = scratchImage.GetImageCount();
 
-                smart_queue.CopyTextureSubresource(
+                helper.m_copy_queue.CopyTextureSubresource(
                     texture.m_resource,
                     0,
                     static_cast<uint32_t>(subresources.size()),
@@ -260,10 +262,10 @@ namespace BruteForce
 
         }
 
-        void AddTexture(const std::wstring& content_path, const std::wstring& filename, std::vector<std::shared_ptr<Texture>>& textures, Device& device, SmartCommandQueue& copy_queue, DescriptorHandle& p_srv_handle_start, TargetFormat format)
+        void AddTexture(const std::wstring& content_path, const std::wstring& filename, std::vector<std::shared_ptr<Texture>>& textures, TextureLoadHlpr& helper, DescriptorHandle& p_srv_handle_start, TargetFormat format)
         {
             auto texture = textures.emplace_back(std::make_shared<BruteForce::Textures::Texture>());
-            LoadTextureFromFile(*texture, (content_path + filename), device, copy_queue);
+            LoadTextureFromFile(*texture, (content_path + filename), helper);
             texture->SetName((L"Texture: " + filename).c_str());
 
             if (format != TargetFormat_Unknown)
@@ -271,8 +273,8 @@ namespace BruteForce
                 texture->m_format = format;
             }
 
-            texture->CreateSrv(device, p_srv_handle_start);
-            p_srv_handle_start.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+            texture->CreateSrv(helper.m_device, p_srv_handle_start);
+            p_srv_handle_start.ptr += helper.m_device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
         }
     }
 }

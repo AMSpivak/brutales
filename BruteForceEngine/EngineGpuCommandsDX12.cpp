@@ -5,6 +5,10 @@
 #include "d3dx12.h"
 #include "VideoDriverInterface.h"
 
+#ifdef _DEBUG
+#define ENABLE_MARKERS
+#endif
+
 namespace BruteForce
 {
 
@@ -155,6 +159,20 @@ namespace BruteForce
     void SmartCommandList::SetComputeRootSignature(const RootSignature& signature)
     {
         command_list->SetComputeRootSignature(signature.Get());
+    }
+
+    void SmartCommandList::BeginEvent(UINT64 color, char const* formatString)
+    {
+#ifdef ENABLE_MARKERS
+        PIXBeginEvent(command_list.Get(), color, formatString);
+#endif
+    }
+
+    void SmartCommandList::EndEvent()
+    {
+#ifdef ENABLE_MARKERS
+        PIXEndEvent(command_list.Get());
+#endif
     }
 
 

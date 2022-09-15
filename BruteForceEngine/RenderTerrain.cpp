@@ -135,22 +135,24 @@ namespace BruteForce
             }
 
             {
+                BruteForce::Textures::TextureLoadHlpr helper { device, copy_queue, desc.gpu_allocator_ptr };
+
                 {
                     HeightmapTexturesRange = descriptor_heap_manager.GetManagedRange("TerrainHeightmapTextures");
                     assert(HeightmapTexturesRange);
                     auto& srv_handle = HeightmapTexturesRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(textures_count), TexturesRange);
-                    BruteForce::Textures::AddTexture(content_path, { L"desert_map_16_2.png" }, m_textures, device, copy_queue, srv_handle);
-                    BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, device, copy_queue, srv_handle, TargetFormat_R8G8B8A8_UInt);
+                    BruteForce::Textures::AddTexture(content_path, { L"desert_map_16_2.png" }, m_textures, helper, srv_handle);
+                    BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, helper, srv_handle, TargetFormat_R8G8B8A8_UInt);
                 }
 
                 std::vector<std::wstring> tex_names = { 
-                                                        {L"Desert_Sand_albedo.dds"}, {L"Desert_Sand_normal.dds"},
-                                                        { L"Desert_Rock_albedo.dds"}, { L"Desert_Rock_normal.dds"}
+                                                        {L"Desert_Sand_albedo.dds"}, {L"norm_tst.png"},//{L"Desert_Sand_normal.dds"},
+                                                        { L"Desert_Rock_albedo.dds"}, {L"norm_tst.png"}//{ L"Desert_Rock_normal.dds"}
                 };
                 size_t textures_count = tex_names.size();
                 TexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(textures_count), BruteForce::DescriptorRangeTypeSrv, "TerrainMaterialTextures");
                 auto& srv_handle = TexturesRange->m_CpuHandle;
-                BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_path, m_textures, device, copy_queue, srv_handle);
+                BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_path, m_textures, helper, srv_handle);
             }
 
             SunShadowSrvDescriptors = descriptor_heap_manager.GetManagedRange("TerrainShadowSrvs");
@@ -248,6 +250,7 @@ namespace BruteForce
 
         SmartCommandList& RenderTerrain::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)
         {
+            smart_command_list.BeginEvent(0, "RenderTerrain");
             //m_TerrainBuffers[0].m_CpuBuffer->m_TerrainScaler = Math::Vec3Float{ 1.0f,1.0f, };
             Math::Vec4Float cam;
             Math::Store(&cam, render_dest.camera.GetPosition());
@@ -275,6 +278,7 @@ namespace BruteForce
             commandList->SetGraphicsRoot32BitConstants(3, static_cast<UINT>(const_size), render_dest.camera.GetCameraMatrixPointer(), 0);
             commandList->SetGraphicsRoot32BitConstants(2, 1, &buff_index, 0);
             commandList->DrawIndexedInstanced(static_cast<UINT>(m_plane.m_IndexesCount), counter, 0, 0, 0);
+            smart_command_list.EndEvent();
             return smart_command_list;
         }
     }

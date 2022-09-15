@@ -12,6 +12,15 @@ namespace BruteForce
 {
 	namespace Textures
 	{
+		struct TextureLoadHlpr
+		{
+			Device& m_device;
+			SmartCommandQueue& m_copy_queue;
+			GpuAllocator* m_gpu_allocator;
+			TextureLoadHlpr(Device& device, SmartCommandQueue& copy_queue, GpuAllocator* gpu_allocator):m_device(device), m_copy_queue(copy_queue), m_gpu_allocator(m_gpu_allocator){}
+		};
+
+
 		class Texture
 		{
 		private:
@@ -44,34 +53,34 @@ namespace BruteForce
 			void TransitionTo(SmartCommandList& commandlist, ResourceStates dst);
 			DescriptorHandle& GetRT();
 
-		friend void LoadTextureFromFile(Texture&, const std::wstring& /*, TextureUsage textureUsage */, Device&, SmartCommandQueue&);
-		friend void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav);
+		friend void LoadTextureFromFile(Texture&, const std::wstring& /*, TextureUsage textureUsage */, TextureLoadHlpr&);
+		friend void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, GpuAllocator* gpu_allocator);
 		};
 
-		void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav);
+		void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, GpuAllocator * gpu_allocator = nullptr);
 
-		void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, Device& device, SmartCommandQueue& smart_queue);
+		void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, TextureLoadHlpr& helper);
 
-		void AddTexture(const std::wstring& content_path, const std::wstring& filename, std::vector<std::shared_ptr<Texture>>& textures, Device& device, SmartCommandQueue& copy_queue, DescriptorHandle& p_srv_handle_start, TargetFormat format = TargetFormat_Unknown);
+		void AddTexture(const std::wstring& content_path, const std::wstring& filename, std::vector<std::shared_ptr<Texture>>& textures, TextureLoadHlpr& helper, DescriptorHandle& p_srv_handle_start, TargetFormat format = TargetFormat_Unknown);
 		
 		template <typename T>
-		void AddTextures(T i_start, T i_end, const std::wstring& content_path, std::vector<std::shared_ptr<Texture>>& textures, Device& device, DescriptorHandle& p_srv_handle_start)
+		void AddTextures(T i_start, T i_end, const std::wstring& content_path, std::vector<std::shared_ptr<Texture>>& textures, Device& device, DescriptorHandle& p_srv_handle_start, GpuAllocator* gpu_allocator = nullptr)
 		{
 			SmartCommandQueue copy_queue(device, BruteForce::CommandListTypeCopy);
-
+			TextureLoadHlpr helper { device, copy_queue, gpu_allocator };
 			while(i_start != i_end)
 			{
-				AddTexture(content_path, (*i_start), textures, device, copy_queue, p_srv_handle_start);
+				AddTexture(content_path, (*i_start), textures, helper, p_srv_handle_start);
 				++i_start;
 			}
 		}
 
 		template <typename T>
-		void AddTextures(T i_start, T i_end, const std::wstring& content_path, std::vector<std::shared_ptr<Texture>>& textures, Device& device, SmartCommandQueue& copy_queue, DescriptorHandle& p_srv_handle_start)
+		void AddTextures(T i_start, T i_end, const std::wstring& content_path, std::vector<std::shared_ptr<Texture>>& textures, TextureLoadHlpr& helper,  DescriptorHandle& p_srv_handle_start)
 		{
 			while (i_start != i_end)
 			{
-				AddTexture(content_path, (*i_start), textures, device, copy_queue, p_srv_handle_start);
+				AddTexture(content_path, (*i_start), textures, helper, p_srv_handle_start);
 				++i_start;
 			}
 		}

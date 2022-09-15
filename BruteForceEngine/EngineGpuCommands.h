@@ -29,6 +29,8 @@ namespace BruteForce
         void SetPipelineState(const PipelineState& state);
         void SetGraphicsRootSignature(const RootSignature& signature);
         void SetComputeRootSignature(const RootSignature& signature);
+        void BeginEvent(UINT64 color, char const* formatString);
+        void EndEvent();
     };
 
 
@@ -46,9 +48,6 @@ namespace BruteForce
         bool IsFenceCompleted(uint64_t fenceValue);
         void WaitForFenceValue(uint64_t fenceValue, std::chrono::milliseconds duration = std::chrono::milliseconds::max());
         void CopyTextureSubresource(Resource& desttexture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData, ResourceStates finalResourceState);
-
-
-        //CommandQueue m_command_queue;
     private:
         struct CommandAllocatorEntry
         {

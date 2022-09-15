@@ -58,6 +58,6 @@ float4 main(PixelShaderInput IN) : SV_Target
 
     float exposure_bias = 0.15f;
     float3 result = uncharted2_filmic(color, exposure_bias);
-    result = pow(result, 2.2f);
+    result = pow(result, 1.0/2.2f);
     return float4(result, 1.0f);
 }

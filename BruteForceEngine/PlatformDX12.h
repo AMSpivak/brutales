@@ -12,6 +12,7 @@
 #include <Windows.h>
 // D3D12 extension library.
 #include "d3dx12.h"
+#include "pix.h"
 #include "DXMemoryAllocator\D3D12MemAlloc.h"
 
 namespace BruteForce
