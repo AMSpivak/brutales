@@ -89,8 +89,9 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
     BruteForce::Render::RenderSubsystemInitDesc desc = {
                                                             render_format,
                                                             BruteForce::TargetFormat_D32_Float,
-                                                            &m_GpuAllocator
+                                                            nullptr
                                                         };
+    desc.gpu_allocator_ptr = m_GpuAllocator;
 
     for (auto& subsystem : m_RenderSystems)
     {
@@ -105,7 +106,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
     BruteForce::Render::RenderSubsystemInitDesc desc_rt = {
                                                             m_TargetFormat,
                                                             BruteForce::TargetFormat_D32_Float,
-                                                            & m_GpuAllocator
+                                                            nullptr
     };
 
     m_ToneMapper.LoadContent(device, m_NumFrames, desc_rt, m_CopyCommandQueue, m_SRV_Heap);
