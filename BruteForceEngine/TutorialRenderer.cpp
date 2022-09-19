@@ -194,6 +194,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     FLOAT clearColor[] = { 1.0f, 0.6f, 0.1f, 1.0f };
         
     auto& SetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
+    SetRT_cl.BeginEvent(0, "Render to HDR RT");
     m_RTTextures[0].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
     //SetRT_cl.ClearRTV(m_RTTextures[0].GetRT(), clearColor);
     SetRT_cl.ClearDSV(dsv, true, false, 1.0f, 0);
@@ -216,6 +217,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
 
     auto& ResetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
     m_RTTextures[0].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
+    ResetRT_cl.EndEvent();
 
     BruteForce::Render::PrepareRenderHelper render_dest_rt{
         &m_Viewport,
