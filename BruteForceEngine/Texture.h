@@ -16,8 +16,8 @@ namespace BruteForce
 		{
 			Device& m_device;
 			SmartCommandQueue& m_copy_queue;
-			GpuAllocator* m_gpu_allocator;
-			TextureLoadHlpr(Device& device, SmartCommandQueue& copy_queue, GpuAllocator* gpu_allocator):m_device(device), m_copy_queue(copy_queue), m_gpu_allocator(m_gpu_allocator){}
+			GpuAllocator m_gpu_allocator;
+			TextureLoadHlpr(Device& device, SmartCommandQueue& copy_queue, GpuAllocator gpu_allocator):m_device(device), m_copy_queue(copy_queue), m_gpu_allocator(gpu_allocator){}
 		};
 
 
@@ -30,14 +30,22 @@ namespace BruteForce
 			size_t m_heap_range_uav_index;
 
 			Resource            m_resource;
+			GpuAllocation* m_p_allocation;
 			ResourceStates      m_state;
 			DescriptorHandle    m_rtvDescriptor;
 			float               m_clearColor[4];
 			bool				m_render_target;
 		public:
-			Texture() : m_render_target(false) {};
-			Texture(const Texture &) = default;
-			~Texture() {};
+			Texture() : m_render_target(false), m_p_allocation(nullptr) {};
+			Texture(const Texture&) = default;
+			~Texture()
+			{
+				if (m_p_allocation)
+				{
+					m_p_allocation->Release();
+					m_p_allocation = nullptr;
+				}
+			};
 
 			TargetFormat m_format;
 			
@@ -54,17 +62,17 @@ namespace BruteForce
 			DescriptorHandle& GetRT();
 
 		friend void LoadTextureFromFile(Texture&, const std::wstring& /*, TextureUsage textureUsage */, TextureLoadHlpr&);
-		friend void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, GpuAllocator* gpu_allocator);
+		friend void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, GpuAllocator gpu_allocator);
 		};
 
-		void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, GpuAllocator * gpu_allocator = nullptr);
+		void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, GpuAllocator gpu_allocator = nullptr);
 
 		void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, TextureLoadHlpr& helper);
 
 		void AddTexture(const std::wstring& content_path, const std::wstring& filename, std::vector<std::shared_ptr<Texture>>& textures, TextureLoadHlpr& helper, DescriptorHandle& p_srv_handle_start, TargetFormat format = TargetFormat_Unknown);
 		
 		template <typename T>
-		void AddTextures(T i_start, T i_end, const std::wstring& content_path, std::vector<std::shared_ptr<Texture>>& textures, Device& device, DescriptorHandle& p_srv_handle_start, GpuAllocator* gpu_allocator = nullptr)
+		void AddTextures(T i_start, T i_end, const std::wstring& content_path, std::vector<std::shared_ptr<Texture>>& textures, Device& device, DescriptorHandle& p_srv_handle_start, GpuAllocator gpu_allocator = nullptr)
 		{
 			SmartCommandQueue copy_queue(device, BruteForce::CommandListTypeCopy);
 			TextureLoadHlpr helper { device, copy_queue, gpu_allocator };

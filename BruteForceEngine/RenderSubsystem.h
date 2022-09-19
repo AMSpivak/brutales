@@ -24,7 +24,7 @@ namespace BruteForce
         {
             const TargetFormat RTFormat;
             const TargetFormat DepthFormat;
-            GpuAllocator* gpu_allocator_ptr;
+            GpuAllocator gpu_allocator_ptr;
         };
 
         class RenderSubsystem

@@ -127,7 +127,7 @@ namespace BruteForce
             return true;
         }
 
-        void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, GpuAllocator* gpu_allocator)
+        void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, GpuAllocator gpu_allocator)
         {
             texture.m_render_target = render_target;
             ResourceDesc textureDesc = {};
@@ -169,7 +169,20 @@ namespace BruteForce
                 //pClearValue = nullptr;
             }
  
-            if (gpu_allocator == nullptr)
+            if (gpu_allocator )
+            {
+                D3D12MA::ALLOCATION_DESC allocDesc = {};
+                allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+
+                ThrowIfFailed(gpu_allocator->CreateResource(
+                    &allocDesc, 
+                    &textureDesc,
+                    texture.m_state,
+                    pClearValue,
+                    &texture.m_p_allocation,
+                    IID_PPV_ARGS(&texture.m_resource)));
+            }
+            else
             {
                 ThrowIfFailed(device->CreateCommittedResource(
                     &props,
@@ -231,7 +244,7 @@ namespace BruteForce
                     metadata.format = MakeSRGB(metadata.format);
                 }*/
 
-                CreateTexture(texture, metadata, helper.m_device, false, false);
+                CreateTexture(texture, metadata, helper.m_device, false, false, helper.m_gpu_allocator);
 
                 std::vector<D3D12_SUBRESOURCE_DATA> subresources(scratchImage.GetImageCount());
                 const DirectX::Image* pImages = scratchImage.GetImages();
