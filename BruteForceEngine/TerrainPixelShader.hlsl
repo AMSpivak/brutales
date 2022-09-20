@@ -1,3 +1,5 @@
+#include "math.hlsli"
+
 struct PixelShaderInput
 {
     float4 WorldPosition  : WORLD_POSITION;
@@ -47,6 +49,10 @@ float4 main(PixelShaderInput IN) : SV_Target
     //float3 Normal = IN.Normal;
     float3 B_Normal = cross(IN.Normal, IN.Tangent);
     float3 T_Normal = cross( IN.Normal, B_Normal);
+
+    matrix TBN = matrix(float4(T_Normal,0), float4(B_Normal, 0), float4(Normal, 0), float4(0,0,0, 1));
+    float4 quat = quat_cast(TBN);
+
     Normal = normalize(Normal * 2.0 - 1.0);
     Normal = Normal.x * T_Normal + Normal.z * IN.Normal + Normal.y * B_Normal;
     float light_diffuse = clamp(dot(Normal, normalize(sun_info.xyz)),0.0, 1.0);
