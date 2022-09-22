@@ -59,7 +59,7 @@ float4 main(PixelShaderInput IN) : SV_Target
     matrix TBN4;
     mat_cast_xm(quat_xm, TBN4);
     //float3 Normal = Normal_smpl.x * T_Normal + Normal_smpl.z * face_Normal + Normal_smpl.y * B_Normal;
-    Normal_smpl.y = -Normal_smpl;
+    Normal_smpl.y = - Normal_smpl;
     float3 Normal = mul(TBN4, float4(Normal_smpl, 0.0f)).xyz;
     float light_diffuse = clamp(dot(Normal, normalize(sun_info.xyz)),0.0, 1.0);
     float light = sun_info.w;// (IN.Normal.y* (1.0f - diff) + diff)* light_force;
@@ -77,7 +77,8 @@ float4 main(PixelShaderInput IN) : SV_Target
     //shadows.x = 1.0 - shadows.x * shadows.x;
     light *= 0.3 + 0.7 * light_diffuse * shadows.x;// *shadows.x;
     
-    float3 Color = float3(1, 1, 1);// tex[materials.r * material_offset].Sample(sampl, IN.WorldPosition.xz).xyz;
+    float3 Color = tex[materials.r * material_offset].Sample(sampl, IN.WorldPosition.xz).xyz;
+    Color = pow(Color, 2.2);
     
     return float4(light * Color * PlanesCB[FrameInfoCB.frame_index].m_SunColor.xyz, 1.0f);
     //return float4(100.0f * (IN.Normal), 1.0f);
