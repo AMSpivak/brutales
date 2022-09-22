@@ -45,16 +45,22 @@ float4 main(PixelShaderInput IN) : SV_Target
     
     float diff = 0.03f;
     float4 sun_info = PlanesCB[FrameInfoCB.frame_index].m_SunInfo;
-    float3 Normal = tex[materials.r * material_offset + 1].Sample(sampl, IN.WorldPosition.xz).xyz;
+    float3 Normal_smpl = tex[materials.r * material_offset + 1].Sample(sampl, IN.WorldPosition.xz).xyz;
     //float3 Normal = IN.Normal;
-    float3 B_Normal = cross(IN.Normal, IN.Tangent);
-    float3 T_Normal = cross( IN.Normal, B_Normal);
+    float3 face_Normal = normalize(IN.Normal);
+    float3 B_Normal = normalize(cross(IN.Tangent,IN.Normal ));
+    float3 T_Normal = normalize(cross( B_Normal,IN.Normal ));
 
-    matrix TBN = matrix(float4(T_Normal,0), float4(B_Normal, 0), float4(Normal, 0), float4(0,0,0, 1));
-    float4 quat = quat_cast(TBN);
+    matrix TBN2 = transpose(matrix(float4(T_Normal, 0), float4(B_Normal, 0), float4(face_Normal, 0), float4(0, 0, 0, 1)));
+    //matrix TBN2 = matrix(float4(1, 0, 0, 0), float4(0, 1, 0, 0), float4(0, 0, 1, 0), float4(0,0,0, 1));
 
-    Normal = normalize(Normal * 2.0 - 1.0);
-    Normal = Normal.x * T_Normal + Normal.z * IN.Normal + Normal.y * B_Normal;
+    float4 quat_xm;
+    quat_cast_xm(TBN2, quat_xm);
+    matrix TBN4;
+    mat_cast_xm(quat_xm, TBN4);
+    //float3 Normal = Normal_smpl.x * T_Normal + Normal_smpl.z * face_Normal + Normal_smpl.y * B_Normal;
+    Normal_smpl.y = -Normal_smpl;
+    float3 Normal = mul(TBN4, float4(Normal_smpl, 0.0f)).xyz;
     float light_diffuse = clamp(dot(Normal, normalize(sun_info.xyz)),0.0, 1.0);
     float light = sun_info.w;// (IN.Normal.y* (1.0f - diff) + diff)* light_force;
     float2 l_dir = PlanesCB[FrameInfoCB.frame_index].m_SunShadow.xy;
@@ -71,7 +77,7 @@ float4 main(PixelShaderInput IN) : SV_Target
     //shadows.x = 1.0 - shadows.x * shadows.x;
     light *= 0.3 + 0.7 * light_diffuse * shadows.x;// *shadows.x;
     
-    float3 Color = tex[materials.r * material_offset].Sample(sampl, IN.WorldPosition.xz).xyz;
+    float3 Color = float3(1, 1, 1);// tex[materials.r * material_offset].Sample(sampl, IN.WorldPosition.xz).xyz;
     
     return float4(light * Color * PlanesCB[FrameInfoCB.frame_index].m_SunColor.xyz, 1.0f);
     //return float4(100.0f * (IN.Normal), 1.0f);
