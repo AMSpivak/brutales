@@ -2,6 +2,7 @@
 #define BRUTEFORCE_TEXTURE_H
 //#include "PlatformDefine.h"
 #include "TexturePlat.h"
+#include "Resources.h"
 #include "EngineGpuCommands.h"
 #include "DescriptorHeapManager.h"
 #include <mutex>
@@ -21,44 +22,29 @@ namespace BruteForce
 		};
 
 
-		class Texture
+		class Texture : public GpuResource
 		{
 		private:
 			std::mutex m_mutex;
 			size_t m_Mips;
-			size_t m_heap_range_srv_index;
-			size_t m_heap_range_uav_index;
 
-			Resource            m_resource;
-			GpuAllocation* m_p_allocation;
-			ResourceStates      m_state;
 			DescriptorHandle    m_rtvDescriptor;
 			float               m_clearColor[4];
 			bool				m_render_target;
 		public:
-			Texture() : m_render_target(false), m_p_allocation(nullptr) {};
+			Texture() : m_render_target(false) {};
 			Texture(const Texture&) = default;
 			~Texture()
-			{
-				if (m_p_allocation)
-				{
-					m_p_allocation->Release();
-					m_p_allocation = nullptr;
-				}
-			};
+			{};
 
 			TargetFormat m_format;
 			
-			//DescriptorHandle m_descriptor_handle;
 			void CreateSrv(Device& device, DescriptorHandle& descriptor_handle);
 			void CreateSrv(Device& device, DescriptorHeapRange& descriptor_range, size_t index);
 			void CreateUav(Device& device, DescriptorHandle& descriptor_handle);
 			void CreateUav(Device& device, DescriptorHeapRange& descriptor_range, size_t index);
 			void CreateRtv(Device& device, DescriptorHandle& rt_handle);
 
-			void SetName(LPCWSTR name);
-
-			void TransitionTo(SmartCommandList& commandlist, ResourceStates dst);
 			DescriptorHandle& GetRT();
 
 		friend void LoadTextureFromFile(Texture&, const std::wstring& /*, TextureUsage textureUsage */, TextureLoadHlpr&);

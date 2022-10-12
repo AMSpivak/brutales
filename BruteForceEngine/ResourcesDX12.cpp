@@ -4,6 +4,32 @@
 
 namespace BruteForce
 {
+
+    void GpuResource::SetName(LPCWSTR name)
+    {
+        m_resource->SetName(name);
+    }
+
+    void GpuResource::TransitionTo(SmartCommandList& commandlist, ResourceStates dst)
+    {
+        if (m_state == dst)
+        {
+            return;
+        }
+
+        ResourceBarrier barrier = BruteForce::ResourceBarrier::Transition(
+            m_resource.Get(),
+            m_state,
+            dst);
+
+        commandlist.command_list->ResourceBarrier(1, &barrier);
+
+        m_state = dst;
+    }
+
+
+
+
     void CreateBufferResource(Device& device,
         pResource* pDestinationResource,
         size_t numElements, size_t elementSize,

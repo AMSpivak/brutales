@@ -67,12 +67,12 @@ namespace BruteForce
             m_rtvDescriptor = rt_handle;
         }
 
-        void Texture::SetName(LPCWSTR name)
-        {
-            m_resource->SetName(name);
-        }
+        //void Texture::SetName(LPCWSTR name)
+        //{
+        //    m_resource->SetName(name);
+        //}
 
-        void Texture::TransitionTo(SmartCommandList& commandlist, ResourceStates dst)
+        /*void Texture::TransitionTo(SmartCommandList& commandlist, ResourceStates dst)
         {
             if (m_state == dst)
             {
@@ -87,7 +87,7 @@ namespace BruteForce
             commandlist.command_list->ResourceBarrier(1, &barrier);
 
             m_state = dst;
-        }
+        }*/
 
         DescriptorHandle& Texture::GetRT()
         {
@@ -146,7 +146,6 @@ namespace BruteForce
                 texture.m_Mips = metadata.mipLevels;
             }
 
-            HeapProperties props(D3D12_HEAP_TYPE_DEFAULT);
             //Resource textureResource;
 
             D3D12_CLEAR_VALUE* pClearValue = nullptr;
@@ -169,7 +168,7 @@ namespace BruteForce
                 //pClearValue = nullptr;
             }
  
-            if (gpu_allocator )
+            if (gpu_allocator)
             {
                 D3D12MA::ALLOCATION_DESC allocDesc = {};
                 allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
@@ -184,6 +183,8 @@ namespace BruteForce
             }
             else
             {
+                HeapProperties props(D3D12_HEAP_TYPE_DEFAULT);
+
                 ThrowIfFailed(device->CreateCommittedResource(
                     &props,
                     HeapFlagsNone,
