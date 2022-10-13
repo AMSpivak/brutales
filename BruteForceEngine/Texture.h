@@ -3,8 +3,6 @@
 //#include "PlatformDefine.h"
 #include "TexturePlat.h"
 #include "Resources.h"
-#include "EngineGpuCommands.h"
-#include "DescriptorHeapManager.h"
 #include <mutex>
 #include <vector>
 #include <memory>

@@ -3,6 +3,7 @@
 
 #include "PlatformDefine.h"
 #include "Helpers.h"
+#include "DescriptorHeapManager.h"
 #ifdef _DEBUG
 #include <typeinfo>
 #include <windows.h>

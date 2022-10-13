@@ -13,7 +13,7 @@ namespace BruteForce
         {
             if (m_render_target)
             {
-                device->CreateShaderResourceView(m_resource.Get(), nullptr, descriptor_handle);
+                device->CreateShaderResourceView(m_GpuBuffer.Get(), nullptr, descriptor_handle);
                 return;
             }
             SrvDesc shaderResourceViewDesc = {};
@@ -23,7 +23,7 @@ namespace BruteForce
             shaderResourceViewDesc.Texture2D.MipLevels = static_cast<UINT>(m_Mips);
             shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
             shaderResourceViewDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-            device->CreateShaderResourceView(m_resource.Get(), &shaderResourceViewDesc, descriptor_handle);
+            device->CreateShaderResourceView(m_GpuBuffer.Get(), &shaderResourceViewDesc, descriptor_handle);
             //m_descriptor_handle = descriptor_handle;
         }
 
@@ -43,7 +43,7 @@ namespace BruteForce
             uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
             uavDesc.Texture2D.MipSlice = 0;
             uavDesc.Texture2D.PlaneSlice = 0;
-            device->CreateUnorderedAccessView(m_resource.Get(), nullptr, &uavDesc, descriptor_handle);
+            device->CreateUnorderedAccessView(m_GpuBuffer.Get(), nullptr, &uavDesc, descriptor_handle);
             //m_descriptor_handle = descriptor_handle;
         }
 
@@ -58,36 +58,14 @@ namespace BruteForce
 
         void Texture::CreateRtv(Device& device, DescriptorHandle& rt_handle)
         {
-            if (!m_resource)
+            if (!m_GpuBuffer)
             {
                 return;
             }
 
-            device->CreateRenderTargetView(m_resource.Get(), nullptr, rt_handle);
+            device->CreateRenderTargetView(m_GpuBuffer.Get(), nullptr, rt_handle);
             m_rtvDescriptor = rt_handle;
         }
-
-        //void Texture::SetName(LPCWSTR name)
-        //{
-        //    m_resource->SetName(name);
-        //}
-
-        /*void Texture::TransitionTo(SmartCommandList& commandlist, ResourceStates dst)
-        {
-            if (m_state == dst)
-            {
-                return;
-            }
-
-            ResourceBarrier barrier = BruteForce::ResourceBarrier::Transition(
-                m_resource.Get(),
-                m_state,
-                dst);
-
-            commandlist.command_list->ResourceBarrier(1, &barrier);
-
-            m_state = dst;
-        }*/
 
         DescriptorHandle& Texture::GetRT()
         {
@@ -179,7 +157,7 @@ namespace BruteForce
                     texture.m_state,
                     pClearValue,
                     &texture.m_p_allocation,
-                    IID_PPV_ARGS(&texture.m_resource)));
+                    IID_PPV_ARGS(&texture.m_GpuBuffer)));
             }
             else
             {
@@ -191,7 +169,7 @@ namespace BruteForce
                     &textureDesc,
                     texture.m_state,
                     pClearValue,
-                    IID_PPV_ARGS(&texture.m_resource)));
+                    IID_PPV_ARGS(&texture.m_GpuBuffer)));
             }
         }
 
@@ -259,12 +237,12 @@ namespace BruteForce
                 texture.m_Mips = scratchImage.GetImageCount();
 
                 helper.m_copy_queue.CopyTextureSubresource(
-                    texture.m_resource,
+                    texture.m_GpuBuffer,
                     0,
                     static_cast<uint32_t>(subresources.size()),
                     subresources.data(), ResourceStateCommon);
 
-                if (subresources.size() < texture.m_resource->GetDesc().MipLevels)
+                if (subresources.size() < texture.m_GpuBuffer->GetDesc().MipLevels)
                 {
                     //GenerateMips(texture);
                 }

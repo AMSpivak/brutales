@@ -2,18 +2,19 @@
 #define CONSTANT_BUFFER_H
 
 #include "PlatformDefine.h"
+#include "Resources.h"
 #include "ConstantBufferPlat.h"
 #include "Helpers.h"
 
 namespace BruteForce
 {
 	template <class BufferStruct>
-	class ConstantBuffer
+	class ConstantBuffer : public GpuResource
 	{
 	private:
 		
 	public:
-		Resource m_GpuBuffer;
+		//Resource m_GpuBuffer;
 		BufferStruct* m_CpuBuffer;
 		UINT8* m_GpuAddress;
 

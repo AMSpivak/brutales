@@ -7,7 +7,7 @@ namespace BruteForce
 
     void GpuResource::SetName(LPCWSTR name)
     {
-        m_resource->SetName(name);
+        m_GpuBuffer->SetName(name);
     }
 
     void GpuResource::TransitionTo(SmartCommandList& commandlist, ResourceStates dst)
@@ -18,7 +18,7 @@ namespace BruteForce
         }
 
         ResourceBarrier barrier = BruteForce::ResourceBarrier::Transition(
-            m_resource.Get(),
+            m_GpuBuffer.Get(),
             m_state,
             dst);
 

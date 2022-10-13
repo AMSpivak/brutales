@@ -12,12 +12,12 @@ namespace BruteForce
 		size_t m_heap_range_srv_index;
 		size_t m_heap_range_uav_index;
 
-		Resource            m_resource;
 		GpuAllocation* m_p_allocation;
 		ResourceStates      m_state;
 		//float               m_clearColor[4];
-		bool				m_render_target;
 	public:
+		Resource            m_GpuBuffer;
+
 		GpuResource() : m_p_allocation(nullptr) {};
 		GpuResource(const GpuResource&) = default;
 		~GpuResource()
@@ -29,10 +29,10 @@ namespace BruteForce
 			}
 		};
 
-		virtual void CreateSrv(Device& device, DescriptorHandle& descriptor_handle) = 0;
-		virtual void CreateSrv(Device& device, DescriptorHeapRange& descriptor_range, size_t index) = 0;
-		virtual void CreateUav(Device& device, DescriptorHandle& descriptor_handle) = 0;
-		virtual void CreateUav(Device& device, DescriptorHeapRange& descriptor_range, size_t index) = 0;
+		virtual void CreateSrv(Device& device, DescriptorHandle& descriptor_handle) {};
+		virtual void CreateSrv(Device& device, DescriptorHeapRange& descriptor_range, size_t index) {};
+		virtual void CreateUav(Device& device, DescriptorHandle& descriptor_handle) {};
+		virtual void CreateUav(Device& device, DescriptorHeapRange& descriptor_range, size_t index) {};
 
 		void SetName(LPCWSTR name);
 		void TransitionTo(SmartCommandList& commandlist, ResourceStates dst);
