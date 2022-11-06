@@ -12,9 +12,9 @@ constexpr BruteForce::TargetFormat output_format = BruteForce::TargetFormat_R8G8
 
 void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
 {
-    RTSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RendererNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsSrvs");
-    SunShadowSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RendererNumFrames), BruteForce::DescriptorRangeTypeSrv, "TerrainShadowSrvs");
-    SunShadowUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RendererNumFrames), BruteForce::DescriptorRangeTypeUav, "TerrainShadowUavs");
+    RTSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsSrvs");
+    SunShadowSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeSrv, "TerrainShadowSrvs");
+    SunShadowUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeUav, "TerrainShadowUavs");
     HeightmapTexturesRange = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(2), BruteForce::DescriptorRangeTypeSrv, "TerrainHeightmapTextures");
 
     BruteForce::Textures::TexMetadata metadata;
@@ -26,7 +26,7 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
     metadata.format = BruteForce::TargetFormat_R16G16B16A16_Float;
     metadata.dimension = DirectX::TEX_DIMENSION_TEXTURE2D;
     metadata.mipLevels = 1;
-    for (size_t i = 0; i < RendererNumFrames; i++)
+    for (size_t i = 0; i < SwapchainNumFrames; i++)
     {
         BruteForce::Textures::CreateTexture(m_ShadowTextures[i], metadata, device, false, true);
         m_ShadowTextures[i].CreateSrv(device, *SunShadowSrvDescriptors, i);
@@ -40,6 +40,7 @@ TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Adapt
     BruteForce::DescriptorHeapManager& SRV_Heap
 )
     :MyRenderer(device, adapter,  pWindow, UseWarp, t_format)
+    , m_rt_index{ 0 }
     , m_SRV_Heap(SRV_Heap)
     , m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
     , m_time(0.0f)
@@ -60,7 +61,7 @@ TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Adapt
 
     {
         BruteForce::DescriptorHeapDesc HeapDesc = {};
-        HeapDesc.NumDescriptors = RendererNumFrames;
+        HeapDesc.NumDescriptors = SwapchainNumFrames;
         HeapDesc.Type = BruteForce::DescriptorHeapRTV;
         HeapDesc.Flags = BruteForce::DescriptorHeapFlagsNone;
         ThrowIfFailed(device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&m_RTHeap)));
@@ -150,9 +151,16 @@ void TutorialRenderer::Resize()
         metadata.format = render_format;
         metadata.width = width;
         metadata.height = height;
-        BruteForce::Textures::CreateTexture(m_RTTextures[0], metadata, m_Device, true, false);
-        m_RTTextures[0].CreateSrv(m_Device, srv_handle);
-        m_RTTextures[0].CreateRtv(m_Device, rt_handle);
+        for (int i = 0; i < RenderNumFrames; i++)
+        {
+            BruteForce::Textures::CreateTexture(m_RTTextures[i], metadata, m_Device, true, false);
+            m_RTTextures[i].CreateSrv(m_Device, srv_handle);
+            srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+            m_RTTextures[i].CreateRtv(m_Device, rt_handle);
+            rt_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
+
+
+        }
     }
 }
 
@@ -196,14 +204,14 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         
     auto& SetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
     SetRT_cl.BeginEvent(0, "Render to HDR RT");
-    m_RTTextures[0].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
+    m_RTTextures[m_rt_index].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
     //SetRT_cl.ClearRTV(m_RTTextures[0].GetRT(), clearColor);
     SetRT_cl.ClearDSV(dsv, true, false, 1.0f, 0);
 
     BruteForce::Render::PrepareRenderHelper render_dest{
         &m_Viewport,
         &m_ScissorRect,
-        &m_RTTextures[0].GetRT(),
+        &m_RTTextures[m_rt_index].GetRT(),
         &dsv,
         m_Camera,
         static_cast<uint8_t>(m_CurrentBackBufferIndex),
@@ -217,7 +225,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     }
 
     auto& ResetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
-    m_RTTextures[0].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
+    m_RTTextures[m_rt_index].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
     ResetRT_cl.EndEvent();
 
     BruteForce::Render::PrepareRenderHelper render_dest_rt{
@@ -237,6 +245,8 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     {
         SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(execute_list));
     }
+
+    m_rt_index = (++m_rt_index) % RenderNumFrames;
 }
 
 BruteForce::Camera* TutorialRenderer::GetCameraPtr()

@@ -14,9 +14,10 @@
 #include <vector>
 #include <memory>
 
-constexpr uint8_t RendererNumFrames = 3;
+constexpr uint8_t SwapchainNumFrames = 3;
+constexpr uint8_t RenderNumFrames = 2;
 
-using MyRenderer = BruteForce::Renderer<RendererNumFrames>;
+using MyRenderer = BruteForce::Renderer<SwapchainNumFrames>;
 
 //struct TerrainInstanceData
 //{
@@ -29,7 +30,8 @@ using MyRenderer = BruteForce::Renderer<RendererNumFrames>;
 class TutorialRenderer :
     public MyRenderer
 {
-private: 
+private:
+    uint8_t m_rt_index;
     BruteForce::SmartCommandQueue m_CopyCommandQueue;
     std::vector<std::shared_ptr<BruteForce::Render::RenderSubsystem>> m_RenderSystems;
     std::vector<std::shared_ptr<BruteForce::Compute::ComputeSubsystem>> m_CalcSystems;
@@ -40,12 +42,12 @@ private:
     std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowUavDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> HeightmapTexturesRange;
 
-    BruteForce::Textures::Texture m_ShadowTextures[RendererNumFrames];
+    BruteForce::Textures::Texture m_ShadowTextures[SwapchainNumFrames];
     void CreateCommonResources(BruteForce::Device& device);
 public:
     BruteForce::Textures::DepthBuffer m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;
-    BruteForce::Textures::Texture m_RTTextures[RendererNumFrames];
+    BruteForce::Textures::Texture m_RTTextures[SwapchainNumFrames];
     BruteForce::DescriptorHeap m_RTHeap;
     //BruteForce::DescriptorHeap m_RTSrvHeap;
 
