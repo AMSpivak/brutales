@@ -58,7 +58,7 @@ namespace BruteForce
 	using HeapType = D3D12_HEAP_TYPE;
 	constexpr HeapType HeapTypeDefault = D3D12_HEAP_TYPE_DEFAULT;
 
-
+	using ClearValue = D3D12_CLEAR_VALUE;
 
 
 	using DescriptorHeapType = D3D12_DESCRIPTOR_HEAP_TYPE;

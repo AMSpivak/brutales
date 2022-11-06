@@ -36,14 +36,28 @@ namespace BruteForce
 
 		void SetName(LPCWSTR name);
 		void TransitionTo(SmartCommandList& commandlist, ResourceStates dst);
+
+		friend void CreateBufferResource(Device& device,
+			GpuResource& pResource,
+			const ResourceDesc* rd,
+			ClearValue* pClearValue,
+			GpuAllocator gpu_allocator
+		);
 	};
 
+	void CreateBufferResource(Device& device,
+		GpuResource& pResource,
+		const ResourceDesc* rd,
+		ClearValue* pClearValue,
+		GpuAllocator gpu_allocator
+	);
 
 
     void CreateBufferResource(Device& device,
         pResource* pDestinationResource,
         size_t numElements, size_t elementSize,
-        ResourceFlags flags = ResourceFlagsNone);
+        ResourceFlags flags = ResourceFlagsNone
+		);
 
     void UpdateBufferResource(
         Device& device,
