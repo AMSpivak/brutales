@@ -182,6 +182,8 @@
     <ClCompile Include="RenderInstanced.cpp" />
     <ClCompile Include="RenderTerrain.cpp" />
     <ClCompile Include="ResourcesDX12.cpp" />
+    <ClCompile Include="RWRawBuffer.cpp" />
+    <ClCompile Include="RWRawBufferDX12.cpp" />
     <ClCompile Include="ScreenSpaceSky.cpp" />
     <ClCompile Include="ScreenSpaceToRt.cpp" />
     <ClCompile Include="Settings.cpp" />
@@ -217,6 +219,7 @@
     <ClInclude Include="PipelineState.h" />
     <ClInclude Include="PlatformDefine.h" />
     <ClInclude Include="PlatformDX12.h" />
+    <ClInclude Include="RWRawBuffer.h" />
     <ClInclude Include="ScreenSpaceSky.h" />
     <ClInclude Include="ShaderCppTypesRedefine.h" />
     <ClInclude Include="SkyAstronomy.h" />

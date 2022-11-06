@@ -146,31 +146,7 @@ namespace BruteForce
                 //pClearValue = nullptr;
             }
  
-            if (gpu_allocator)
-            {
-                D3D12MA::ALLOCATION_DESC allocDesc = {};
-                allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
-
-                ThrowIfFailed(gpu_allocator->CreateResource(
-                    &allocDesc, 
-                    &textureDesc,
-                    texture.m_state,
-                    pClearValue,
-                    &texture.m_p_allocation,
-                    IID_PPV_ARGS(&texture.m_GpuBuffer)));
-            }
-            else
-            {
-                HeapProperties props(D3D12_HEAP_TYPE_DEFAULT);
-
-                ThrowIfFailed(device->CreateCommittedResource(
-                    &props,
-                    HeapFlagsNone,
-                    &textureDesc,
-                    texture.m_state,
-                    pClearValue,
-                    IID_PPV_ARGS(&texture.m_GpuBuffer)));
-            }
+            CreateBufferResource(device, texture, &textureDesc, pClearValue, gpu_allocator);
         }
 
         void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, TextureLoadHlpr& helper)

@@ -28,7 +28,39 @@ namespace BruteForce
     }
 
 
+    void CreateBufferResource(Device& device,
+        GpuResource& pResource,
+        const ResourceDesc* rd,
+        ClearValue * pClearValue,
+        GpuAllocator gpu_allocator
+    )
+    {
+        if (gpu_allocator)
+        {
+            D3D12MA::ALLOCATION_DESC allocDesc = {};
+            allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 
+            ThrowIfFailed(gpu_allocator->CreateResource(
+                &allocDesc,
+                rd,
+                pResource.m_state,
+                pClearValue,
+                &pResource.m_p_allocation,
+                IID_PPV_ARGS(&pResource.m_GpuBuffer)));
+        }
+        else
+        {
+            HeapProperties props(D3D12_HEAP_TYPE_DEFAULT);
+
+            ThrowIfFailed(device->CreateCommittedResource(
+                &props,
+                HeapFlagsNone,
+                rd,
+                pResource.m_state,
+                pClearValue,
+                IID_PPV_ARGS(&pResource.m_GpuBuffer)));
+        }
+    }
 
     void CreateBufferResource(Device& device,
         pResource* pDestinationResource,
