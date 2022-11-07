@@ -25,7 +25,7 @@ namespace BruteForce
 			RWRawBuffer(const RWRawBuffer&) = default;
 			~RWRawBuffer()
 			{};
-			void Create(Device& device, size_t size);
+			void Create(Device& device, size_t size, GpuAllocator gpu_allocator = nullptr);
 			//void CreateSrv(Device& device, DescriptorHandle& descriptor_handle);
 			void CreateSrv(Device& device, DescriptorHeapRange& descriptor_range, size_t index);
 			//void CreateUav(Device& device, DescriptorHandle& descriptor_handle);

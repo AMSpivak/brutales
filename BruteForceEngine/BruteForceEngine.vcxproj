@@ -182,7 +182,6 @@
     <ClCompile Include="RenderInstanced.cpp" />
     <ClCompile Include="RenderTerrain.cpp" />
     <ClCompile Include="ResourcesDX12.cpp" />
-    <ClCompile Include="RWRawBuffer.cpp" />
     <ClCompile Include="RWRawBufferDX12.cpp" />
     <ClCompile Include="ScreenSpaceSky.cpp" />
     <ClCompile Include="ScreenSpaceToRt.cpp" />

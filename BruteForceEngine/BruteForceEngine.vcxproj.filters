@@ -90,9 +90,6 @@
     <ClCompile Include="RWRawBufferDX12.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="RWRawBuffer.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VideoDriverDX12.h">
