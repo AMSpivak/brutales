@@ -1,7 +1,7 @@
 #ifndef TUTORIAL_RENDERER_H
 #define TUTORIAL_RENDERER_H
 
-#include <cstdint>
+
 #include "Renderer.h"
 #include "IndexedGeometry.h"
 #include "Texture.h"
@@ -14,8 +14,7 @@
 #include <vector>
 #include <memory>
 
-constexpr uint8_t SwapchainNumFrames = 3;
-constexpr uint8_t RenderNumFrames = 2;
+#include "CommonRenderParams.h"
 
 using MyRenderer = BruteForce::Renderer<SwapchainNumFrames>;
 

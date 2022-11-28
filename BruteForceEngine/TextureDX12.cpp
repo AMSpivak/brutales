@@ -138,7 +138,7 @@ namespace BruteForce
                 pClearValue = &clearValue;
 
                 textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-                texture.m_state = ResourceStatesRenderTarget;
+                //texture.m_state = ResourceStatesRenderTarget;
             }
             if (is_uav)
             {

@@ -17,6 +17,7 @@ namespace BruteForce
             const BruteForce::DescriptorHandle* dsv;
             const Camera& camera;
             const uint8_t frame_index;
+            const  uint8_t rt_index;
             DescriptorHeapManager& HeapManager;
        };
 

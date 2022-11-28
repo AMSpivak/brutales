@@ -7,12 +7,12 @@
 #include "ComputeTerrainShadow.h"
 
 #include <DirectXMath.h>
-constexpr BruteForce::TargetFormat render_format = BruteForce::TargetFormat_R16G16B16A16_Float;
-constexpr BruteForce::TargetFormat output_format = BruteForce::TargetFormat_R8G8B8A8_Unorm;
+inline constexpr BruteForce::TargetFormat render_format = BruteForce::TargetFormat_R16G16B16A16_Float;
+inline constexpr BruteForce::TargetFormat output_format = BruteForce::TargetFormat_R8G8B8A8_Unorm;
 
 void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
 {
-    RTSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsSrvs");
+    RTSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsSrvs");
     SunShadowSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeSrv, "TerrainShadowSrvs");
     SunShadowUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeUav, "TerrainShadowUavs");
     HeightmapTexturesRange = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(2), BruteForce::DescriptorRangeTypeSrv, "TerrainHeightmapTextures");
@@ -23,7 +23,7 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
     metadata.height = shadowsize;
     metadata.arraySize = 1;
     metadata.depth = 1;
-    metadata.format = BruteForce::TargetFormat_R16G16B16A16_Float;
+    metadata.format = render_format;
     metadata.dimension = DirectX::TEX_DIMENSION_TEXTURE2D;
     metadata.mipLevels = 1;
     for (size_t i = 0; i < SwapchainNumFrames; i++)
@@ -158,9 +158,8 @@ void TutorialRenderer::Resize()
             srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
             m_RTTextures[i].CreateRtv(m_Device, rt_handle);
             rt_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
-
-
         }
+        //m_rt_index = 0;
     }
 }
 
@@ -215,6 +214,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         &dsv,
         m_Camera,
         static_cast<uint8_t>(m_CurrentBackBufferIndex),
+        m_rt_index,
         m_SRV_Heap
     };
 
@@ -235,6 +235,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         &dsv,
         m_Camera,
         static_cast<uint8_t>(m_CurrentBackBufferIndex),
+        m_rt_index,
         m_SRV_Heap
     };
 

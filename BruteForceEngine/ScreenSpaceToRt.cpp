@@ -7,12 +7,39 @@ namespace BruteForce
 {
     namespace Render
     {
+        ScreenSpaceToRt::ScreenSpaceToRt():m_TonemapBuffers(nullptr)
+        {
+        }
+        ScreenSpaceToRt::~ScreenSpaceToRt()
+        {
+            if (m_TonemapBuffers)
+            {
+                delete[] m_TonemapBuffers;
+            }
+
+        }
         void ScreenSpaceToRt::Update(float delta_time, uint8_t frame_index)
         {
         }
 
         void ScreenSpaceToRt::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue, DescriptorHeapManager& descriptor_heap_manager)
         {
+
+            {
+                CbvRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(frames_count), BruteForce::DescriptorRangeTypeCvb, "TonemapCBVs");
+                auto& srv_handle = CbvRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(frames_count), CbvRange);
+
+                for (int i = 0; i < RenderNumFrames; i++)
+                {
+                    CreateUploadGPUBuffer(device, m_TonemapBuffers[i], srv_handle);
+
+                    m_TonemapBuffers[i].Map();
+                    m_TonemapBuffers[i].Update();
+
+                    srv_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+                }
+            }
+
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path{ settings.GetExecuteDirWchar() };
 
@@ -40,10 +67,11 @@ namespace BruteForce
             assert(RTSrvDescriptors);
 
             RTSrvDescriptors->Fill(descRange, 0);
-            descRange.NumDescriptors = 1;
+            //descRange.NumDescriptors = 1;
 
-            CD3DX12_ROOT_PARAMETER1 rootParameters;
-            rootParameters.InitAsDescriptorTable(1, &descRange, D3D12_SHADER_VISIBILITY_PIXEL);
+            CD3DX12_ROOT_PARAMETER1 rootParameters[2];
+            rootParameters[0].InitAsDescriptorTable(1, &descRange, D3D12_SHADER_VISIBILITY_PIXEL);
+            rootParameters[1].InitAsConstants(1, 0, 0, D3D12_SHADER_VISIBILITY_PIXEL);
 
             CD3DX12_STATIC_SAMPLER_DESC linearClampSampler(
                 0,
@@ -55,7 +83,7 @@ namespace BruteForce
 
             CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
 
-            rootSignatureDescription.Init_1_1(1, &rootParameters, 1, &linearClampSampler, rootSignatureFlags);
+            rootSignatureDescription.Init_1_1(_countof(rootParameters), rootParameters, 1, &linearClampSampler, rootSignatureFlags);
 
             BruteForce::DataBlob rootSignatureBlob;
             BruteForce::DataBlob errorBlob;
@@ -107,8 +135,10 @@ namespace BruteForce
             ID3D12DescriptorHeap* ppHeaps[] = { render_dest.HeapManager.GetDescriptorHeapPointer()/*, m_SamplerHeap.Get()*/};
             commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
-            commandList->SetGraphicsRootDescriptorTable(0,
-                render_dest.HeapManager.GetGpuDescriptorHandle());
+            
+            uint32_t rt_index = render_dest.rt_index;
+            commandList->SetGraphicsRoot32BitConstants(1, 1, &rt_index, 0);
+            commandList->SetGraphicsRootDescriptorTable(0, render_dest.HeapManager.GetGpuDescriptorHandle());
 
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             commandList->IASetVertexBuffers(0, 1, NULL);

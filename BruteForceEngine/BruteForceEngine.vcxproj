@@ -196,6 +196,7 @@
     <ClInclude Include="AAVasiliev\PlatformPoint.h" />
     <ClInclude Include="Atlas.h" />
     <ClInclude Include="BruteForceMath.h" />
+    <ClInclude Include="CommonRenderParams.h" />
     <ClInclude Include="ComputeSubsystem.h" />
     <ClInclude Include="ComputeTerrainShadow.h" />
     <ClInclude Include="Camera.h" />
@@ -325,6 +326,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EnableUnboundedDescriptorTables Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</EnableUnboundedDescriptorTables>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

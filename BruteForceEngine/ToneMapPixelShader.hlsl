@@ -1,4 +1,12 @@
+
+struct FrameInfo
+{
+    uint frame_index;
+};
+ConstantBuffer<FrameInfo> FrameInfoCB : register(b0);
+
 #include "TonemapCB.h"
+ConstantBuffer<TonemapCB> Tonemap_CB : register(b1);
 
 float luminance(float3 v)
 {
@@ -46,7 +54,7 @@ struct PixelShaderInput
     float2 Tex : TexCoord0;
 };
 
-Texture2D texture0 : register(t0);
+Texture2D textures[] : register(t0);
 sampler sampl : register(s0);
 
 float4 main(PixelShaderInput IN) : SV_Target
@@ -54,7 +62,7 @@ float4 main(PixelShaderInput IN) : SV_Target
     const float3 c_night = float3(0.077f, 0.73f, 3.3f);
     const float3 c_day = float3(1.f, 1.f, 1.f);
     float p = 1.0f;
-    float3 color = lerp(c_night, c_day, p) * texture0.Sample(sampl, IN.Tex).xyz;
+    float3 color = lerp(c_night, c_day, p) * textures[FrameInfoCB.frame_index].Sample(sampl, IN.Tex).xyz;
 
     float exposure_bias = 0.05f;
     float3 result = uncharted2_filmic(color, exposure_bias);
