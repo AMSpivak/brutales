@@ -8,11 +8,16 @@
 
 #include <DirectXMath.h>
 inline constexpr BruteForce::TargetFormat render_format = BruteForce::TargetFormat_R16G16B16A16_Float;
+inline constexpr BruteForce::TargetFormat render_normals_format = BruteForce::TargetFormat_R16G16B16A16_Float;
+inline constexpr BruteForce::TargetFormat render_uvddxddy_format = BruteForce::TargetFormat_R16G16B16A16_Float;
 inline constexpr BruteForce::TargetFormat output_format = BruteForce::TargetFormat_R8G8B8A8_Unorm;
 
 void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
 {
     RTSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsSrvs");
+    RTNormalsSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "NormalRenderTargetsSrvs");
+    RTUVSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "UVRenderTargetsSrvs");
+
     SunShadowSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeSrv, "TerrainShadowSrvs");
     SunShadowUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeUav, "TerrainShadowUavs");
     HeightmapTexturesRange = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(2), BruteForce::DescriptorRangeTypeSrv, "TerrainHeightmapTextures");
@@ -159,6 +164,8 @@ void TutorialRenderer::Resize()
             m_RTTextures[i].CreateRtv(m_Device, rt_handle);
             rt_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
         }
+
+
         //m_rt_index = 0;
     }
 }

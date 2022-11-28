@@ -24,6 +24,12 @@ namespace BruteForce
 
         void ScreenSpaceToRt::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue, DescriptorHeapManager& descriptor_heap_manager)
         {
+            if (m_TonemapBuffers)
+            {
+                delete[] m_TonemapBuffers;
+            }
+
+            m_TonemapBuffers = new ConstantBuffer<TonemapCB>[RenderNumFrames];
 
             {
                 CbvRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(frames_count), BruteForce::DescriptorRangeTypeCvb, "TonemapCBVs");
