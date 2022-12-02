@@ -14,6 +14,7 @@ namespace BruteForce
             const Viewport* m_Viewport;
             const ScissorRect* m_ScissorRect;
             const BruteForce::DescriptorHandle* rtv;
+            const  uint8_t m_rt_count;
             const BruteForce::DescriptorHandle* dsv;
             const Camera& camera;
             const uint8_t frame_index;

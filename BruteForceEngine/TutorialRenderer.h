@@ -37,9 +37,7 @@ private:
     BruteForce::Render::ScreenSpaceToRt m_ToneMapper;
     BruteForce::DescriptorHeapManager& m_SRV_Heap;
     std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvDescriptors;
-    std::shared_ptr<BruteForce::DescriptorHeapRange> RTNormalsSrvDescriptors;
-    std::shared_ptr<BruteForce::DescriptorHeapRange> RTUVSrvDescriptors;
-    std::shared_ptr<BruteForce::DescriptorHeapRange> RTMaterialSrvDescriptors;
+    std::shared_ptr<BruteForce::DescriptorHeapRange> RTNoScreenSrvDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowSrvDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowUavDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> HeightmapTexturesRange;
@@ -50,7 +48,7 @@ public:
     BruteForce::Textures::DepthBuffer m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;
     BruteForce::Textures::Texture m_RTTextures[RenderNumFrames];
-    BruteForce::Textures::Texture m_RTNormalTextures[RenderNumFrames];
+    BruteForce::Textures::Texture m_RTNoScreenTextures[NoScreenTextures];
     BruteForce::DescriptorHeap m_RTHeap;
     //BruteForce::DescriptorHeap m_RTSrvHeap;
 

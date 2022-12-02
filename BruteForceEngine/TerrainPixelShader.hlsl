@@ -28,7 +28,14 @@ Texture2D<float4> shadow_tex[3] : register(t2);
 Texture2D tex[] : register(t5);
 sampler sampl : register(s0);
 
-float4 main(PixelShaderInput IN) : SV_Target
+struct PS_OUTPUT
+{
+    float4 Color: SV_Target0;
+    float4 Normal: SV_Target1;
+    uint4 Material: SV_Target4;
+};
+
+PS_OUTPUT main(PixelShaderInput IN) : SV_Target
 {
     //int material = IN.id;
     const uint material_offset = 2;
@@ -79,8 +86,12 @@ float4 main(PixelShaderInput IN) : SV_Target
     
     float3 Color = tex[materials.r * material_offset].Sample(sampl, IN.WorldPosition.xz).xyz;
     Color = pow(Color, 2.2);
-    
-    return float4(light * Color * PlanesCB[FrameInfoCB.frame_index].m_SunColor.xyz, 1.0f);
+    PS_OUTPUT output;
+    output.Color = float4(light * Color * PlanesCB[FrameInfoCB.frame_index].m_SunColor.xyz, 1.0f);//Set first output
+    output.Normal = quat_xm;//Set second output
+    output.Material = materials;
+    return output;
+    //return 
     //return float4(100.0f * (IN.Normal), 1.0f);
     
     //return float4(0.5f * IN.Normal + float3(0.5f,0.5f,0.5f), 1.0f);

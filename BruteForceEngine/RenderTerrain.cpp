@@ -3,7 +3,7 @@
 #include "IndexedGeometryGenerator.h"
 #include "Settings.h"
 #include "GameEnvironment.h"
-
+#include "CommonRenderParams.h"
 
 namespace BruteForce
 {
@@ -225,8 +225,10 @@ namespace BruteForce
             } pipelineStateStream;
 
             D3D12_RT_FORMAT_ARRAY rtvFormats = {};
-            rtvFormats.NumRenderTargets = 1;
+            rtvFormats.NumRenderTargets = 3;
             rtvFormats.RTFormats[0] = desc.RTFormat;
+            rtvFormats.RTFormats[1] = desc.RTFormat;
+            rtvFormats.RTFormats[2] = render_materials_format;
 
             pipelineStateStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 
@@ -272,7 +274,7 @@ namespace BruteForce
             commandList->IASetIndexBuffer(&m_plane.m_IndexBufferView);
             commandList->RSSetViewports(1, render_dest.m_Viewport);
             commandList->RSSetScissorRects(1, render_dest.m_ScissorRect);
-            commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, render_dest.dsv);
+            commandList->OMSetRenderTargets(render_dest.m_rt_count, render_dest.rtv, FALSE, render_dest.dsv);
 
             auto const_size = sizeof(BruteForce::Math::Matrix) / 4;
             commandList->SetGraphicsRoot32BitConstants(3, static_cast<UINT>(const_size), render_dest.camera.GetCameraMatrixPointer(), 0);
