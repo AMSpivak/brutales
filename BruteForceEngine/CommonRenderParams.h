@@ -6,10 +6,12 @@
 
 inline constexpr uint8_t SwapchainNumFrames = 3;
 inline constexpr uint8_t RenderNumFrames = 2;
-inline constexpr uint8_t NoScreenTextures = 2;
 
-enum class enRenderTargets : int {TBN_Quaternion = 0, Materials};
+
+enum class enRenderTargets : int {TBN_Quaternion = 0, Materials, TexUV, TexDdxDdy, NoScreenCount};
 inline constexpr int RT(enRenderTargets v) { return static_cast<int>(v); };
+
+inline constexpr uint8_t NoScreenTextures = static_cast<int>(enRenderTargets::NoScreenCount);
 
 inline constexpr BruteForce::TargetFormat render_format = BruteForce::TargetFormat_R16G16B16A16_Float;
 inline constexpr BruteForce::TargetFormat render_normals_format = BruteForce::TargetFormat_R16G16B16A16_Float;

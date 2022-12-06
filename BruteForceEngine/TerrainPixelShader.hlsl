@@ -32,10 +32,12 @@ struct PS_OUTPUT
 {
     float4 Color: SV_Target0;
     float4 Normal: SV_Target1;
-    uint4 Material: SV_Target4;
+    uint4 Material: SV_Target2;
+    float4 TexUV: SV_Target3;
+    float4 TexDdxDdy: SV_Target4;
 };
 
-PS_OUTPUT main(PixelShaderInput IN) : SV_Target
+PS_OUTPUT main(PixelShaderInput IN)// : SV_Target
 {
     //int material = IN.id;
     const uint material_offset = 2;
@@ -66,7 +68,7 @@ PS_OUTPUT main(PixelShaderInput IN) : SV_Target
     matrix TBN4;
     mat_cast_xm(quat_xm, TBN4);
     //float3 Normal = Normal_smpl.x * T_Normal + Normal_smpl.z * face_Normal + Normal_smpl.y * B_Normal;
-    Normal_smpl.y = - Normal_smpl;
+    Normal_smpl.y = - Normal_smpl.y;
     float3 Normal = mul(TBN4, float4(Normal_smpl, 0.0f)).xyz;
     float light_diffuse = clamp(dot(Normal, normalize(sun_info.xyz)),0.0, 1.0);
     float light = sun_info.w;// (IN.Normal.y* (1.0f - diff) + diff)* light_force;
@@ -84,12 +86,20 @@ PS_OUTPUT main(PixelShaderInput IN) : SV_Target
     //shadows.x = 1.0 - shadows.x * shadows.x;
     light *= 0.3 + 0.7 * light_diffuse * shadows.x;// *shadows.x;
     
-    float3 Color = tex[materials.r * material_offset].Sample(sampl, IN.WorldPosition.xz).xyz;
+    //float3 Color = tex[materials.r * material_offset].Sample(sampl, IN.WorldPosition.xz).xyz;
+    float2 derivX = ddx(IN.WorldPosition.xz);
+    float2 derivY = ddy(IN.WorldPosition.xz);
+
+    float3 Color = tex[materials.r * material_offset].SampleGrad(sampl, IN.WorldPosition.xz, derivX, derivY).xyz;
     Color = pow(Color, 2.2);
+
     PS_OUTPUT output;
     output.Color = float4(light * Color * PlanesCB[FrameInfoCB.frame_index].m_SunColor.xyz, 1.0f);//Set first output
+
     output.Normal = quat_xm;//Set second output
     output.Material = materials;
+    output.TexDdxDdy = float4(derivX, derivY);
+    output.TexUV = float4(IN.WorldPosition.xz, 0.0, 0.0);
     return output;
     //return 
     //return float4(100.0f * (IN.Normal), 1.0f);

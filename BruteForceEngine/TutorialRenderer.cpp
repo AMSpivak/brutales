@@ -188,6 +188,33 @@ void TutorialRenderer::Resize()
                 m_RTNoScreenTextures[rt].CreateRtv(m_Device, rt_handle);
                 rt_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
             }
+
+            {
+                metadata.format = render_uvddxddy_format;
+                int rt = RT(enRenderTargets::TexUV);
+                srv_handle = RTNoScreenSrvDescriptors->m_CpuHandle;
+                srv_handle.ptr += rt * m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+
+                BruteForce::Textures::CreateTexture(m_RTNoScreenTextures[rt], metadata, m_Device, true, false);
+                m_RTNoScreenTextures[rt].CreateSrv(m_Device, srv_handle);
+                srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+                m_RTNoScreenTextures[rt].CreateRtv(m_Device, rt_handle);
+                rt_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
+            }
+
+            {
+                metadata.format = render_uvddxddy_format;
+                int rt = RT(enRenderTargets::TexDdxDdy);
+                srv_handle = RTNoScreenSrvDescriptors->m_CpuHandle;
+                srv_handle.ptr += rt * m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+
+                BruteForce::Textures::CreateTexture(m_RTNoScreenTextures[rt], metadata, m_Device, true, false);
+                m_RTNoScreenTextures[rt].CreateSrv(m_Device, srv_handle);
+                srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+                m_RTNoScreenTextures[rt].CreateRtv(m_Device, rt_handle);
+                rt_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
+            }
+
         }
 
         //m_rt_index = 0;
@@ -243,17 +270,19 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     SetRT_cl.ClearRTV(m_RTNoScreenTextures[RT(enRenderTargets::Materials)].GetRT(), clearEmptyColor);
     SetRT_cl.ClearDSV(dsv, true, false, 1.0f, 0);
 
-    const BruteForce::DescriptorHandle HdrRts[3] = {
+    const BruteForce::DescriptorHandle GbufferRts[NoScreenTextures+1] = {
         m_RTTextures[m_rt_index].GetRT()
         , m_RTNoScreenTextures[RT(enRenderTargets::TBN_Quaternion)].GetRT()
         , m_RTNoScreenTextures[RT(enRenderTargets::Materials)].GetRT()
+        , m_RTNoScreenTextures[RT(enRenderTargets::TexUV)].GetRT()
+        , m_RTNoScreenTextures[RT(enRenderTargets::TexDdxDdy)].GetRT()
     };
 
     BruteForce::Render::PrepareRenderHelper render_dest{
         &m_Viewport,
         &m_ScissorRect,
-        HdrRts,
-        3,
+        GbufferRts,
+        NoScreenTextures + 1,
         &dsv,
         m_Camera,
         static_cast<uint8_t>(m_CurrentBackBufferIndex),
