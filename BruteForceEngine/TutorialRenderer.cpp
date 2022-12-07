@@ -170,6 +170,8 @@ void TutorialRenderer::Resize()
                 srv_handle.ptr += rt * m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
 
                 BruteForce::Textures::CreateTexture(m_RTNoScreenTextures[rt], metadata, m_Device, true, false);
+                m_RTNoScreenTextures[rt].m_GpuBuffer->SetName(L"TBN_Quaternion");
+
                 m_RTNoScreenTextures[rt].CreateSrv(m_Device, srv_handle);
                 srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 m_RTNoScreenTextures[rt].CreateRtv(m_Device, rt_handle);
@@ -183,6 +185,8 @@ void TutorialRenderer::Resize()
                 srv_handle.ptr += rt * m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
 
                 BruteForce::Textures::CreateTexture(m_RTNoScreenTextures[rt], metadata, m_Device, true, false);
+                m_RTNoScreenTextures[rt].m_GpuBuffer->SetName(L"Materials");
+
                 m_RTNoScreenTextures[rt].CreateSrv(m_Device, srv_handle);
                 srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 m_RTNoScreenTextures[rt].CreateRtv(m_Device, rt_handle);
@@ -196,6 +200,7 @@ void TutorialRenderer::Resize()
                 srv_handle.ptr += rt * m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
 
                 BruteForce::Textures::CreateTexture(m_RTNoScreenTextures[rt], metadata, m_Device, true, false);
+                m_RTNoScreenTextures[rt].m_GpuBuffer->SetName(L"TexUV");
                 m_RTNoScreenTextures[rt].CreateSrv(m_Device, srv_handle);
                 srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 m_RTNoScreenTextures[rt].CreateRtv(m_Device, rt_handle);
@@ -209,6 +214,7 @@ void TutorialRenderer::Resize()
                 srv_handle.ptr += rt * m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
 
                 BruteForce::Textures::CreateTexture(m_RTNoScreenTextures[rt], metadata, m_Device, true, false);
+                m_RTNoScreenTextures[rt].m_GpuBuffer->SetName(L"TexDdxDdy");
                 m_RTNoScreenTextures[rt].CreateSrv(m_Device, srv_handle);
                 srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 m_RTNoScreenTextures[rt].CreateRtv(m_Device, rt_handle);
@@ -265,6 +271,8 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     m_RTTextures[m_rt_index].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
     m_RTNoScreenTextures[RT(enRenderTargets::TBN_Quaternion)].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
     m_RTNoScreenTextures[RT(enRenderTargets::Materials)].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
+    m_RTNoScreenTextures[RT(enRenderTargets::TexUV)].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
+    m_RTNoScreenTextures[RT(enRenderTargets::TexDdxDdy)].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
     //SetRT_cl.ClearRTV(m_RTTextures[0].GetRT(), clearColor);
     SetRT_cl.ClearRTV(m_RTNoScreenTextures[RT(enRenderTargets::TBN_Quaternion)].GetRT(), clearEmptyColor);
     SetRT_cl.ClearRTV(m_RTNoScreenTextures[RT(enRenderTargets::Materials)].GetRT(), clearEmptyColor);
@@ -300,6 +308,8 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     m_RTTextures[m_rt_index].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
     m_RTNoScreenTextures[RT(enRenderTargets::TBN_Quaternion)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
     m_RTNoScreenTextures[RT(enRenderTargets::Materials)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
+    m_RTNoScreenTextures[RT(enRenderTargets::TexUV)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
+    m_RTNoScreenTextures[RT(enRenderTargets::TexDdxDdy)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
     ResetRT_cl.EndEvent();
 
     BruteForce::Render::PrepareRenderHelper render_dest_rt{

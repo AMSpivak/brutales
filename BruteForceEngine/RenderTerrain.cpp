@@ -146,8 +146,8 @@ namespace BruteForce
                 }
 
                 std::vector<std::wstring> tex_names = { 
-                                                        {L"Desert_Sand_albedo.dds"}, {L"norm_tst.png"}//{L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
-                                                        ,{ L"Desert_Rock_albedo.dds"},  {L"norm_tst.png"}//{ L"Desert_Rock_normal.dds"}
+                                                        {L"Desert_Sand_albedo.dds"}, {L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
+                                                        ,{ L"Desert_Rock_albedo.dds"},  { L"Desert_Rock_normal.dds"}
                 };
                 size_t textures_count = tex_names.size();
                 TexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(textures_count), BruteForce::DescriptorRangeTypeSrv, "TerrainMaterialTextures");
@@ -229,6 +229,8 @@ namespace BruteForce
             rtvFormats.RTFormats[0] = desc.RTFormat;
             rtvFormats.RTFormats[1] = render_normals_format;
             rtvFormats.RTFormats[2] = render_materials_format;
+            rtvFormats.RTFormats[3] = render_uvddxddy_format;
+            rtvFormats.RTFormats[4] = render_uvddxddy_format;
 
             pipelineStateStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 
