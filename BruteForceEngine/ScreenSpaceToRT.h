@@ -15,6 +15,8 @@ namespace BruteForce
             std::shared_ptr<DescriptorHeapRange> CbvRange;
 #include "TonemapCB.h"
             ConstantBuffer<TonemapCB>* m_TonemapBuffers;
+
+            void PrepareCB(uint32_t index);
         public:
             ScreenSpaceToRt();
             virtual ~ScreenSpaceToRt();

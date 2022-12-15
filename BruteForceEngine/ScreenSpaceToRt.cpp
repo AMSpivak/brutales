@@ -7,6 +7,11 @@ namespace BruteForce
 {
     namespace Render
     {
+        void ScreenSpaceToRt::PrepareCB(uint32_t index)
+        {
+
+        }
+
         ScreenSpaceToRt::ScreenSpaceToRt():m_TonemapBuffers(nullptr)
         {
         }
@@ -133,6 +138,9 @@ namespace BruteForce
 
         SmartCommandList& ScreenSpaceToRt::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)
         {
+            uint32_t buff_index = render_dest.frame_index;
+            PrepareCB(buff_index);
+
             smart_command_list.BeginEvent(0, "ToneMapping");
             auto& commandList = smart_command_list.command_list;
             smart_command_list.SetPipelineState(m_PipelineState);
