@@ -10,7 +10,9 @@
 #include "ShaderCppTypesRedefine.h"
 struct TonemapCB
 {
-    float CB_Exposure;
+    float Exposure;
+    float Nits;
+    int CurveType;
     int SourceFrameIndex;
 
 };

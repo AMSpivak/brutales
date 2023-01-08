@@ -15,7 +15,11 @@ namespace BruteForce
 			RotateLeft,
 			RotateRight,
 			DbgInrease,
-			DbgDecrease
+			DbgDecrease,
+			DbgSwitch1,
+			DbgSwitch2,
+			DbgSwitch3,
+			DbgSwitch4
 		};
 
 		enum class Axes

@@ -1,5 +1,6 @@
 #ifndef RENDER_SUBSYSTEM_H
 #define RENDER_SUBSYSTEM_H
+#include "VideoDriverInterface.h"
 #include "PlatformDefine.h"
 #include "EngineGpuCommands.h"
 #include "Camera.h"
@@ -19,6 +20,7 @@ namespace BruteForce
             const Camera& camera;
             const uint8_t frame_index;
             const  uint8_t rt_index;
+            const float m_Nits;
             DescriptorHeapManager& HeapManager;
        };
 

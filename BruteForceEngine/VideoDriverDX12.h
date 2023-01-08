@@ -13,12 +13,15 @@ namespace BruteForce
 		bool CheckTearingSupport();
 		void Resize();
 	public:
-		WindowDX12(HWND hWnd) : mhWnd(hWnd), m_IsFullscreen(false){};
+		WindowDX12(HWND hWnd) : mhWnd(hWnd), m_IsFullscreen(false) {};
 		virtual void Show();
 		virtual ~WindowDX12() {};
 		virtual SwapChain CreateSwapChain(CommandQueue& commandQueue, uint32_t bufferCount, TargetFormat format );
 		virtual SwapChain CreateSwapChain(SmartCommandQueue& commandQueue, uint32_t bufferCount, TargetFormat format);
 		virtual void SetFullscreen(bool value);
+		virtual bool IsOnHDRDisplay(Adapter& adapter);
+		virtual bool SetHDRMode(HDRMode::HDRMode mode);
+		virtual void SetHDRMetaData(HDRMode::HDRMode mode, float MaxOutputNits, float MinOutputNits, float MaxCLL, float MaxFALL);
 	};
 
 	class VideoDriverDX12 : public VideoDriverInterface

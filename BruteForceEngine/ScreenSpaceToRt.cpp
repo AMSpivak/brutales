@@ -7,11 +7,6 @@ namespace BruteForce
 {
     namespace Render
     {
-        void ScreenSpaceToRt::PrepareCB(uint32_t index)
-        {
-
-        }
-
         ScreenSpaceToRt::ScreenSpaceToRt():m_TonemapBuffers(nullptr)
         {
         }
@@ -23,6 +18,14 @@ namespace BruteForce
             }
 
         }
+
+        void ScreenSpaceToRt::PrepareCB(uint32_t index)
+        {
+            //m_TonemapBuffers[rt_index].m_CpuBuffer->CurveType = m_HDRMode;
+            //m_TonemapBuffers[rt_index].m_CpuBuffer->Nits = render_dest.m_Nits;
+            //m_TonemapBuffers[rt_index].Update();
+        }
+
         void ScreenSpaceToRt::Update(float delta_time, uint8_t frame_index)
         {
         }
@@ -37,7 +40,7 @@ namespace BruteForce
             m_TonemapBuffers = new ConstantBuffer<TonemapCB>[RenderNumFrames];
 
             {
-                CbvRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(frames_count), BruteForce::DescriptorRangeTypeCvb, "TonemapCBVs");
+                CbvRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeCvb, "TonemapCBVs");
                 auto& srv_handle = CbvRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(frames_count), CbvRange);
 
                 for (int i = 0; i < RenderNumFrames; i++)
@@ -72,16 +75,18 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-            CD3DX12_DESCRIPTOR_RANGE1 descRange;
+            CD3DX12_DESCRIPTOR_RANGE1 descRange[2];
 
             RTSrvDescriptors = descriptor_heap_manager.GetManagedRange("RenderTargetsSrvs");
             assert(RTSrvDescriptors);
 
-            RTSrvDescriptors->Fill(descRange, 0);
+            RTSrvDescriptors->Fill(descRange[0], 0);
+
+            CbvRange->Fill(descRange[1], 2);
             //descRange.NumDescriptors = 1;
 
             CD3DX12_ROOT_PARAMETER1 rootParameters[2];
-            rootParameters[0].InitAsDescriptorTable(1, &descRange, D3D12_SHADER_VISIBILITY_PIXEL);
+            rootParameters[0].InitAsDescriptorTable(_countof(descRange), descRange, D3D12_SHADER_VISIBILITY_PIXEL);
             rootParameters[1].InitAsConstants(1, 0, 0, D3D12_SHADER_VISIBILITY_PIXEL);
 
             CD3DX12_STATIC_SAMPLER_DESC linearClampSampler(
@@ -132,18 +137,24 @@ namespace BruteForce
             D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
                 sizeof(PipelineStateStream), &pipelineStateStream
             };
-            ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
-            m_PipelineState->SetName(L"Tone mapping PSO");
+
+            LPCWSTR PSONames[] = { L"Tone mapping R8G8B8A8 PSO" ,L"Tone mapping R10G10B10A2 PSO" ,L"Tone mapping R16G16B16A16 PSO" };
+            TargetFormat m_swapChainFormats[] = { TargetFormat_R8G8B8A8_Unorm, TargetFormat_R10G10B10A2_Unorm, TargetFormat_R16G16B16A16_Float };
+            for(int i = 0; i < NumPSO; i++)
+            {
+                rtvFormats.RTFormats[0] = m_swapChainFormats[i];
+                pipelineStateStream.RTVFormats = rtvFormats;
+
+                ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineStates[i])));
+                m_PipelineStates[i]->SetName(PSONames[i]);
+            }
         }
 
         SmartCommandList& ScreenSpaceToRt::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)
         {
-            uint32_t buff_index = render_dest.frame_index;
-            PrepareCB(buff_index);
-
             smart_command_list.BeginEvent(0, "ToneMapping");
             auto& commandList = smart_command_list.command_list;
-            smart_command_list.SetPipelineState(m_PipelineState);
+            smart_command_list.SetPipelineState(m_PipelineStates[m_HDRMode]);
             smart_command_list.SetGraphicsRootSignature(m_RootSignature);
 
             ID3D12DescriptorHeap* ppHeaps[] = { render_dest.HeapManager.GetDescriptorHeapPointer()/*, m_SamplerHeap.Get()*/};
@@ -151,6 +162,11 @@ namespace BruteForce
 
             
             uint32_t rt_index = render_dest.rt_index;
+            PrepareCB(rt_index);
+            m_TonemapBuffers[rt_index].m_CpuBuffer->CurveType = m_HDRMode;
+            m_TonemapBuffers[rt_index].m_CpuBuffer->Nits = render_dest.m_Nits;
+            m_TonemapBuffers[rt_index].Update();
+
             commandList->SetGraphicsRoot32BitConstants(1, 1, &rt_index, 0);
             commandList->SetGraphicsRootDescriptorTable(0, render_dest.HeapManager.GetGpuDescriptorHandle());
 
@@ -164,6 +180,10 @@ namespace BruteForce
             commandList->DrawInstanced(3, 1, 0, 0);
             smart_command_list.EndEvent();
             return smart_command_list;
+        }
+        void ScreenSpaceToRt::SetHDRMode(HDRMode::HDRMode mode)
+        {
+            m_HDRMode = mode;
         }
     }
 }

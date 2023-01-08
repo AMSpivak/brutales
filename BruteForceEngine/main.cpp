@@ -157,17 +157,51 @@ void Update()
         }
 
 
+        static bool fullscreen = false;
+        {
+            static bool fullscreen_switch = false;
+            bool press = test_controller->GetKeyPressed(BruteForce::Controller::Keys::DbgSwitch2);
+            if (press && (!fullscreen_switch))
+            {
+                fullscreen = !fullscreen;
+                if (pWindow)
+                {
+                    pWindow->SetFullscreen(fullscreen);
+                }
+            }
+            fullscreen_switch = press;
+        }
+
         static float day_hour = 0.5f;
         static bool chng = true;
+        static bool do_day_cycle = true;
+
+        {
+            static bool do_day_cycle_switch = false;
+
+            bool press = test_controller->GetKeyPressed(BruteForce::Controller::Keys::DbgSwitch3);
+
+            if (press && (!do_day_cycle_switch))
+            {
+                do_day_cycle = !do_day_cycle;
+            }
+            do_day_cycle_switch = press;
+        }
+
 
         float msecs_up = (0.000001f * (t1 - t_up).count());
         if (msecs_up > 12)
         {
-            day_hour += msecs * 0.00001f;
             t_up = t1;
-            chng = true;
 
+            if(do_day_cycle)
+            {
+                day_hour += msecs * 0.00001f;
+                chng = true;
+            }
         }
+
+
 
         if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::DbgInrease))
         {
@@ -309,7 +343,7 @@ void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Win
     {
         auto smart_command_list = in_SmartCommandQueue.GetCommandList();
         p_Renderer->StartFrame(smart_command_list);
-        p_Renderer->SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
+        p_Renderer->SetCurrentFenceValue(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
     }
 
      p_Renderer->Render(in_SmartCommandQueue);
@@ -317,7 +351,7 @@ void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Win
     {
         auto smart_command_list = in_SmartCommandQueue.GetCommandList();
         p_Renderer->PrepareSwapFrame(smart_command_list);
-        p_Renderer->SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
+        p_Renderer->SetCurrentFenceValue(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
         //p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
 
     }
