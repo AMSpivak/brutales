@@ -236,6 +236,9 @@
     <ClInclude Include="CommonRenderParams.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="DefferedLightingCB.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicVertexShader.hlsl">
@@ -266,6 +269,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="SkyPixelShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ComputeSunLightShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

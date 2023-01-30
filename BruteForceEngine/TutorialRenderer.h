@@ -37,6 +37,8 @@ private:
     BruteForce::Render::ScreenSpaceToRt m_ToneMapper;
     BruteForce::DescriptorHeapManager& m_SRV_Heap;
     std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvDescriptors;
+    std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvUavDescriptors;
+
     std::shared_ptr<BruteForce::DescriptorHeapRange> RTNoScreenSrvDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowSrvDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowUavDescriptors;

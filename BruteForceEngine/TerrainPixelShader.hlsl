@@ -26,7 +26,7 @@ Texture2D<uint4> tex_material_id : register(t1);
 Texture2D<float4> shadow_tex[3] : register(t2);
 
 Texture2D tex[] : register(t5);
-sampler sampl : register(s0);
+SamplerState sampl : register(s0);
 
 struct PS_OUTPUT
 {
