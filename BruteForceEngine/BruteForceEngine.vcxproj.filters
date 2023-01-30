@@ -280,5 +280,8 @@
     <None Include="math.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="color.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

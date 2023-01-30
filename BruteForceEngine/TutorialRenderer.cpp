@@ -128,7 +128,15 @@ void TutorialRenderer::Update(float delta_time, BruteForce::SmartCommandQueue& c
 
 void TutorialRenderer::Resize()
 {
+
+
     MyRenderer::Resize();
+
+    //bool can_hdr = m_Window->IsOnHDRDisplay(m_Adapter);
+    //{
+    //    char buffer[500];
+    //    sprintf_s(buffer, 500, can_hdr ? "HDR is supported\n" : "No HDR support\n");
+    //}
 
     int width = m_Window->GetWidth();
     int height = m_Window->GetHeight();
@@ -296,6 +304,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         m_Camera,
         static_cast<uint8_t>(m_CurrentBackBufferIndex),
         m_rt_index,
+        m_Window->GetMaxNits(),
         m_SRV_Heap
     };
 
@@ -322,16 +331,22 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         m_Camera,
         static_cast<uint8_t>(m_CurrentBackBufferIndex),
         m_rt_index,
+        m_Window->GetMaxNits(),
         m_SRV_Heap
     };
 
     auto& ToneMap_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
+    m_ToneMapper.SetHDRMode(m_HDRmode);
     m_ToneMapper.PrepareRenderCommandList(ToneMap_cl, render_dest_rt);
 
+    //uint64_t fence_value = 0;
     for (auto& execute_list : command_lists)
     {
-        SetCurrentFence(in_SmartCommandQueue.ExecuteCommandList(execute_list));
+        //SetCurrentFenceValue(in_SmartCommandQueue.ExecuteCommandList(execute_list));
+        in_SmartCommandQueue.ExecuteCommandList(execute_list);
     }
+
+
 
     m_rt_index = (++m_rt_index) % RenderNumFrames;
 }

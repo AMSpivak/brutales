@@ -11,10 +11,13 @@ namespace BruteForce
         class ScreenSpaceToRt : public RenderSubsystem
         {
         private:
+            static constexpr int NumPSO = 3;
             std::shared_ptr<DescriptorHeapRange> RTSrvDescriptors;
             std::shared_ptr<DescriptorHeapRange> CbvRange;
 #include "TonemapCB.h"
             ConstantBuffer<TonemapCB>* m_TonemapBuffers;
+            PipelineState m_PipelineStates[NumPSO];
+            HDRMode::HDRMode m_HDRMode;
 
             void PrepareCB(uint32_t index);
         public:
@@ -23,6 +26,7 @@ namespace BruteForce
             virtual void Update(float delta_time, uint8_t frame_index);
             virtual void LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc&, SmartCommandQueue& copy_queue, DescriptorHeapManager& descriptor_heap_manager);
             virtual SmartCommandList& PrepareRenderCommandList(SmartCommandList&, const PrepareRenderHelper&);
+            void SetHDRMode(HDRMode::HDRMode mode);
         };
     }
 }

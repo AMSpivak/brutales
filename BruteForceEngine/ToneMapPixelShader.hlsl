@@ -6,12 +6,12 @@ struct FrameInfo
 ConstantBuffer<FrameInfo> FrameInfoCB : register(b0);
 
 #include "TonemapCB.h"
-ConstantBuffer<TonemapCB> Tonemap_CB : register(b1);
+ConstantBuffer<TonemapCB> Tonemap_CB[2] : register(b2);
 
-float luminance(float3 v)
-{
-    return dot(v, float3(0.2126f, 0.7152f, 0.0722f));
-}
+#include "color.hlsli"
+
+
+
 
 float3 change_luminance(float3 c_in, float l_out)
 {
@@ -66,6 +66,34 @@ float4 main(PixelShaderInput IN) : SV_Target
 
     float exposure_bias = 0.05f;
     float3 result = uncharted2_filmic(color, exposure_bias);
-    result = pow(result, 1.0/2.2f);
+
+
+    //result = pow(result, 1.0/2.2f);
+    if (Tonemap_CB[FrameInfoCB.frame_index].CurveType == DISPLAY_CURVE_SRGB)
+    {
+        result = LinearToSRGB(result);
+
+    }
+    else if (Tonemap_CB[FrameInfoCB.frame_index].CurveType == DISPLAY_CURVE_ST2084)
+    {
+        const float st2084max = 10000.0;
+        const float hdrScalar = Tonemap_CB[FrameInfoCB.frame_index].Nits / st2084max;
+
+        // The HDR scene is in Rec.709, but the display is Rec.2020
+        result = Rec709ToRec2020(result);
+
+        // Apply the ST.2084 curve to the scene.
+        result = LinearToST2084(result * hdrScalar);
+    }
+    else // displayCurve == DISPLAY_CURVE_LINEAR
+    {
+        const float nits_per_scale = 80.0;
+        const float hdrScalar = Tonemap_CB[FrameInfoCB.frame_index].Nits / nits_per_scale;
+
+        //result = reinhard_extended_luminance(color, 1000);
+        // Just pass through
+        result *= hdrScalar;
+    }
+
     return float4(result, 1.0f);
 }

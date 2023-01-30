@@ -109,11 +109,14 @@ namespace BruteForce
 	constexpr TargetFormat TargetFormat_R8G8B8A8_Unorm = DXGI_FORMAT_R8G8B8A8_UNORM;
 	constexpr TargetFormat TargetFormat_R8G8B8A8_Unorm_Srgb = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	constexpr TargetFormat TargetFormat_R8G8B8A8_UInt = DXGI_FORMAT_R8G8B8A8_UINT;
+	constexpr TargetFormat TargetFormat_R10G10B10A2_Unorm = DXGI_FORMAT_R10G10B10A2_UNORM;
 	constexpr TargetFormat TargetFormat_R16_UInt = DXGI_FORMAT_R16_UINT;
 	constexpr TargetFormat TargetFormat_R16G16B16A16_UInt = DXGI_FORMAT_R16G16B16A16_UINT;
 	constexpr TargetFormat TargetFormat_R16G16B16A16_Float = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	constexpr TargetFormat TargetFormat_R32G32B32A32_Float = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	constexpr TargetFormat TargetFormat_R32G32B32_Float = DXGI_FORMAT_R32G32B32_FLOAT;
+
+	using OutputDescriptor = DXGI_OUTPUT_DESC1;
 
 
 	constexpr UINT AllowTearing = DXGI_PRESENT_ALLOW_TEARING;

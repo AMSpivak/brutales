@@ -15,6 +15,11 @@
 #endif
 namespace BruteForce
 {	
+	namespace HDRMode
+	{
+		enum HDRMode { OFF = 0, RGB_FULL_G2084_NONE_P2020, RGB_FULL_G22_NONE_P709 };
+	}
+
 	class Window;
 	using SimpleFunctionPtr = std::function<void()>;
 	using ResizeFunctionPtr = std::function<void(uint32_t, uint32_t, Window *)>;
@@ -28,6 +33,7 @@ namespace BruteForce
 		uint32_t Height;
 		bool m_VSync;
 		bool m_Tearing;
+		OutputDescriptor m_OutputDescriptor;
 	public:
 		Window(): Width(0), Height(0), m_VSync(true), m_Tearing(false){};
 		virtual ~Window() {};
@@ -43,8 +49,12 @@ namespace BruteForce
 		SwapChain& GetSwapChainReference() { return m_SwapChain; }
 		uint32_t GetWidth() { return Width; }
 		uint32_t GetHeight() { return Height; }
-
+		float GetMaxNits() { return m_OutputDescriptor.MaxLuminance; };
 		virtual void SetFullscreen(bool value) = 0;
+		virtual bool IsOnHDRDisplay(Adapter& adapter) = 0;
+		virtual bool SetHDRMode(HDRMode::HDRMode mode) = 0;
+		virtual void SetHDRMetaData(HDRMode::HDRMode mode, float MaxOutputNits, float MinOutputNits, float MaxCLL, float MaxFALL) = 0;
+
 	};
 
 	class VideoDriverInterface

@@ -16,6 +16,11 @@ using namespace Microsoft::WRL;
 
 namespace BruteForce
 {
+    inline int ComputeIntersectionArea(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int by2)
+    {
+        return std::max(0, std::min(ax2, bx2) - std::max(ax1, bx1)) * std::max(0, std::min(ay2, by2) - std::max(ay1, by1));
+    }
+
     LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         WindowDX12* pWindow = (WindowDX12*)GetWindowLongPtr(hwnd, 0);
@@ -161,6 +166,7 @@ namespace BruteForce
             SetSize(width, height);
             funcOnResize(width, height, this);
         }
+        ::GetWindowRect(mhWnd, &m_WinRect);
     }
     void WindowDX12::SetFullscreen(bool value)
     {
@@ -204,6 +210,59 @@ namespace BruteForce
 
     }
 
+    bool WindowDX12::IsOnHDRDisplay(Adapter& adapter)
+    {
+        // takenfrom Microsoft samples
+
+        // Iterate through the DXGI outputs associated with the DXGI adapter,
+        // and find the output whose bounds have the greatest overlap with the
+        // app window (i.e. the output for which the intersection area is the
+        // greatest).
+
+        UINT i = 0;
+        ComPtr<IDXGIOutput> currentOutput;
+        ComPtr<IDXGIOutput> bestOutput;
+        float bestIntersectArea = -1;
+
+        while (adapter->EnumOutputs(i, &currentOutput) != DXGI_ERROR_NOT_FOUND)
+        {
+            // Get the retangle bounds of the app window
+            int ax1 = m_WinRect.left;
+            int ay1 = m_WinRect.top;
+            int ax2 = m_WinRect.right;
+            int ay2 = m_WinRect.bottom;
+
+            // Get the rectangle bounds of current output
+            DXGI_OUTPUT_DESC desc;
+            ThrowIfFailed(currentOutput->GetDesc(&desc));
+            RECT r = desc.DesktopCoordinates;
+            int bx1 = r.left;
+            int by1 = r.top;
+            int bx2 = r.right;
+            int by2 = r.bottom;
+
+            // Compute the intersection
+            int intersectArea = ComputeIntersectionArea(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2);
+            if (intersectArea > bestIntersectArea)
+            {
+                bestOutput = currentOutput;
+                bestIntersectArea = static_cast<float>(intersectArea);
+            }
+
+            i++;
+        }
+
+        // Having determined the output (display) upon which the app is primarily being 
+        // rendered, retrieve the HDR capabilities of that display by checking the color space.
+        ComPtr<IDXGIOutput6> output6;
+        ThrowIfFailed(bestOutput.As(&output6));
+
+        //DXGI_OUTPUT_DESC1 desc1;
+        ThrowIfFailed(output6->GetDesc1(&m_OutputDescriptor));
+
+        return (m_OutputDescriptor.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020);
+    }
+
     bool WindowDX12::CheckTearingSupport()
     {
         BOOL allowTearing = FALSE;
@@ -241,6 +300,111 @@ namespace BruteForce
         return m_SwapChain = BruteForce::CreateSwapChain(commandQueue, bufferCount, Width, Height, CheckTearingSupport(), format, mhWnd);
     }
 
+    bool WindowDX12::SetHDRMode(HDRMode::HDRMode mode)
+    {
+        DXGI_COLOR_SPACE_TYPE colorSpace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
+
+        auto format = DXGI_FORMAT_R8G8B8A8_UNORM;// , DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R16G16B16A16_FLOAT
+    
+
+        switch (mode)
+        {
+        case HDRMode::OFF:
+            //m_rootConstants[DisplayCurve] = sRGB;
+            break;
+
+        case HDRMode::RGB_FULL_G2084_NONE_P2020:
+            colorSpace = DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
+            format = DXGI_FORMAT_R10G10B10A2_UNORM;
+            //m_rootConstants[DisplayCurve] = enableST2084;
+            break;
+
+        case HDRMode::RGB_FULL_G22_NONE_P709:
+            colorSpace = DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
+            format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+            //m_rootConstants[DisplayCurve] = None;
+            break;
+        }
+
+
+
+        UINT colorSpaceSupport = 0;
+        if (SUCCEEDED(m_SwapChain->CheckColorSpaceSupport(colorSpace, &colorSpaceSupport)) &&
+            ((colorSpaceSupport & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT) == DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT))
+        {
+            ThrowIfFailed(m_SwapChain->SetColorSpace1(colorSpace));
+            //m_currentSwapChainColorSpace = colorSpace;
+        }
+        else
+        {
+            return false;
+        }
+
+        SetHDRMetaData(mode, 1000.0f, 0.001f, 2000.0f, 500.0f);
+        return true;
+    }
+
+    void WindowDX12::SetHDRMetaData(HDRMode::HDRMode mode, float MaxOutputNits, float MinOutputNits, float MaxCLL, float MaxFALL)
+    {
+
+        if (!m_SwapChain)
+        {
+            return;
+        }
+
+        // Clean the hdr metadata if the display doesn't support HDR
+        if (mode == HDRMode::OFF)
+        {
+            ThrowIfFailed(m_SwapChain->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_NONE, 0, nullptr));
+            return;
+        }
+
+        struct DisplayChromaticities
+        {
+            float RedX;
+            float RedY;
+            float GreenX;
+            float GreenY;
+            float BlueX;
+            float BlueY;
+            float WhiteX;
+            float WhiteY;
+        };
+
+        static const DisplayChromaticities DisplayChromaticityList[] =
+        {
+            { 0.64000f, 0.33000f, 0.30000f, 0.60000f, 0.15000f, 0.06000f, 0.31270f, 0.32900f }, // Display Gamut Rec709 
+            { 0.70800f, 0.29200f, 0.17000f, 0.79700f, 0.13100f, 0.04600f, 0.31270f, 0.32900f }, // Display Gamut Rec2020
+        };
+
+        // Select the chromaticity based on HDR format of the DWM.
+        int selectedChroma = 0;
+        if (mode == HDRMode::RGB_FULL_G2084_NONE_P2020)
+        {
+            selectedChroma = 0;
+        }
+        else
+        {
+            selectedChroma = 1;
+        }
+        //m_OutputDescriptor.MinLuminance
+        // Set HDR meta data
+        const DisplayChromaticities& Chroma = DisplayChromaticityList[selectedChroma];
+        DXGI_HDR_METADATA_HDR10 HDR10MetaData = {};
+        HDR10MetaData.RedPrimary[0] = static_cast<UINT16>(Chroma.RedX * 50000.0f);
+        HDR10MetaData.RedPrimary[1] = static_cast<UINT16>(Chroma.RedY * 50000.0f);
+        HDR10MetaData.GreenPrimary[0] = static_cast<UINT16>(Chroma.GreenX * 50000.0f);
+        HDR10MetaData.GreenPrimary[1] = static_cast<UINT16>(Chroma.GreenY * 50000.0f);
+        HDR10MetaData.BluePrimary[0] = static_cast<UINT16>(Chroma.BlueX * 50000.0f);
+        HDR10MetaData.BluePrimary[1] = static_cast<UINT16>(Chroma.BlueY * 50000.0f);
+        HDR10MetaData.WhitePoint[0] = static_cast<UINT16>(Chroma.WhiteX * 50000.0f);
+        HDR10MetaData.WhitePoint[1] = static_cast<UINT16>(Chroma.WhiteY * 50000.0f);
+        HDR10MetaData.MaxMasteringLuminance = static_cast<UINT>(m_OutputDescriptor.MaxLuminance * 10000.0f);
+        HDR10MetaData.MinMasteringLuminance = static_cast<UINT>(m_OutputDescriptor.MinLuminance * 10000.0f);
+        HDR10MetaData.MaxContentLightLevel = static_cast<UINT16>(MaxCLL);
+        HDR10MetaData.MaxFrameAverageLightLevel = static_cast<UINT16>(MaxFALL);
+        ThrowIfFailed(m_SwapChain->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_HDR10, sizeof(DXGI_HDR_METADATA_HDR10), &HDR10MetaData));
+    }
 
     Adapter GetAdapter(bool useWarp)
     {
@@ -284,6 +448,8 @@ namespace BruteForce
 
         return dxgiAdapter4;
     }
+
+
 
 
 

@@ -45,6 +45,18 @@ namespace BruteForce
 			case Keys::DbgDecrease:
 				return GetKeyState(VK_SUBTRACT) & 0x8000;
 				break;
+			case Keys::DbgSwitch1:
+				return GetKeyState(VK_F5) & 0x8000;
+				break;
+			case Keys::DbgSwitch2:
+				return GetKeyState(VK_F6) & 0x8000;
+				break;
+			case Keys::DbgSwitch3:
+				return GetKeyState(VK_F7) & 0x8000;
+				break;
+			case Keys::DbgSwitch4:
+				return GetKeyState(VK_F8) & 0x8000;
+				break;
 
 			default:
 				break;
@@ -80,7 +92,7 @@ namespace BruteForce
 				LockY = mouse.y;
 			}
 
-			bool current_camera_look_key = GetKeyState(VK_F5) & 0x8000;
+			bool current_camera_look_key = GetKeyPressed(Keys::DbgSwitch1);
 			if (current_camera_look_key && !camera_look_key)
 			{
 				camera_look = !camera_look;

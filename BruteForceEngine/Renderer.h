@@ -13,6 +13,8 @@
 
 namespace BruteForce
 {
+
+
     template <const uint8_t t_NumFrames>
     class Renderer
     {
@@ -20,6 +22,7 @@ namespace BruteForce
         BruteForce::Window* m_Window;
         const uint8_t m_NumFrames;
         const  BruteForce::TargetFormat m_TargetFormat;
+        HDRMode::HDRMode m_HDRmode;
     public:
         // Use WARP adapter
         Device& m_Device;
@@ -35,7 +38,7 @@ namespace BruteForce
         Viewport m_Viewport;
         ScissorRect m_ScissorRect;
         Renderer(BruteForce::Device& device, BruteForce::Adapter& adapter, BruteForce::Window* pWindow, bool UseWarp, BruteForce::TargetFormat t_format) : m_Window(pWindow), m_NumFrames(t_NumFrames)
-                , m_Device(device), m_Adapter(adapter),  m_TargetFormat(t_format)
+                , m_Device(device), m_Adapter(adapter),  m_TargetFormat(t_format), m_HDRmode(HDRMode::OFF)
                 , m_SmartCommandQueue(m_Device, BruteForce::CommandListTypeDirect), m_ComputeSmartCommandQueue(m_Device, BruteForce::CommandListTypeCompute)
         {
             m_GpuAllocator = BruteForce::CreateGpuAllocator(m_Adapter, m_Device);
@@ -54,6 +57,44 @@ namespace BruteForce
         ~Renderer() 
         {
             //ReportLiveObjects();
+        }
+
+        bool SetHDR(HDRMode::HDRMode mode)
+        {
+            uint32_t width = m_Window->GetWidth();
+            uint32_t height = m_Window->GetHeight();
+
+            auto& refSwapChain = m_Window->GetSwapChainReference();
+            BruteForce::SwapChainDesc swapChainDesc = {};
+            ThrowIfFailed(refSwapChain->GetDesc(&swapChainDesc));
+            auto swch_format = swapChainDesc.BufferDesc.Format;
+            decltype(swch_format) new_format = TargetFormat_R8G8B8A8_Unorm;
+            switch(mode)
+            {
+            case HDRMode::OFF:
+                new_format = TargetFormat_R8G8B8A8_Unorm;
+                break;
+            case HDRMode::RGB_FULL_G2084_NONE_P2020:
+                new_format = TargetFormat_R10G10B10A2_Unorm;
+
+                break;
+            case HDRMode::RGB_FULL_G22_NONE_P709:
+                new_format = TargetFormat_R16G16B16A16_Float;
+
+                break;
+            default:
+                assert(false);
+                break;
+            }
+
+            if (swch_format == new_format)
+                return false;
+
+            m_HDRmode = mode;
+
+            ThrowIfFailed(refSwapChain->ResizeBuffers(GetBuffersCount(), width, height,
+                new_format, swapChainDesc.Flags));
+            return m_Window->SetHDRMode(mode);
         }
 
         void Resize()
@@ -76,8 +117,18 @@ namespace BruteForce
 
             BruteForce::SwapChainDesc swapChainDesc = {};
             ThrowIfFailed(refSwapChain->GetDesc(&swapChainDesc));
+
+            
+
             ThrowIfFailed(refSwapChain->ResizeBuffers(GetBuffersCount(), width, height,
                 swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
+
+            bool can_hdr = m_Window->IsOnHDRDisplay(m_Adapter);
+
+            if (can_hdr)
+            {
+                SetHDR(HDRMode::RGB_FULL_G22_NONE_P709);
+            }
 
             m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
             BruteForce::UpdateRenderTargetViews(m_Device, refSwapChain,m_BackBuffersDHeap, m_BackBuffers, GetBuffersCount());
@@ -85,7 +136,7 @@ namespace BruteForce
         }
 
         const uint8_t GetBuffersCount() { return m_NumFrames; }
-        void SetCurrentFence(uint64_t value) { m_FrameFenceValues[m_CurrentBackBufferIndex] = value; };
+        void SetCurrentFenceValue(uint64_t value) { m_FrameFenceValues[m_CurrentBackBufferIndex] = value; };
         uint64_t GetCurrentFence() { return m_FrameFenceValues[m_CurrentBackBufferIndex]; };
         BruteForce::Resource& GetCurrentBackBufferRef() { return m_BackBuffers[m_CurrentBackBufferIndex]; };
 
