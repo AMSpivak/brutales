@@ -163,11 +163,13 @@ void TutorialRenderer::Resize()
         metadata.height = height;
         for (int i = 0; i < RenderNumFrames; i++)
         {
-            BruteForce::Textures::CreateTexture(m_RTTextures[i], metadata, m_Device, true, false);
+            BruteForce::Textures::CreateTexture(m_RTTextures[i], metadata, m_Device, true, true);
             m_RTTextures[i].CreateSrv(m_Device, srv_handle);
             srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
             m_RTTextures[i].CreateRtv(m_Device, rt_handle);
             rt_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
+
+            m_RTTextures[i].CreateUav(m_Device, *RTSrvUavDescriptors, i);
         }
 
         {

@@ -128,7 +128,7 @@ namespace BruteForce
 
             D3D12_CLEAR_VALUE* pClearValue = nullptr;
             texture.m_state = ResourceStateCommon;
-            
+            textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
             if (render_target)
             {
                 texture.m_clearColor[0] = texture.m_clearColor[1] = texture.m_clearColor[2] = texture.m_clearColor[3] = 0.0f;
@@ -137,12 +137,12 @@ namespace BruteForce
                 memcpy(clearValue.Color, texture.m_clearColor, sizeof(clearValue.Color));
                 pClearValue = &clearValue;
 
-                textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+                textureDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
                 //texture.m_state = ResourceStatesRenderTarget;
             }
             if (is_uav)
             {
-                textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+                textureDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
                 //pClearValue = nullptr;
             }
  
