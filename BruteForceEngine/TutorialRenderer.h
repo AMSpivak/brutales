@@ -46,6 +46,8 @@ private:
 
     BruteForce::Textures::Texture m_ShadowTextures[SwapchainNumFrames];
     void CreateCommonResources(BruteForce::Device& device);
+
+    BruteForce::Sync::SmartFence m_fence_sky_shadow;
 public:
     BruteForce::Textures::DepthBuffer m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;

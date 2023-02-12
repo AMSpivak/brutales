@@ -53,7 +53,7 @@ namespace BruteForce
 
             BruteForce::UpdateRenderTargetViews(m_Device, refSwapChain, m_BackBuffersDHeap, m_BackBuffers, m_NumFrames);
         }
-        void Flush() { m_SmartCommandQueue.Flush(); }
+        void Flush() { m_ComputeSmartCommandQueue.Flush();  m_SmartCommandQueue.Flush(); }
         ~Renderer() 
         {
             //ReportLiveObjects();
@@ -103,7 +103,8 @@ namespace BruteForce
             uint32_t height = m_Window->GetHeight();
             // Flush the GPU queue to make sure the swap chain's back buffers
             // are not being referenced by an in-flight command list.
-            m_SmartCommandQueue.Flush();
+            Flush();
+            //m_SmartCommandQueue.Flush();
 
             for (int i = 0; i < GetBuffersCount(); ++i)
             {

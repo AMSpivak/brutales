@@ -48,12 +48,12 @@ namespace BruteForce
     void Flush(CommandQueue commandQueue, Fence fence,
         uint64_t& fenceValue, EventHandle fenceEvent)
     {
-        uint64_t fenceValueForSignal = BruteForce::Signal(commandQueue, fence, fenceValue);
-        BruteForce::WaitForFenceValue(fence, fenceValueForSignal, fenceEvent);
+        uint64_t fenceValueForSignal = BruteForce::Sync::Signal(commandQueue, fence, fenceValue);
+        BruteForce::Sync::WaitForFenceValue(fence, fenceValueForSignal, fenceEvent);
     }
 
 
-    void Flush(CommandQueue commandQueue, BruteForce::SmartFence& fence)
+    void Flush(CommandQueue commandQueue, BruteForce::Sync::SmartFence& fence)
     {
         uint64_t fenceValueForSignal = fence.Signal(commandQueue);
         fence.WaitForFenceValue(fenceValueForSignal);
@@ -180,6 +180,17 @@ namespace BruteForce
     {
         return m_fence.Signal(m_command_queue);
     }
+
+    uint64_t SmartCommandQueue::Signal(Sync::SmartFence& fence)
+    {
+        return fence.Signal(m_command_queue);
+    }
+
+    void SmartCommandQueue::GpuWait(Sync::SmartFence& fence)
+    {
+        fence.GpuWait(m_command_queue);
+    }
+
 
     bool SmartCommandQueue::IsFenceCompleted()
     {

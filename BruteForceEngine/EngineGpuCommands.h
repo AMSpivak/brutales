@@ -11,7 +11,7 @@ namespace BruteForce
     GraphicsCommandList CreateCommandList(Device& device, CommandAllocator commandAllocator, CommandListType type);
     void Flush(CommandQueue commandQueue, Fence fence,
         uint64_t& fenceValue, EventHandle fenceEvent);
-    void Flush(CommandQueue commandQueue, SmartFence& fence);
+    void Flush(CommandQueue commandQueue, Sync::SmartFence& fence);
 
     class SmartCommandQueue;
 
@@ -44,6 +44,9 @@ namespace BruteForce
         SmartCommandList GetCommandList();
         uint64_t ExecuteCommandList(SmartCommandList& list);
         uint64_t Signal();
+        uint64_t Signal(Sync::SmartFence & fence);
+        void GpuWait(Sync::SmartFence& fence);
+
         bool IsFenceCompleted();
         bool IsFenceCompleted(uint64_t fenceValue);
         void WaitForFenceValue(uint64_t fenceValue, std::chrono::milliseconds duration = std::chrono::milliseconds::max());
@@ -60,7 +63,7 @@ namespace BruteForce
         std::queue<GraphicsCommandList> m_command_list_queue;
 
         CommandQueue m_command_queue;
-        SmartFence m_fence;
+        Sync::SmartFence m_fence;
         Device& m_device;
         CommandListType m_list_type;
 

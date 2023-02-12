@@ -146,8 +146,8 @@ namespace BruteForce
                 }
 
                 std::vector<std::wstring> tex_names = { 
-                                                        {L"Desert_Sand_albedo.dds"}, {L"norm_tst.png"}//{L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
-                                                        ,{ L"Desert_Rock_albedo.dds"},  {L"norm_tst.png"}//{ L"Desert_Rock_normal.dds"}
+                                                        {L"Desert_Sand_albedo.dds"}, {L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
+                                                        ,{ L"Desert_Rock_albedo.dds"},  { L"Desert_Rock_normal.dds"}
                 };
                 size_t textures_count = tex_names.size();
                 TexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(textures_count), BruteForce::DescriptorRangeTypeSrv, "TerrainMaterialTextures");

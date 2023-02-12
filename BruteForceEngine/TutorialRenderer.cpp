@@ -47,6 +47,7 @@ TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Adapt
     , m_CopyCommandQueue(device, BruteForce::CommandListTypeCopy)
     , m_time(0.0f)
     , m_ContentLoaded(false)
+    , m_fence_sky_shadow(device)
 {
     //BruteForce::ReportLiveObjects();
 
@@ -129,7 +130,8 @@ void TutorialRenderer::Update(float delta_time, BruteForce::SmartCommandQueue& c
 void TutorialRenderer::Resize()
 {
 
-
+    //auto signal = m_SmartCommandQueue.Signal(m_fence_sky_shadow);
+    //m_SmartCommandQueue.WaitForFenceValue(signal);
     MyRenderer::Resize();
 
     //bool can_hdr = m_Window->IsOnHDRDisplay(m_Adapter);
@@ -266,6 +268,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
             //m_ComputeSmartCommandQueue
         }
         m_ComputeSmartCommandQueue.ExecuteCommandList(smart_compute_command_list);
+        m_ComputeSmartCommandQueue.Signal(m_fence_sky_shadow);
     }
     std::vector<BruteForce::SmartCommandList> command_lists;
 
@@ -345,6 +348,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     for (auto& execute_list : command_lists)
     {
         //SetCurrentFenceValue(in_SmartCommandQueue.ExecuteCommandList(execute_list));
+        in_SmartCommandQueue.GpuWait(m_fence_sky_shadow);
         in_SmartCommandQueue.ExecuteCommandList(execute_list);
     }
 
@@ -360,6 +364,8 @@ BruteForce::Camera* TutorialRenderer::GetCameraPtr()
 
 TutorialRenderer::~TutorialRenderer()
 {
+    //auto signal = m_SmartCommandQueue.Signal(m_fence_sky_shadow);
+    //m_SmartCommandQueue.WaitForFenceValue(signal);
     Flush();
 }
 
