@@ -5,6 +5,7 @@
 #include "RenderTerrain.h"
 #include "ScreenSpaceSky.h"
 #include "ComputeTerrainShadow.h"
+#include "BruteForceMath.h"
 
 #include <DirectXMath.h>
 
@@ -64,7 +65,7 @@ TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Adapt
 
     {
         BruteForce::DescriptorHeapDesc HeapDesc = {};
-        HeapDesc.NumDescriptors = RenderNumFrames + NoScreenTextures;
+        HeapDesc.NumDescriptors = RenderNumFrames + NoScreenTextures + RenderNumFrames/*luminance*/;
         HeapDesc.Type = BruteForce::DescriptorHeapRTV;
         HeapDesc.Flags = BruteForce::DescriptorHeapFlagsNone;
         ThrowIfFailed(device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&m_RTHeap)));
@@ -232,6 +233,33 @@ void TutorialRenderer::Resize()
                 srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 m_RTNoScreenTextures[rt].CreateRtv(m_Device, rt_handle);
                 rt_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
+            }
+
+            {
+                int sidesize = width > height ? height : width;
+                static constexpr int max_lum_buffer = 1024;
+                if (sidesize >= max_lum_buffer)
+                {
+                    sidesize = max_lum_buffer;
+                }
+                else
+                {
+                    sidesize = static_cast<int>(BruteForce::Math::NearestLower2Pow(static_cast<unsigned int>(sidesize)));
+                }
+                
+                metadata.format = render_luminance_format;
+                //int rt = RT(enRenderTargets::TexDdxDdy);
+                //srv_handle = RTNoScreenSrvDescriptors->m_CpuHandle;
+                //srv_handle.ptr += rt * m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+                for (int i = 0; i < RenderNumFrames; i++)
+                {
+                    BruteForce::Textures::CreateTexture(m_RTLuminanceTextures[i], metadata, m_Device, true, false);
+                    m_RTLuminanceTextures[i].m_GpuBuffer->SetName(L"LuminanceLog");
+                    //m_RTNoScreenTextures[rt].CreateSrv(m_Device, srv_handle);
+                    //srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+                    m_RTLuminanceTextures[i].CreateRtv(m_Device, rt_handle);
+                    rt_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
+                }
             }
 
         }

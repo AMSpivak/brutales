@@ -18,7 +18,13 @@ namespace BruteForce
             return x * x * (3 - 2 * x);
         }
 
-    }
+        unsigned int NearestLower2Pow(unsigned int x)
+        {
+            unsigned long idx = 0;
+            _BitScanReverse(&idx, x);
+            unsigned int res = 1 << idx;
+            return res;
+        }
 
-
+    } 
 }

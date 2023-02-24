@@ -16,6 +16,7 @@ inline constexpr uint8_t NoScreenTextures = static_cast<int>(enRenderTargets::No
 inline constexpr BruteForce::TargetFormat render_format = BruteForce::TargetFormat_R16G16B16A16_Float;
 inline constexpr BruteForce::TargetFormat render_normals_format = BruteForce::TargetFormat_R16G16B16A16_Float;
 inline constexpr BruteForce::TargetFormat render_uvddxddy_format = BruteForce::TargetFormat_R16G16B16A16_Float;
+inline constexpr BruteForce::TargetFormat render_luminance_format = BruteForce::TargetFormat_R32_Float;
 inline constexpr BruteForce::TargetFormat render_materials_format = BruteForce::TargetFormat_R16G16B16A16_UInt;
 inline constexpr BruteForce::TargetFormat output_format = BruteForce::TargetFormat_R8G8B8A8_Unorm;
 #endif

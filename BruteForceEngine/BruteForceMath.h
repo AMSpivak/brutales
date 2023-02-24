@@ -11,6 +11,7 @@ namespace BruteForce
         }
 
         float Smoothstep(float edge0, float edge1, float x);
+        unsigned int NearestLower2Pow(unsigned int x);
     }
 }
 

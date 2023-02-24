@@ -40,6 +40,7 @@ private:
     std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvUavDescriptors;
 
     std::shared_ptr<BruteForce::DescriptorHeapRange> RTNoScreenSrvDescriptors;
+    std::shared_ptr<BruteForce::DescriptorHeapRange> RTNLuminanceSrvDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowSrvDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowUavDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> HeightmapTexturesRange;
@@ -53,6 +54,7 @@ public:
     BruteForce::DescriptorHeap m_DSVHeap;
     BruteForce::Textures::Texture m_RTTextures[RenderNumFrames];
     BruteForce::Textures::Texture m_RTNoScreenTextures[NoScreenTextures];
+    BruteForce::Textures::Texture m_RTLuminanceTextures[RenderNumFrames];
     BruteForce::DescriptorHeap m_RTHeap;
     //BruteForce::DescriptorHeap m_RTSrvHeap;
 
