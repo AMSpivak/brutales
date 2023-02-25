@@ -183,6 +183,7 @@
     <ClCompile Include="RenderTerrain.cpp" />
     <ClCompile Include="ResourcesDX12.cpp" />
     <ClCompile Include="RWRawBufferDX12.cpp" />
+    <ClCompile Include="ScreenSpaceLuminance.cpp" />
     <ClCompile Include="ScreenSpaceSky.cpp" />
     <ClCompile Include="ScreenSpaceToRt.cpp" />
     <ClCompile Include="Settings.cpp" />
@@ -221,6 +222,7 @@
     <ClInclude Include="PlatformDefine.h" />
     <ClInclude Include="PlatformDX12.h" />
     <ClInclude Include="RWRawBuffer.h" />
+    <ClInclude Include="ScreenSpaceLuminance.h" />
     <ClInclude Include="ScreenSpaceSky.h" />
     <ClInclude Include="ShaderCppTypesRedefine.h" />
     <ClInclude Include="SkyAstronomy.h" />
@@ -291,6 +293,13 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Luminance1Pass.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EnableUnboundedDescriptorTables Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</EnableUnboundedDescriptorTables>
     </FxCompile>
     <FxCompile Include="ScreenSpaceVertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>

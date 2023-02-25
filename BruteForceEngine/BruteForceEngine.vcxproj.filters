@@ -90,6 +90,9 @@
     <ClCompile Include="RWRawBufferDX12.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="ScreenSpaceLuminance.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VideoDriverDX12.h">
@@ -239,6 +242,9 @@
     <ClInclude Include="DefferedLightingCB.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="ScreenSpaceLuminance.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicVertexShader.hlsl">
@@ -272,6 +278,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="ComputeSunLightShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Luminance1Pass.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
