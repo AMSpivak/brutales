@@ -25,6 +25,8 @@ namespace BruteForce
 		private:
 			std::mutex m_mutex;
 			size_t m_Mips;
+			size_t m_Width;
+			size_t m_Height;
 
 			DescriptorHandle    m_rtvDescriptor;
 			float               m_clearColor[4];
@@ -44,6 +46,9 @@ namespace BruteForce
 			void CreateRtv(Device& device, DescriptorHandle& rt_handle);
 
 			DescriptorHandle& GetRT();
+
+			size_t GetWidth() { return m_Width; }
+			size_t GetHeight() { return m_Height; }
 
 		friend void LoadTextureFromFile(Texture&, const std::wstring& /*, TextureUsage textureUsage */, TextureLoadHlpr&);
 		friend void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, GpuAllocator gpu_allocator);

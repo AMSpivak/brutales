@@ -1,5 +1,6 @@
 #include "TutorialRenderer.h"
 #include "Helpers.h"
+#include "PlatformDefine.h"
 #include "IndexedGeometryGenerator.h"
 #include "RenderInstanced.h"
 #include "RenderTerrain.h"
@@ -115,6 +116,16 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
     };
 
     m_ToneMapper.LoadContent(device, m_NumFrames, desc_rt, m_CopyCommandQueue, m_SRV_Heap);
+
+    BruteForce::Render::RenderSubsystemInitDesc desc_lum = {
+                                                        render_luminance_format,
+                                                        BruteForce::TargetFormat_D32_Float,
+                                                        nullptr
+    };
+    desc_lum.gpu_allocator_ptr = m_GpuAllocator;
+    m_Luminance.LoadContent(device, m_NumFrames, desc_lum, m_CopyCommandQueue, m_SRV_Heap);
+
+
     m_ContentLoaded = true;
 
     Resize();
@@ -248,6 +259,8 @@ void TutorialRenderer::Resize()
                 }
                 
                 metadata.format = render_luminance_format;
+                metadata.width = sidesize;
+                metadata.height = sidesize;
                 //int rt = RT(enRenderTargets::TexDdxDdy);
                 //srv_handle = RTNoScreenSrvDescriptors->m_CpuHandle;
                 //srv_handle.ptr += rt * m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
@@ -276,14 +289,14 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         int height = m_Window->GetHeight();
         float jx = 0.0f;// 0.5f / width;
         float jy = 0.0f;// 0.5f / height;
-        m_Camera.SetJitter(0.0f, (m_CurrentBackBufferIndex & 1)? jy: -jy, true);
+        m_Camera.SetJitter(0.0f, (m_CurrentBackBufferIndex & 1) ? jy : -jy, true);
         m_Camera.RecalculateMatrixes();
     }
 
     {
         auto smart_compute_command_list = m_ComputeSmartCommandQueue.GetCommandList();
 
-        BruteForce::Compute::PrepareComputeHelper c_helper {
+        BruteForce::Compute::PrepareComputeHelper c_helper{
             &m_Viewport,
             &m_ScissorRect,
             m_Camera,
@@ -300,14 +313,14 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     }
     std::vector<BruteForce::SmartCommandList> command_lists;
 
-    
+
 
     BruteForce::CDescriptorHandle rtv(m_BackBuffersDHeap->GetCPUDescriptorHandleForHeapStart(), m_CurrentBackBufferIndex, m_RTVDescriptorSize);
     BruteForce::DescriptorHandle dsv = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
 
     FLOAT clearColor[] = { 1.0f, 0.6f, 0.1f, 1.0f };
     FLOAT clearEmptyColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-        
+
     auto& SetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
     SetRT_cl.BeginEvent(0, "Render to HDR RT");
     m_RTTextures[m_rt_index].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
@@ -320,7 +333,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     SetRT_cl.ClearRTV(m_RTNoScreenTextures[RT(enRenderTargets::Materials)].GetRT(), clearEmptyColor);
     SetRT_cl.ClearDSV(dsv, true, false, 1.0f, 0);
 
-    const BruteForce::DescriptorHandle GbufferRts[NoScreenTextures+1] = {
+    const BruteForce::DescriptorHandle GbufferRts[NoScreenTextures + 1] = {
         m_RTTextures[m_rt_index].GetRT()
         , m_RTNoScreenTextures[RT(enRenderTargets::TBN_Quaternion)].GetRT()
         , m_RTNoScreenTextures[RT(enRenderTargets::Materials)].GetRT()
@@ -347,13 +360,45 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         subsystem->PrepareRenderCommandList(list, render_dest);
     }
 
+    
+
     auto& ResetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
     m_RTTextures[m_rt_index].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
     m_RTNoScreenTextures[RT(enRenderTargets::TBN_Quaternion)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
     m_RTNoScreenTextures[RT(enRenderTargets::Materials)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
     m_RTNoScreenTextures[RT(enRenderTargets::TexUV)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
     m_RTNoScreenTextures[RT(enRenderTargets::TexDdxDdy)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
+    
     ResetRT_cl.EndEvent();
+
+    
+    {
+        int lum_index = 0;
+        m_RTLuminanceTextures[lum_index].TransitionTo(ResetRT_cl, BruteForce::ResourceStatesRenderTarget);
+        const BruteForce::DescriptorHandle LuminanceRts[1] = { m_RTLuminanceTextures[lum_index].GetRT() };
+        BruteForce::Viewport vp{ 0,0, m_RTLuminanceTextures[lum_index].GetWidth(), m_RTLuminanceTextures[lum_index].GetHeight() };
+        BruteForce::ScissorRect sr{ 0,0, m_RTLuminanceTextures[lum_index].GetWidth(), m_RTLuminanceTextures[lum_index].GetHeight() };
+
+        BruteForce::Render::PrepareRenderHelper render_dest_lum{
+            &vp,
+            &sr,
+            LuminanceRts,
+            1,
+            &dsv,
+            m_Camera,
+            static_cast<uint8_t>(m_CurrentBackBufferIndex),
+            m_rt_index,
+            m_Window->GetMaxNits(),
+            m_SRV_Heap
+        };
+
+        //auto& ToneMap_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
+
+        m_Luminance.PrepareRenderCommandList(ResetRT_cl, render_dest_lum);
+        m_RTLuminanceTextures[lum_index].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
+    }
+
+    
 
     BruteForce::Render::PrepareRenderHelper render_dest_rt{
         &m_Viewport,
@@ -368,9 +413,9 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         m_SRV_Heap
     };
 
-    auto& ToneMap_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
+    
     m_ToneMapper.SetHDRMode(m_HDRmode);
-    m_ToneMapper.PrepareRenderCommandList(ToneMap_cl, render_dest_rt);
+    m_ToneMapper.PrepareRenderCommandList(ResetRT_cl, render_dest_rt);
 
     //uint64_t fence_value = 0;
     for (auto& execute_list : command_lists)

@@ -40,6 +40,7 @@ namespace BruteForce
             DescriptorRange descRange;
             RTSrvDescriptors = descriptor_heap_manager.GetManagedRange("RenderTargetsSrvs");
             assert(RTSrvDescriptors);
+
             RTSrvDescriptors->Fill(descRange, 0);
 
             CD3DX12_ROOT_PARAMETER1 rootParameters;
@@ -94,7 +95,7 @@ namespace BruteForce
                 sizeof(PipelineStateStream), &pipelineStateStream
             };
             ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
-            m_PipelineState->SetName(L"Sky PSO");
+            m_PipelineState->SetName(L"Luminance PSO");
         }
 
         SmartCommandList& ScreenSpaceLuminance::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)

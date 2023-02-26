@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "RenderSubsystem.h"
 #include "ScreenSpaceToRt.h"
+#include "ScreenSpaceLuminance.h"
 #include "ComputeSubsystem.h"
 #include "DepthBuffer.h"
 #include "DescriptorHeapManager.h"
@@ -35,6 +36,7 @@ private:
     std::vector<std::shared_ptr<BruteForce::Render::RenderSubsystem>> m_RenderSystems;
     std::vector<std::shared_ptr<BruteForce::Compute::ComputeSubsystem>> m_CalcSystems;
     BruteForce::Render::ScreenSpaceToRt m_ToneMapper;
+    BruteForce::Render::ScreenSpaceLuminance m_Luminance;
     BruteForce::DescriptorHeapManager& m_SRV_Heap;
     std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvUavDescriptors;

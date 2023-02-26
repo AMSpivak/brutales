@@ -147,6 +147,8 @@ namespace BruteForce
             }
  
             CreateBufferResource(device, texture, &textureDesc, pClearValue, gpu_allocator);
+            texture.m_Width = metadata.width;
+            texture.m_Height = metadata.height;
         }
 
         void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, TextureLoadHlpr& helper)
