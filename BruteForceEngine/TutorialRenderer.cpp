@@ -36,6 +36,17 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
         m_ShadowTextures[i].CreateSrv(device, *SunShadowSrvDescriptors, i);
         m_ShadowTextures[i].CreateUav(device, *SunShadowUavDescriptors, i);
     }
+
+    metadata.format = render_luminance_format;
+    metadata.width = 32;
+    metadata.height = 32;
+    BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[0], metadata, m_Device, true, false);
+    m_UAVLuminanceTextures[0].m_GpuBuffer->SetName(L"LuminanceLog32");
+
+    metadata.width = 1;
+    metadata.height = 1;
+    BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[1], metadata, m_Device, true, false);
+    m_UAVLuminanceTextures[1].m_GpuBuffer->SetName(L"LuminanceLog1");
 }
 
 TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Adapter& adapter,

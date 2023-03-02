@@ -57,6 +57,7 @@ public:
     BruteForce::Textures::Texture m_RTTextures[RenderNumFrames];
     BruteForce::Textures::Texture m_RTNoScreenTextures[NoScreenTextures];
     BruteForce::Textures::Texture m_RTLuminanceTextures[RenderNumFrames];
+    BruteForce::Textures::Texture m_UAVLuminanceTextures[2];
     BruteForce::DescriptorHeap m_RTHeap;
     //BruteForce::DescriptorHeap m_RTSrvHeap;
 
