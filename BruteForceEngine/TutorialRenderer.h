@@ -46,6 +46,7 @@ private:
     std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowSrvDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowUavDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> HeightmapTexturesRange;
+    std::shared_ptr<BruteForce::DescriptorHeapRange> LuminanceUavDescriptors;
 
     BruteForce::Textures::Texture m_ShadowTextures[SwapchainNumFrames];
     void CreateCommonResources(BruteForce::Device& device);

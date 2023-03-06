@@ -20,6 +20,7 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
     SunShadowSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeSrv, "TerrainShadowSrvs");
     SunShadowUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeUav, "TerrainShadowUavs");
     HeightmapTexturesRange = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(2), BruteForce::DescriptorRangeTypeSrv, "TerrainHeightmapTextures");
+    LuminanceUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames * 2), BruteForce::DescriptorRangeTypeUav, "LuminanceUavs");
 
     BruteForce::Textures::TexMetadata metadata;
     const int shadowsize = BruteForce::Compute::ComputeTerrainShadow::GetTerrainShadowSize();
@@ -37,16 +38,23 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
         m_ShadowTextures[i].CreateUav(device, *SunShadowUavDescriptors, i);
     }
 
-    metadata.format = render_luminance_format;
-    metadata.width = 32;
-    metadata.height = 32;
-    BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[0], metadata, m_Device, true, false);
-    m_UAVLuminanceTextures[0].m_GpuBuffer->SetName(L"LuminanceLog32");
+    for (size_t i = 0; i < RenderNumFrames; i++)
+    {
+        metadata.format = render_luminance_format;
+        metadata.width = 32;
+        metadata.height = 32;
+        BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[0], metadata, m_Device, false, true);
+        m_UAVLuminanceTextures[0].m_GpuBuffer->SetName(L"LuminanceLog32");
+        m_UAVLuminanceTextures[0].CreateUav(device, *LuminanceUavDescriptors, i);
 
-    metadata.width = 1;
-    metadata.height = 1;
-    BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[1], metadata, m_Device, true, false);
-    m_UAVLuminanceTextures[1].m_GpuBuffer->SetName(L"LuminanceLog1");
+
+        metadata.width = 1;
+        metadata.height = 1;
+        BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[1], metadata, m_Device, false, true);
+        m_UAVLuminanceTextures[1].m_GpuBuffer->SetName(L"LuminanceLog1");
+        m_UAVLuminanceTextures[1].CreateUav(device, *LuminanceUavDescriptors, i + 1);
+    }
+
 }
 
 TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Adapter& adapter,
