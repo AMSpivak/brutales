@@ -39,10 +39,10 @@ private:
     BruteForce::Render::ScreenSpaceLuminance m_Luminance;
     BruteForce::DescriptorHeapManager& m_SRV_Heap;
     std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvDescriptors;
-    std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvUavDescriptors;
+    //std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvUavDescriptors;
 
     std::shared_ptr<BruteForce::DescriptorHeapRange> RTNoScreenSrvDescriptors;
-    std::shared_ptr<BruteForce::DescriptorHeapRange> RTNLuminanceSrvDescriptors;
+    std::shared_ptr<BruteForce::DescriptorHeapRange> RTLuminanceSrvDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowSrvDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowUavDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> HeightmapTexturesRange;

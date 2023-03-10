@@ -15,7 +15,8 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
 {
     RTSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsSrvs");
     RTNoScreenSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(NoScreenTextures), BruteForce::DescriptorRangeTypeSrv, "NoScreenRenderTargetsSrvs");
-    RTSrvUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsUavs");
+    RTLuminanceSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "LuminanceSrvs");
+    //RTSrvUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsUavs");
 
     SunShadowSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeSrv, "TerrainShadowSrvs");
     SunShadowUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeUav, "TerrainShadowUavs");
@@ -202,7 +203,7 @@ void TutorialRenderer::Resize()
             m_RTTextures[i].CreateRtv(m_Device, rt_handle);
             rt_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);
 
-            m_RTTextures[i].CreateUav(m_Device, *RTSrvUavDescriptors, i);
+            //m_RTTextures[i].CreateUav(m_Device, *RTSrvUavDescriptors, i);
         }
 
         {
@@ -287,7 +288,7 @@ void TutorialRenderer::Resize()
                 {
                     BruteForce::Textures::CreateTexture(m_RTLuminanceTextures[i], metadata, m_Device, true, false);
                     m_RTLuminanceTextures[i].m_GpuBuffer->SetName(L"LuminanceLog");
-                    //m_RTNoScreenTextures[rt].CreateSrv(m_Device, srv_handle);
+                    m_RTLuminanceTextures[i].CreateSrv(m_Device, *RTLuminanceSrvDescriptors, i);
                     //srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                     m_RTLuminanceTextures[i].CreateRtv(m_Device, rt_handle);
                     rt_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapRTV);

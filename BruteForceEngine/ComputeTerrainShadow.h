@@ -1,5 +1,5 @@
-#ifndef CALC_TERRAIN_SHADOW_H
-#define CALC_TERRAIN_SHADOW_H
+#ifndef COMPUTE_TERRAIN_SHADOW_H
+#define COMPUTE_TERRAIN_SHADOW_H
 #include "ComputeSubsystem.h"
 //#include "AAVasiliev/PlatformPoint.h"
 #include "TerrainShadowCB.h"
