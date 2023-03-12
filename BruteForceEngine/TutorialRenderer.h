@@ -9,6 +9,7 @@
 #include "RenderSubsystem.h"
 #include "ScreenSpaceToRt.h"
 #include "ScreenSpaceLuminance.h"
+#include "ComputeLuminance.h"
 #include "ComputeSubsystem.h"
 #include "DepthBuffer.h"
 #include "DescriptorHeapManager.h"
@@ -37,6 +38,7 @@ private:
     std::vector<std::shared_ptr<BruteForce::Compute::ComputeSubsystem>> m_CalcSystems;
     BruteForce::Render::ScreenSpaceToRt m_ToneMapper;
     BruteForce::Render::ScreenSpaceLuminance m_Luminance;
+    BruteForce::Compute::ComputeLuminance m_CalculateLuminance;
     BruteForce::DescriptorHeapManager& m_SRV_Heap;
     std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvDescriptors;
     //std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvUavDescriptors;
@@ -52,6 +54,9 @@ private:
     void CreateCommonResources(BruteForce::Device& device);
 
     BruteForce::Sync::SmartFence m_fence_sky_shadow;
+    BruteForce::Sync::SmartFence m_fence_avg_luminance;
+    BruteForce::Sync::SmartFence m_fence_frame_luminance;
+
 public:
     BruteForce::Textures::DepthBuffer m_DepthBuffer;
     BruteForce::DescriptorHeap m_DSVHeap;

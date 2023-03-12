@@ -39,19 +39,20 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
         m_ShadowTextures[i].CreateUav(device, *SunShadowUavDescriptors, i);
     }
 
-    for (size_t i = 0; i < RenderNumFrames; i++)
+    //for (size_t i = 0; i < RenderNumFrames; i++)
     {
+        size_t i = 0;
         metadata.format = render_luminance_format;
         metadata.width = 32;
         metadata.height = 32;
-        BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[0], metadata, m_Device, false, true);
+        BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[0], metadata, device, false, true);
         m_UAVLuminanceTextures[0].m_GpuBuffer->SetName(L"LuminanceLog32");
         m_UAVLuminanceTextures[0].CreateUav(device, *LuminanceUavDescriptors, i);
 
 
         metadata.width = 1;
         metadata.height = 1;
-        BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[1], metadata, m_Device, false, true);
+        BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[1], metadata, device, false, true);
         m_UAVLuminanceTextures[1].m_GpuBuffer->SetName(L"LuminanceLog1");
         m_UAVLuminanceTextures[1].CreateUav(device, *LuminanceUavDescriptors, i + 1);
     }
@@ -70,6 +71,8 @@ TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Adapt
     , m_time(0.0f)
     , m_ContentLoaded(false)
     , m_fence_sky_shadow(device)
+    , m_fence_avg_luminance(device)
+    , m_fence_frame_luminance(device)
 {
     //BruteForce::ReportLiveObjects();
 
@@ -145,6 +148,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
     desc_lum.gpu_allocator_ptr = m_GpuAllocator;
     m_Luminance.LoadContent(device, m_NumFrames, desc_lum, m_CopyCommandQueue, m_SRV_Heap);
 
+    m_CalculateLuminance.LoadContent(device, m_NumFrames, m_SRV_Heap);
 
     m_ContentLoaded = true;
 
@@ -328,6 +332,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
             subsystem->PrepareRenderCommandList(smart_compute_command_list, c_helper);
             //m_ComputeSmartCommandQueue
         }
+        m_CalculateLuminance.PrepareRenderCommandList(smart_compute_command_list, c_helper);
         m_ComputeSmartCommandQueue.ExecuteCommandList(smart_compute_command_list);
         m_ComputeSmartCommandQueue.Signal(m_fence_sky_shadow);
     }
@@ -393,6 +398,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
 
     
     {
+        //in_SmartCommandQueue.GpuWait(m_fence_avg_luminance);
         int lum_index = 0;
         m_RTLuminanceTextures[lum_index].TransitionTo(ResetRT_cl, BruteForce::ResourceStatesRenderTarget);
         const BruteForce::DescriptorHandle LuminanceRts[1] = { m_RTLuminanceTextures[lum_index].GetRT() };
@@ -415,7 +421,17 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         //auto& ToneMap_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
 
         m_Luminance.PrepareRenderCommandList(ResetRT_cl, render_dest_lum);
-        m_RTLuminanceTextures[lum_index].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
+        m_RTLuminanceTextures[lum_index].TransitionTo(ResetRT_cl, BruteForce::ResourceStateCommon);
+           // m_RTLuminanceTextures[lum_index].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader); ResourceStateCommon
+
+        //in_SmartCommandQueue.Signal(m_fence_frame_luminance);
+    }
+
+    {
+        //m_ComputeSmartCommandQueue.GpuWait(m_fence_frame_luminance);
+
+
+        //m_ComputeSmartCommandQueue.Signal(m_fence_avg_luminance);
     }
 
     
@@ -438,10 +454,11 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     m_ToneMapper.PrepareRenderCommandList(ResetRT_cl, render_dest_rt);
 
     //uint64_t fence_value = 0;
+    in_SmartCommandQueue.GpuWait(m_fence_sky_shadow);
     for (auto& execute_list : command_lists)
     {
         //SetCurrentFenceValue(in_SmartCommandQueue.ExecuteCommandList(execute_list));
-        in_SmartCommandQueue.GpuWait(m_fence_sky_shadow);
+        
         in_SmartCommandQueue.ExecuteCommandList(execute_list);
     }
 

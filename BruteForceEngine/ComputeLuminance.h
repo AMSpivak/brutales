@@ -2,7 +2,7 @@
 #define COMPUTE_LUMINANCE_H
 #include "ComputeSubsystem.h"
 //#include "AAVasiliev/PlatformPoint.h"
-#include "TerrainShadowCB.h"
+#include "ComputeLuminanceCB.h"
 #include "ConstantBuffer.h"
 #include "Texture.h"
 #include <memory>
@@ -19,7 +19,7 @@ namespace BruteForce
 			std::shared_ptr<DescriptorHeapRange> LuminanceUavDescriptors;
 			std::shared_ptr<DescriptorHeapRange> CbvRange;
 			std::shared_ptr<DescriptorHeapRange> RTLuminanceSrvDescriptors;
-			ConstantBuffer<TerrainShadowCB>* m_LuminanceBuffers;
+			ConstantBuffer<ComputeLuminanceCB>* m_LuminanceBuffers;
 		public:
 			static const int GetLuminanceBufferSize() { return 1024; }
 			ComputeLuminance();

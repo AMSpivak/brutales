@@ -92,6 +92,7 @@ namespace BruteForce
 
             m_HDRmode = mode;
 
+            //auto ret = m_Window->SetHDRMode(mode);
             ThrowIfFailed(refSwapChain->ResizeBuffers(GetBuffersCount(), width, height,
                 new_format, swapChainDesc.Flags));
             return m_Window->SetHDRMode(mode);

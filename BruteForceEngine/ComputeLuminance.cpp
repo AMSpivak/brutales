@@ -32,14 +32,14 @@ namespace BruteForce
 			{
 				delete[] m_LuminanceBuffers;
 			}
-
-			m_LuminanceBuffers = new ConstantBuffer<TerrainShadowCB>[frames_count];
+			static constexpr size_t cb_count = 1/*frames_count*/;
+			m_LuminanceBuffers = new ConstantBuffer<ComputeLuminanceCB>[cb_count];
 
 			{
-				CbvRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(frames_count), BruteForce::DescriptorRangeTypeCvb, "LuminanceCBVs");
+				CbvRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(cb_count), BruteForce::DescriptorRangeTypeCvb, "LuminanceCBVs");
 				auto& cvb_handle = CbvRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(frames_count), CbvRange);
 
-				for (int i = 0; i < frames_count; i++)
+				for (int i = 0; i < cb_count; i++)
 				{
 					CreateUploadGPUBuffer(device, m_LuminanceBuffers[i], cvb_handle);
 
@@ -69,22 +69,21 @@ namespace BruteForce
 			//DescriptorRange outMip;// (D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
 			
 			
-			SunShadowUavDescriptors->Fill(descRange[1], 0);
+			RTLuminanceSrvDescriptors->Fill(descRange[0], 0, 1, 0);
 			//descRange[1].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
-			HeightmapTexturesRange->Fill(descRange[0], 0);
+			LuminanceUavDescriptors->Fill(descRange[1], 0, 2, 0);
 
-			CbvRange->Fill(descRange[2], 1);
-
-
+			CbvRange->Fill(descRange[2], 0);
 
 
-			CD3DX12_ROOT_PARAMETER1 rootParameters[2];
-			rootParameters[0].InitAsConstants(1, 0);
-			rootParameters[1].InitAsDescriptorTable(3, descRange);
+
+
+			CD3DX12_ROOT_PARAMETER1 rootParameters[1];
+			rootParameters[0].InitAsDescriptorTable(3, descRange);
 
 			CD3DX12_STATIC_SAMPLER_DESC linearClampSampler(
 				0,
-				D3D12_FILTER_ANISOTROPIC,//D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+				D3D12_FILTER_MIN_MAG_MIP_LINEAR,
 				D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
 				D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
 				D3D12_TEXTURE_ADDRESS_MODE_CLAMP
@@ -129,7 +128,7 @@ namespace BruteForce
 
 		SmartCommandList& ComputeLuminance::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareComputeHelper& compute_helper)
 		{
-			smart_command_list.BeginEvent(0, "ComputeTerrainShadow");
+			smart_command_list.BeginEvent(0, "ComputeLuminance");
 
 			//auto terrain_scaler = GlobalLevelInfo::ReadGlobalTerrainInfo().m_TerrainScaler;
 
@@ -156,18 +155,19 @@ namespace BruteForce
 			//m_TerrainShadowBuffers[buff_index].m_CpuBuffer->LightSpace2 = { 0.0f, terrain_scaler.y, first_shadow_tg, second_shadow_tg };
 			//m_TerrainShadowBuffers[buff_index].Update();
 
-			//auto& command_list = smart_command_list.command_list;
-			//smart_command_list.SetPipelineState(m_PipelineState);
-			//smart_command_list.SetComputeRootSignature(m_RootSignature);
-			//ID3D12DescriptorHeap* const ppHeaps[] = { compute_helper.HeapManager.GetDescriptorHeapPointer() };
-			//command_list->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+			auto& command_list = smart_command_list.command_list;
+			smart_command_list.SetPipelineState(m_PipelineState);
+			smart_command_list.SetComputeRootSignature(m_RootSignature);
+			ID3D12DescriptorHeap* const ppHeaps[] = { compute_helper.HeapManager.GetDescriptorHeapPointer() };
+			command_list->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
-			//command_list->SetComputeRootDescriptorTable(1, compute_helper.HeapManager.GetGpuDescriptorHandle());
+			command_list->SetComputeRootDescriptorTable(0, compute_helper.HeapManager.GetGpuDescriptorHandle());
 			//command_list->SetComputeRoot32BitConstants(0, 1, &buff_index, 0);
 
-			//int dispatch_size = 64;
+			int dispatch_size = 32;
 
 			//command_list->Dispatch(static_cast<UINT>((shadow_size + dispatch_size - 1) / dispatch_size), 1, 1);
+			command_list->Dispatch(32,32, 1);
 			//command_list
 			// TODO: insert return statement here
 			smart_command_list.EndEvent();
