@@ -1,13 +1,5 @@
-#include "ComputeLuminanceCB.h"
-
-
-
-ConstantBuffer<ComputeLuminanceCB> LuminanceCB : register(b0);
-
-Texture2D<float4> SrcLuminance : register(t0);
 
 RWTexture2D<float> OutLuminance[2] : register(u0);
-SamplerState LinearClampSampler : register(s0);
 
 struct ComputeShaderInput
 {
@@ -17,20 +9,15 @@ struct ComputeShaderInput
     uint  GroupIndex        : SV_GroupIndex;        // Flattened local index of the thread within a thread group.
 };
 
-#define BLOCK_SIZE 16
-#define STEPS 8
-groupshared float gs_Luminance[BLOCK_SIZE* BLOCK_SIZE];
+#define BLOCK_SIZE 32
+#define STEPS 10
+groupshared float gs_Luminance[BLOCK_SIZE * BLOCK_SIZE];
 
 [numthreads(BLOCK_SIZE, BLOCK_SIZE, 1)]
 void main(ComputeShaderInput IN)
 {
-    uint w = 0;
-    uint h = 0;
-    SrcLuminance.GetDimensions(w, h);
-    float TexelSize = 2.0 / w;
-    float2 UV = TexelSize * (IN.DispatchThreadID.xy + 0.5);
 
-    float src = SrcLuminance.SampleLevel(LinearClampSampler, UV, 0).r;
+    float src = OutLuminance[0][int2(IN.GroupThreadID.xy)];
     gs_Luminance[IN.GroupIndex] = src;
     uint index = IN.GroupIndex;
     uint offset = 1;
@@ -48,9 +35,9 @@ void main(ComputeShaderInput IN)
     }
     GroupMemoryBarrierWithGroupSync();
 
-    if(IN.GroupIndex == 0)
+    if (IN.GroupIndex == 0)
     {
-        OutLuminance[0][int2(IN.GroupID.xy)] = gs_Luminance[IN.GroupIndex];// src;
+        OutLuminance[1][int2(0,0)] =  src;
     }
     //GroupMemoryBarrierWithGroupSync();
 }

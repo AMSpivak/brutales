@@ -295,6 +295,9 @@
     <FxCompile Include="ComputeLuminance.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="ComputeLuminance2Pass.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

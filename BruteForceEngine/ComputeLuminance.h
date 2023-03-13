@@ -20,6 +20,9 @@ namespace BruteForce
 			std::shared_ptr<DescriptorHeapRange> CbvRange;
 			std::shared_ptr<DescriptorHeapRange> RTLuminanceSrvDescriptors;
 			ConstantBuffer<ComputeLuminanceCB>* m_LuminanceBuffers;
+
+			RootSignature m_RootSignature2Pass;
+			PipelineState m_PipelineState2Pass;
 		public:
 			static const int GetLuminanceBufferSize() { return 1024; }
 			ComputeLuminance();

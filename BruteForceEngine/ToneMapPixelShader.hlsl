@@ -15,7 +15,7 @@ ConstantBuffer<TonemapCB> Tonemap_CB[2] : register(b2);
 
 float3 change_luminance(float3 c_in, float l_out)
 {
-    float l_in = luminance(c_in);
+    float l_in = (luminance(c_in));
     return c_in * (l_out / l_in);
 }
 
@@ -64,7 +64,7 @@ float4 main(PixelShaderInput IN) : SV_Target
     float p = 1.0f;
     float3 color = lerp(c_night, c_day, p) * textures[FrameInfoCB.frame_index].Sample(sampl, IN.Tex).xyz;
 
-    float exposure_bias = 0.05f;
+    float exposure_bias = 3.05f;
     float3 result = uncharted2_filmic(color, exposure_bias);
 
 

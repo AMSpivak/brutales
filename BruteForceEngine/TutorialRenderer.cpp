@@ -281,7 +281,7 @@ void TutorialRenderer::Resize()
                 {
                     sidesize = static_cast<int>(BruteForce::Math::NearestLower2Pow(static_cast<unsigned int>(sidesize)));
                 }
-                
+                sidesize = max_lum_buffer;
                 metadata.format = render_luminance_format;
                 metadata.width = sidesize;
                 metadata.height = sidesize;
