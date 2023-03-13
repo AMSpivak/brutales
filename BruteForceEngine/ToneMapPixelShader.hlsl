@@ -54,7 +54,8 @@ struct PixelShaderInput
     float2 Tex : TexCoord0;
 };
 
-Texture2D textures[] : register(t0);
+Texture2D<float> lumtex : register(t0);
+Texture2D textures[] : register(t1);
 sampler sampl : register(s0);
 
 float4 main(PixelShaderInput IN) : SV_Target
@@ -64,7 +65,11 @@ float4 main(PixelShaderInput IN) : SV_Target
     float p = 1.0f;
     float3 color = lerp(c_night, c_day, p) * textures[FrameInfoCB.frame_index].Sample(sampl, IN.Tex).xyz;
 
-    float exposure_bias = 3.05f;
+    float luminance = lumtex.Sample(sampl, float2(0.f, 0.f));// Load(int2(0, 0)).r;
+    float key = 1.03 - 2 / (2 + luminance);
+    luminance = exp( luminance) - 1.0;           
+    
+    float exposure_bias = key / luminance;
     float3 result = uncharted2_filmic(color, exposure_bias);
 
 

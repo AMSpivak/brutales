@@ -75,14 +75,18 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-            CD3DX12_DESCRIPTOR_RANGE1 descRange[2];
+            CD3DX12_DESCRIPTOR_RANGE1 descRange[3];
 
             RTSrvDescriptors = descriptor_heap_manager.GetManagedRange("RenderTargetsSrvs");
             assert(RTSrvDescriptors);
 
-            RTSrvDescriptors->Fill(descRange[0], 0);
+            RTSrvDescriptors->Fill(descRange[1], 1);
 
-            CbvRange->Fill(descRange[1], 2);
+            CbvRange->Fill(descRange[2], 2);
+
+            std::shared_ptr<DescriptorHeapRange> LuminanceSrvDescriptors = descriptor_heap_manager.GetManagedRange("LuminanceSrvs");
+            LuminanceSrvDescriptors->Fill(descRange[0], 1,1, 0);
+
             //descRange.NumDescriptors = 1;
 
             CD3DX12_ROOT_PARAMETER1 rootParameters[2];

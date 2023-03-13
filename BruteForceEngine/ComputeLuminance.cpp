@@ -25,7 +25,7 @@ namespace BruteForce
 			LuminanceUavDescriptors = descriptor_heap_manager.GetManagedRange("LuminanceUavs");
 			assert(LuminanceUavDescriptors);
 
-			RTLuminanceSrvDescriptors = descriptor_heap_manager.GetManagedRange("LuminanceSrvs");
+			RTLuminanceSrvDescriptors = descriptor_heap_manager.GetManagedRange("RTLuminanceSrvs");
 			assert(RTLuminanceSrvDescriptors);
 
 			if (m_LuminanceBuffers)

@@ -15,13 +15,14 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
 {
     RTSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsSrvs");
     RTNoScreenSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(NoScreenTextures), BruteForce::DescriptorRangeTypeSrv, "NoScreenRenderTargetsSrvs");
-    RTLuminanceSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "LuminanceSrvs");
+    RTLuminanceSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "RTLuminanceSrvs");
     //RTSrvUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsUavs");
 
     SunShadowSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeSrv, "TerrainShadowSrvs");
     SunShadowUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeUav, "TerrainShadowUavs");
     HeightmapTexturesRange = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(2), BruteForce::DescriptorRangeTypeSrv, "TerrainHeightmapTextures");
     LuminanceUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames * 2), BruteForce::DescriptorRangeTypeUav, "LuminanceUavs");
+    LuminanceSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames * 2), BruteForce::DescriptorRangeTypeSrv, "LuminanceSrvs");
 
     BruteForce::Textures::TexMetadata metadata;
     const int shadowsize = BruteForce::Compute::ComputeTerrainShadow::GetTerrainShadowSize();
@@ -48,6 +49,7 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
         BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[0], metadata, device, false, true);
         m_UAVLuminanceTextures[0].m_GpuBuffer->SetName(L"LuminanceLog32");
         m_UAVLuminanceTextures[0].CreateUav(device, *LuminanceUavDescriptors, i);
+        m_UAVLuminanceTextures[0].CreateSrv(device, *LuminanceSrvDescriptors, i);
 
 
         metadata.width = 1;
@@ -55,6 +57,8 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
         BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[1], metadata, device, false, true);
         m_UAVLuminanceTextures[1].m_GpuBuffer->SetName(L"LuminanceLog1");
         m_UAVLuminanceTextures[1].CreateUav(device, *LuminanceUavDescriptors, i + 1);
+        m_UAVLuminanceTextures[1].CreateSrv(device, *LuminanceSrvDescriptors, i + 1);
+
     }
 
 }
@@ -332,7 +336,10 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
             subsystem->PrepareRenderCommandList(smart_compute_command_list, c_helper);
             //m_ComputeSmartCommandQueue
         }
+        //m_UAVLuminanceTextures[1].TransitionTo(smart_compute_command_list, BruteForce::ResourceStatesRenderTarget);
         m_CalculateLuminance.PrepareRenderCommandList(smart_compute_command_list, c_helper);
+        //m_UAVLuminanceTextures[1].TransitionTo(smart_compute_command_list, BruteForce::ResourceStatesRenderTarget);
+
         m_ComputeSmartCommandQueue.ExecuteCommandList(smart_compute_command_list);
         m_ComputeSmartCommandQueue.Signal(m_fence_sky_shadow);
     }
