@@ -349,6 +349,8 @@ void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Win
      p_Renderer->Render(in_SmartCommandQueue);
 
     {
+		// p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
+
         auto smart_command_list = in_SmartCommandQueue.GetCommandList();
         p_Renderer->PrepareSwapFrame(smart_command_list);
         p_Renderer->SetCurrentFenceValue(in_SmartCommandQueue.ExecuteCommandList(smart_command_list));
@@ -392,7 +394,8 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     MSG msg = {};
     while (msg.message != WM_QUIT)
     {
-        if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		//while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             ::TranslateMessage(&msg);
             ::DispatchMessage(&msg);

@@ -14,6 +14,7 @@
 void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
 {
     RTSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsSrvs");
+    RTUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeUav, "RenderTargetsUavs");
     RTNoScreenSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(NoScreenTextures), BruteForce::DescriptorRangeTypeSrv, "NoScreenRenderTargetsSrvs");
     RTLuminanceSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "RTLuminanceSrvs");
     //RTSrvUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsUavs");
@@ -206,6 +207,8 @@ void TutorialRenderer::Resize()
         for (int i = 0; i < RenderNumFrames; i++)
         {
             BruteForce::Textures::CreateTexture(m_RTTextures[i], metadata, m_Device, true, true);
+            //RTUavDescriptors
+            m_RTTextures[i].CreateUav(m_Device, *RTUavDescriptors, i);
             m_RTTextures[i].CreateSrv(m_Device, srv_handle);
             srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
             m_RTTextures[i].CreateRtv(m_Device, rt_handle);
