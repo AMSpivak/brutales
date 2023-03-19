@@ -69,7 +69,7 @@ float4 main(PixelShaderInput IN) : SV_Target
     float key = 1.03 - 2 / (2 + luminance);
     luminance = exp( luminance) - 1.0;           
     
-    float exposure_bias = key / luminance;
+    float exposure_bias = clamp(key / luminance, 0.25, 2);
     float3 result = uncharted2_filmic(color, exposure_bias);
 
 

@@ -260,6 +260,9 @@
     <ClInclude Include="ComputeDeffered.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="CommonComputeInput.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicVertexShader.hlsl">
@@ -302,9 +305,6 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="ComputeLuminance2Pass.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="ComputeDeffered.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

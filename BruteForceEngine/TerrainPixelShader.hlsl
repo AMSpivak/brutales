@@ -84,7 +84,7 @@ PS_OUTPUT main(PixelShaderInput IN)// : SV_Target
     //shadows.x = clamp(shadows.x, 0, 1.0f);
     shadows.x = smoothstep(shadows.y, shadows.x, shadows.z);// IN.WorldPosition.y);
     //shadows.x = 1.0 - shadows.x * shadows.x;
-    light *= 0.3 + 0.7 * light_diffuse * shadows.x;// *shadows.x;
+    light *= 0.2 + light_diffuse * shadows.x;// *shadows.x;
     
     //float3 Color = tex[materials.r * material_offset].Sample(sampl, IN.WorldPosition.xz).xyz;
     float2 derivX = ddx(IN.WorldPosition.xz);
