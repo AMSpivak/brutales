@@ -223,6 +223,7 @@ namespace BruteForce
         ComPtr<IDXGIOutput> currentOutput;
         ComPtr<IDXGIOutput> bestOutput;
         float bestIntersectArea = -1;
+        bestOutput = currentOutput;
 
         while (adapter->EnumOutputs(i, &currentOutput) != DXGI_ERROR_NOT_FOUND)
         {
@@ -254,6 +255,11 @@ namespace BruteForce
 
         // Having determined the output (display) upon which the app is primarily being 
         // rendered, retrieve the HDR capabilities of that display by checking the color space.
+        if (!bestOutput)
+        {
+            return false;
+        }
+
         ComPtr<IDXGIOutput6> output6;
         ThrowIfFailed(bestOutput.As(&output6));
 

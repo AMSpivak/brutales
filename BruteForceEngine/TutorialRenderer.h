@@ -58,6 +58,8 @@ private:
     BruteForce::Sync::SmartFence m_fence_sky_shadow;
     BruteForce::Sync::SmartFence m_fence_avg_luminance;
     BruteForce::Sync::SmartFence m_fence_frame_luminance;
+    BruteForce::Sync::SmartFence m_fence_gbuffer;
+    BruteForce::Sync::SmartFence m_fence_deffered;
 
 public:
     BruteForce::Textures::DepthBuffer m_DepthBuffer;

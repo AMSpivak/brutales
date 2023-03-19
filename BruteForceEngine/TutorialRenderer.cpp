@@ -78,6 +78,8 @@ TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Adapt
     , m_fence_sky_shadow(device)
     , m_fence_avg_luminance(device)
     , m_fence_frame_luminance(device)
+    , m_fence_gbuffer(device)
+    , m_fence_deffered(device)
 {
     //BruteForce::ReportLiveObjects();
 

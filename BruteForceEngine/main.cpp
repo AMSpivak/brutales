@@ -258,7 +258,7 @@ void Update()
             BruteForce::Math::Store(&shadow_dir, BruteForce::Math::Vector3Norm({ main_sky_light.x, 0.0f, main_sky_light.z, 0.0f }));
 
             //float sun_azimuth = sun_info.Azimuth;
-            float sun_intencivity = 100.0f;
+            float sun_intencivity = 100000.0f;
             /*if (sun.y < 0.0f)
             {
                 sun_intencivity = 10.0f;
@@ -290,7 +290,7 @@ void Update()
             float shadow_tg_2 = 1.f/(tan(a2) + offset);
 
             
-            float moon_intencivity = sun_intencivity;// *0.5f;
+            float moon_intencivity = 0.25f;// *0.5f;
 
             atmosphere.m_SunInfo = {
                 sun.x,// tang_dir* cos(azimuth_rad),
@@ -303,8 +303,8 @@ void Update()
                 moon.z,//tang_dir * sin(-azimuth_rad),
                 moon_intencivity * moon_mul };
             atmosphere.m_MoonColor = {
-                0.85f,// tang_dir* cos(azimuth_rad),
-                0.9f,
+                1.0f,//0.85f,// tang_dir* cos(azimuth_rad),
+                1.0f,//0.9f,
                 1.0f,//tang_dir * sin(-azimuth_rad),
                 moon_intencivity };
             atmosphere.m_SunShadow.x = shadow_tg_1;
@@ -313,6 +313,11 @@ void Update()
             atmosphere.m_SunShadow.w = -shadow_dir.z;
             atmosphere.m_SunShadowScaler = abs(atmosphere.m_SunShadow.z) + abs(atmosphere.m_SunShadow.w);
             BruteForce::Math::Store(&(atmosphere.m_SunColor), day_light);
+            atmosphere.m_SunColor = {
+                1.0f,//0.85f,// tang_dir* cos(azimuth_rad),
+                1.0f,//0.9f,
+                1.0f,//tang_dir * sin(-azimuth_rad),
+                sun_intencivity };
             atmosphere.m_Moonlight = moonlight;
             chng = false;
         }
