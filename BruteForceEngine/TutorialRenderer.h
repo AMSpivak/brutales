@@ -9,8 +9,9 @@
 #include "RenderSubsystem.h"
 #include "ScreenSpaceToRt.h"
 #include "ScreenSpaceLuminance.h"
-#include "ComputeLuminance.h"
 #include "ComputeSubsystem.h"
+#include "ComputeLuminance.h"
+#include "ComputeDeffered.h"
 #include "DepthBuffer.h"
 #include "DescriptorHeapManager.h"
 #include <vector>
@@ -39,6 +40,7 @@ private:
     BruteForce::Render::ScreenSpaceToRt m_ToneMapper;
     BruteForce::Render::ScreenSpaceLuminance m_Luminance;
     BruteForce::Compute::ComputeLuminance m_CalculateLuminance;
+    BruteForce::Compute::ComputeDeffered m_ComputeDeffered;
     BruteForce::DescriptorHeapManager& m_SRV_Heap;
 	std::shared_ptr<BruteForce::DescriptorHeapRange> RTSrvDescriptors;
 	std::shared_ptr<BruteForce::DescriptorHeapRange> RTUavDescriptors;

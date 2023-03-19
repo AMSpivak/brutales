@@ -91,6 +91,7 @@ namespace BruteForce
 	constexpr ResourceStates ResourceStatesPresent = D3D12_RESOURCE_STATE_PRESENT;
 	constexpr ResourceStates ResourceStateDepthWrite = D3D12_RESOURCE_STATE_DEPTH_WRITE;
 	constexpr ResourceStates ResourceStateCommon = D3D12_RESOURCE_STATE_COMMON;
+	constexpr ResourceStates ResourceStateUav = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 	constexpr ResourceStates ResourceStateRead = D3D12_RESOURCE_STATE_GENERIC_READ;
 	constexpr ResourceStates ResourceStateCopyDest = D3D12_RESOURCE_STATE_COPY_DEST;
 	constexpr ResourceStates ResourceStatePixelShader = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;

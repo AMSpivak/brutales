@@ -1,8 +1,7 @@
 #ifndef COMPUTE_DEFFERED_H
 #define COMPUTE_DEFFERED_H
 #include "ComputeSubsystem.h"
-//#include "AAVasiliev/PlatformPoint.h"
-#include "ComputeLuminanceCB.h"
+#include "DefferedLightingCB.h"
 #include "ConstantBuffer.h"
 #include "Texture.h"
 #include <memory>
@@ -16,10 +15,13 @@ namespace BruteForce
 		{
 		private:
 
-			std::shared_ptr<DescriptorHeapRange> LuminanceUavDescriptors;
+			//std::shared_ptr<DescriptorHeapRange> LuminanceUavDescriptors;
+			std::shared_ptr<DescriptorHeapRange> RTUavDescriptors;
+			std::shared_ptr<DescriptorHeapRange> SrvTexturesRange;
+
 			std::shared_ptr<DescriptorHeapRange> CbvRange;
 			std::shared_ptr<DescriptorHeapRange> RTLuminanceSrvDescriptors;
-			ConstantBuffer<ComputeLuminanceCB>* m_LuminanceBuffers;
+			ConstantBuffer<DefferedLightingCB>* m_DefferedBuffers;
 
 		public:
 			static const int GetLuminanceBufferSize() { return 1024; }

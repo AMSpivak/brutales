@@ -156,6 +156,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
     m_Luminance.LoadContent(device, m_NumFrames, desc_lum, m_CopyCommandQueue, m_SRV_Heap);
 
     m_CalculateLuminance.LoadContent(device, m_NumFrames, m_SRV_Heap);
+    m_ComputeDeffered.LoadContent(device, m_NumFrames, m_SRV_Heap);
 
     m_ContentLoaded = true;
 
@@ -326,6 +327,12 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         m_Camera.RecalculateMatrixes();
     }
 
+   /* auto ResetRT_cl = in_SmartCommandQueue.GetCommandList();
+    ResetRT_cl.command_list->SetName(L"ResetRT");
+    m_RTTextures[0].TransitionTo(ResetRT_cl, BruteForce::ResourceStateCommon);
+    m_RTTextures[1].TransitionTo(ResetRT_cl, BruteForce::ResourceStateCommon);*/
+
+    
     {
         auto smart_compute_command_list = m_ComputeSmartCommandQueue.GetCommandList();
 
@@ -347,6 +354,25 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
 
         m_ComputeSmartCommandQueue.ExecuteCommandList(smart_compute_command_list);
         m_ComputeSmartCommandQueue.Signal(m_fence_sky_shadow);
+        m_ComputeSmartCommandQueue.GpuWaitNext(m_fence_gbuffer);
+
+        auto compute_deffered_command_list = m_ComputeSmartCommandQueue.GetCommandList();
+        m_RTTextures[0].TransitionTo(compute_deffered_command_list, BruteForce::ResourceStateUav);
+        m_RTTextures[1].TransitionTo(compute_deffered_command_list, BruteForce::ResourceStateUav);
+        //c_helper.frame_index = m_rt_index;
+        BruteForce::Compute::PrepareComputeHelper deffered_helper{
+            &m_Viewport,
+            &m_ScissorRect,
+            m_Camera,
+            static_cast<uint8_t>(m_rt_index),
+            m_SRV_Heap };
+
+        m_ComputeDeffered.PrepareRenderCommandList(compute_deffered_command_list, deffered_helper);
+
+        m_RTTextures[0].TransitionTo(compute_deffered_command_list, BruteForce::ResourceStateCommon);
+        m_RTTextures[1].TransitionTo(compute_deffered_command_list, BruteForce::ResourceStateCommon);
+        m_ComputeSmartCommandQueue.ExecuteCommandList(compute_deffered_command_list);
+        m_ComputeSmartCommandQueue.Signal(m_fence_deffered);
     }
     std::vector<BruteForce::SmartCommandList> command_lists;
 
@@ -391,16 +417,33 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         m_SRV_Heap
     };
 
-    for (auto& subsystem : m_RenderSystems)
+    constexpr bool separate_threads = false;
+
+    if (separate_threads)
+    {
+        for (auto& subsystem : m_RenderSystems)
+        {
+            auto& list = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
+            subsystem->PrepareRenderCommandList(list, render_dest);
+        }
+    }
+    else
     {
         auto& list = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
-        subsystem->PrepareRenderCommandList(list, render_dest);
+        for (auto& subsystem : m_RenderSystems)
+        {
+            subsystem->PrepareRenderCommandList(list, render_dest);
+        }
+        m_RTTextures[0].TransitionTo(list, BruteForce::ResourceStateCommon);
+        m_RTTextures[1].TransitionTo(list, BruteForce::ResourceStateCommon);
     }
 
     
 
-    auto& ResetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
-    m_RTTextures[m_rt_index].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
+    auto ResetRT_cl = in_SmartCommandQueue.GetCommandList();
+    ResetRT_cl.command_list->SetName(L"ResetRT");
+    m_RTTextures[0].TransitionTo(ResetRT_cl, BruteForce::ResourceStateCommon);
+    m_RTTextures[1].TransitionTo(ResetRT_cl, BruteForce::ResourceStateCommon);
     m_RTNoScreenTextures[RT(enRenderTargets::TBN_Quaternion)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
     m_RTNoScreenTextures[RT(enRenderTargets::Materials)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
     m_RTNoScreenTextures[RT(enRenderTargets::TexUV)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
@@ -431,12 +474,9 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         };
 
         //auto& ToneMap_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
-
+        //ResetRT_cl
         m_Luminance.PrepareRenderCommandList(ResetRT_cl, render_dest_lum);
         m_RTLuminanceTextures[lum_index].TransitionTo(ResetRT_cl, BruteForce::ResourceStateCommon);
-           // m_RTLuminanceTextures[lum_index].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader); ResourceStateCommon
-
-        //in_SmartCommandQueue.Signal(m_fence_frame_luminance);
     }
 
     {
@@ -473,6 +513,10 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         
         in_SmartCommandQueue.ExecuteCommandList(execute_list);
     }
+    in_SmartCommandQueue.Signal(m_fence_gbuffer);
+    in_SmartCommandQueue.GpuWait(m_fence_deffered);
+    in_SmartCommandQueue.ExecuteCommandList(ResetRT_cl);
+
 
 
 

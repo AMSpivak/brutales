@@ -46,6 +46,7 @@ namespace BruteForce
         uint64_t Signal();
         uint64_t Signal(Sync::SmartFence & fence);
         void GpuWait(Sync::SmartFence& fence);
+        void GpuWaitNext(Sync::SmartFence& fence);
 
         bool IsFenceCompleted();
         bool IsFenceCompleted(uint64_t fenceValue);

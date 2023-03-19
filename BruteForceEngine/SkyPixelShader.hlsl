@@ -81,7 +81,7 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 	float night_intens = 1.0 - smoothstep(0.0,0.5,-star_intens + (1.0 - to_sun) * 0.08);
 	float3 sky_color = lerp(night,day,night_intens);
 	sky_color += sun_l * SkyPixelsCB[FrameInfoCB.frame_index].MoonColor; //sky += sun_l * SkyPixelsCB[FrameInfoCB.frame_index].MoonColor;
-	sky_color = night;
+	//sky_color = night;
 	return float4(LightColor.w * lerp(EarthColor * a_earth, sky_color, l_earth), 1.0);
 	//return float4(LightColor.w * night, 1.0);
 	//return float4(0,0,100, 1.0);

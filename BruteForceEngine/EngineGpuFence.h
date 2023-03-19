@@ -33,6 +33,7 @@ namespace BruteForce
 			~SmartFence();
 			uint64_t Signal(CommandQueue commandQueue);
 			void GpuWait(CommandQueue commandQueue);
+			void GpuWaitNext(CommandQueue commandQueue);
 			bool IsCompleted();
 			bool IsCompleted(uint64_t fenceValue);
 			void WaitForFenceValue(uint64_t fenceValue, std::chrono::milliseconds duration = std::chrono::milliseconds::max());

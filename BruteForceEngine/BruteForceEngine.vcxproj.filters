@@ -295,7 +295,7 @@
     <FxCompile Include="SkyPixelShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="ComputeSunLightShader.hlsl">
+    <FxCompile Include="ComputeDeffered.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Luminance1Pass.hlsl">

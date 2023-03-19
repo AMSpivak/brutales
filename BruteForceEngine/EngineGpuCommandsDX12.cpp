@@ -191,6 +191,10 @@ namespace BruteForce
         fence.GpuWait(m_command_queue);
     }
 
+    void SmartCommandQueue::GpuWaitNext(Sync::SmartFence& fence)
+    {
+        fence.GpuWaitNext(m_command_queue);
+    }
 
     bool SmartCommandQueue::IsFenceCompleted()
     {
