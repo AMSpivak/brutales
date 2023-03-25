@@ -66,8 +66,8 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 	float3 atmosphere = min(base, lerp(base, sun, a));
 	float3 sky = (SkyPixelsCB[FrameInfoCB.frame_index].SkyColor.xyz * (1.0 - sun_l) + sun_l * sun);
 	float t = (6.0f - 5.0f * l);
-	sun_l = smoothstep(1.0 - 0.0005 *t,1.0 - 0.0003 * t,to_sun);
-	sky = sky * (1.0 - sun_l) + sun_l * sun;
+	sun_l = smoothstep(1.0 - 0.0005 * t, 1.0 - 0.0003 * t, to_sun);
+	sky += sun_l * sun;
 
 	t = 1.0;// (6.0f - 5.0f * l);
 	sun_l = smoothstep(1.0 - 0.0005 * t, 1.0 - 0.0003 * t, to_moon);
@@ -76,13 +76,16 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 	float atm = (1.0 - l)*0.5;
 	float3 day = float3(atmosphere * (atm)+sky * (1.0 - atm));
 	float star_intens = min(0, sun_dir.y);
-	float star = smoothstep(0.99994 + 0.008 * star_intens,1.0,Noise3d(Normal));
-	float3 night = star * star * float3(1.0,1.0,1.0);
-	float night_intens = 1.0 - smoothstep(0.0,0.5,-star_intens + (1.0 - to_sun) * 0.08);
-	float3 sky_color = lerp(night,day,night_intens);
-	sky_color += sun_l * SkyPixelsCB[FrameInfoCB.frame_index].MoonColor; //sky += sun_l * SkyPixelsCB[FrameInfoCB.frame_index].MoonColor;
-	//sky_color = night;
-	return float4(LightColor.w * lerp(EarthColor * a_earth, sky_color, l_earth), 1.0);
-	//return float4(LightColor.w * night, 1.0);
+	float star = smoothstep(0.99994,1.0,Noise3d(Normal));
+	float3 night = star * star * float3(1.0,1.0,1.0) *0.01;
+	//float night_intens = 1.0 - smoothstep(0.0,0.5,-star_intens + (1.0 - to_sun) * 0.08);
+	//float3 sky_color = lerp(night,day,night_intens);
+
+	float day_intencivity = smoothstep(-0.1, 0.0, sun_dir.y);
+	float3 sky_color = night + day_intencivity * (day * LightColor.w);
+
+	sky_color += sun_l * float3(0.5,0.5,1.0);// SkyPixelsCB[FrameInfoCB.frame_index].MoonColor; //sky += sun_l * SkyPixelsCB[FrameInfoCB.frame_index].MoonColor;
+	//return float4(LightColor.w * lerp(EarthColor * a_earth, sky_color, l_earth), 1.0);
+	return float4(sky_color, 1.0);
 	//return float4(0,0,100, 1.0);
 }

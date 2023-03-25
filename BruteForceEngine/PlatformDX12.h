@@ -95,6 +95,7 @@ namespace BruteForce
 	constexpr ResourceStates ResourceStateRead = D3D12_RESOURCE_STATE_GENERIC_READ;
 	constexpr ResourceStates ResourceStateCopyDest = D3D12_RESOURCE_STATE_COPY_DEST;
 	constexpr ResourceStates ResourceStatePixelShader = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	constexpr ResourceStates ResourceStateNonPixel = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 	using ResourceFlags = D3D12_RESOURCE_FLAGS;
 
 	constexpr ResourceFlags ResourceFlagsNone = D3D12_RESOURCE_FLAG_NONE;
@@ -107,6 +108,7 @@ namespace BruteForce
 	using TargetFormat = DXGI_FORMAT;
 	constexpr TargetFormat TargetFormat_Unknown = DXGI_FORMAT_UNKNOWN;
 	constexpr TargetFormat TargetFormat_D32_Float = DXGI_FORMAT_D32_FLOAT;
+	constexpr TargetFormat TargetFormat_R32_Typeless = DXGI_FORMAT_R32_TYPELESS;
 	constexpr TargetFormat TargetFormat_R8G8B8A8_Unorm = DXGI_FORMAT_R8G8B8A8_UNORM;
 	constexpr TargetFormat TargetFormat_R8G8B8A8_Unorm_Srgb = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	constexpr TargetFormat TargetFormat_R8G8B8A8_UInt = DXGI_FORMAT_R8G8B8A8_UINT;

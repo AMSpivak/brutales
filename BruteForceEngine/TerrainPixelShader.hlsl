@@ -97,9 +97,10 @@ PS_OUTPUT main(PixelShaderInput IN)// : SV_Target
     output.Color = float4(light * Color * PlanesCB[FrameInfoCB.frame_index].m_SunColor.xyz, 1.0f);//Set first output
 
     output.Normal = quat_xm;//Set second output
-    output.Material = materials;
+    output.Material = materials + 1;
     output.TexDdxDdy = float4(derivX, derivY);
-    output.TexUV = float4(IN.WorldPosition.xz, 0.0, 0.0);
+    //output.TexUV = float4(frac(IN.WorldPosition.xz), 0.0, 0.0);
+    output.TexUV = float4((IN.WorldPosition.xz), 0.0, 0.0);
     return output;
     //return 
     //return float4(100.0f * (IN.Normal), 1.0f);

@@ -7,6 +7,7 @@
 //using float4 = BruteForce::Math::Vec4Float;
 #define float4 BruteForce::Math::Vec4Float
 #define int2 BruteForce::Math::Vec2Int
+#define matrix BruteForce::Math::Matrix
 #endif
 
 #endif

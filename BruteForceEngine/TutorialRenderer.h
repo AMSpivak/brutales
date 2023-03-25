@@ -53,6 +53,7 @@ private:
     std::shared_ptr<BruteForce::DescriptorHeapRange> HeightmapTexturesRange;
     std::shared_ptr<BruteForce::DescriptorHeapRange> LuminanceUavDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> LuminanceSrvDescriptors;
+    std::shared_ptr<BruteForce::DescriptorHeapRange> DepthSrvDescriptors;
 
     BruteForce::Textures::Texture m_ShadowTextures[SwapchainNumFrames];
     void CreateCommonResources(BruteForce::Device& device);
@@ -70,6 +71,7 @@ public:
     BruteForce::Textures::Texture m_RTNoScreenTextures[NoScreenTextures];
     BruteForce::Textures::Texture m_RTLuminanceTextures[RenderNumFrames];
     BruteForce::Textures::Texture m_UAVLuminanceTextures[2];
+    BruteForce::Textures::Texture m_DepthTexture;
     BruteForce::DescriptorHeap m_RTHeap;
     //BruteForce::DescriptorHeap m_RTSrvHeap;
 

@@ -196,7 +196,7 @@ void Update()
 
             if(do_day_cycle)
             {
-                day_hour += msecs * 0.00001f;
+                day_hour += msecs * 0.000001f;
                 chng = true;
             }
         }
@@ -301,7 +301,7 @@ void Update()
                 moon.x,// tang_dir* cos(azimuth_rad),
                 moon.y,
                 moon.z,//tang_dir * sin(-azimuth_rad),
-                moon_intencivity * moon_mul };
+                moon_intencivity };
             atmosphere.m_MoonColor = {
                 1.0f,//0.85f,// tang_dir* cos(azimuth_rad),
                 1.0f,//0.9f,
@@ -313,11 +313,11 @@ void Update()
             atmosphere.m_SunShadow.w = -shadow_dir.z;
             atmosphere.m_SunShadowScaler = abs(atmosphere.m_SunShadow.z) + abs(atmosphere.m_SunShadow.w);
             BruteForce::Math::Store(&(atmosphere.m_SunColor), day_light);
-            atmosphere.m_SunColor = {
-                1.0f,//0.85f,// tang_dir* cos(azimuth_rad),
-                1.0f,//0.9f,
-                1.0f,//tang_dir * sin(-azimuth_rad),
-                sun_intencivity };
+            //atmosphere.m_SunColor = {
+            //    1.0f,//0.85f,// tang_dir* cos(azimuth_rad),
+            //    1.0f,//0.9f,
+            //    1.0f,//tang_dir * sin(-azimuth_rad),
+            //    sun_intencivity };
             atmosphere.m_Moonlight = moonlight;
             chng = false;
         }

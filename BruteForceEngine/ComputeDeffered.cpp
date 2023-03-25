@@ -30,6 +30,15 @@ namespace BruteForce
 			RTUavDescriptors = descriptor_heap_manager.GetManagedRange("RenderTargetsUavs");
 			assert(RTUavDescriptors);
 
+			RTNoScreenSrvDescriptors = descriptor_heap_manager.GetManagedRange("NoScreenRenderTargetsSrvs");
+			assert(RTNoScreenSrvDescriptors);
+
+			SunShadowSrvDescriptors = descriptor_heap_manager.GetManagedRange("TerrainShadowSrvs");
+			assert(SunShadowSrvDescriptors);
+
+			DepthSrvDescriptors = descriptor_heap_manager.GetManagedRange("DepthSrvs");
+			assert(DepthSrvDescriptors);
+
 			if (m_DefferedBuffers)
 			{
 				delete[] m_DefferedBuffers;
@@ -82,7 +91,7 @@ namespace BruteForce
 
 
 
-				DescriptorRange descRange[3];
+				DescriptorRange descRange[6];
 
 				//DescriptorRange srcMip;// (D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
 				//DescriptorRange outMip;// (D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
@@ -90,10 +99,13 @@ namespace BruteForce
 
 				RTUavDescriptors->Fill(descRange[0], 0);
 				//descRange[1].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
-				SrvTexturesRange->Fill(descRange[1], 0);
+				DepthSrvDescriptors->Fill(descRange[5], 8);
+				SrvTexturesRange->Fill(descRange[1], 9);
 
 				CbvRange->Fill(descRange[2], 2);
 
+				RTNoScreenSrvDescriptors->Fill(descRange[4], 3);
+				SunShadowSrvDescriptors->Fill(descRange[3], 0);
 
 				CD3DX12_DESCRIPTOR_RANGE1 descRangeSamp;
 				descRangeSamp.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);
@@ -106,10 +118,11 @@ namespace BruteForce
 
 				CD3DX12_STATIC_SAMPLER_DESC AnisotropicClampSampler(
 					0,
+					//D3D12_FILTER_MIN_MAG_MIP_LINEAR,
 					D3D12_FILTER_ANISOTROPIC,
-					D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
-					D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
-					D3D12_TEXTURE_ADDRESS_MODE_CLAMP
+					D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+					D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+					D3D12_TEXTURE_ADDRESS_MODE_WRAP
 				);
 
 
@@ -143,8 +156,19 @@ namespace BruteForce
 
 		SmartCommandList& ComputeDeffered::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareComputeHelper& compute_helper)
 		{
-			smart_command_list.BeginEvent(0, "ComputeDeffered");
 			uint32_t buff_index = compute_helper.frame_index;
+
+			const auto& sun_info = GlobalLevelInfo::ReadGlobalAtmosphereInfo();
+			m_DefferedBuffers[buff_index].m_CpuBuffer->m_SunInfo = sun_info.m_SunInfo;
+			m_DefferedBuffers[buff_index].m_CpuBuffer->m_MoonInfo = sun_info.m_MoonInfo;
+
+			m_DefferedBuffers[buff_index].m_CpuBuffer->m_SunShadow = { sun_info.m_SunShadow.z, -sun_info.m_SunShadow.w,
+				 1.0f / sun_info.m_SunShadowScaler,
+				0.0f };
+			m_DefferedBuffers[buff_index].m_CpuBuffer->m_SunColor = sun_info.m_SunColor;
+			m_DefferedBuffers[buff_index].Update();
+			
+			smart_command_list.BeginEvent(0, "ComputeDeffered");
 
 			auto& command_list = smart_command_list.command_list;
 			smart_command_list.SetPipelineState(m_PipelineState);
@@ -155,6 +179,7 @@ namespace BruteForce
 			command_list->SetComputeRootDescriptorTable(0, compute_helper.HeapManager.GetGpuDescriptorHandle());
 			command_list->SetComputeRoot32BitConstants(1, 1, &buff_index, 0);
 
+			
 			int dispatch_size = DEFFERED_DISPATCH_SIZE;
 			UINT dispatch_x = static_cast<UINT>((compute_helper.m_Viewport->Width + dispatch_size - 1) / dispatch_size);
 			UINT dispatch_y = static_cast<UINT>((compute_helper.m_Viewport->Height + dispatch_size - 1) / dispatch_size);

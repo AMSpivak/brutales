@@ -18,9 +18,13 @@ namespace BruteForce
 			//std::shared_ptr<DescriptorHeapRange> LuminanceUavDescriptors;
 			std::shared_ptr<DescriptorHeapRange> RTUavDescriptors;
 			std::shared_ptr<DescriptorHeapRange> SrvTexturesRange;
+			std::shared_ptr<BruteForce::DescriptorHeapRange> RTNoScreenSrvDescriptors;
+			std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowSrvDescriptors;
 
 			std::shared_ptr<DescriptorHeapRange> CbvRange;
 			std::shared_ptr<DescriptorHeapRange> RTLuminanceSrvDescriptors;
+			std::shared_ptr<DescriptorHeapRange> DepthSrvDescriptors;
+
 			ConstantBuffer<DefferedLightingCB>* m_DefferedBuffers;
 
 		public:

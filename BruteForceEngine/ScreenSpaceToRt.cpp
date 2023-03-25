@@ -169,6 +169,7 @@ namespace BruteForce
             PrepareCB(rt_index);
             m_TonemapBuffers[rt_index].m_CpuBuffer->CurveType = m_HDRMode;
             m_TonemapBuffers[rt_index].m_CpuBuffer->Nits = render_dest.m_Nits;
+            m_TonemapBuffers[rt_index].m_CpuBuffer->ExposureShift = 0.0;
             m_TonemapBuffers[rt_index].Update();
 
             commandList->SetGraphicsRoot32BitConstants(1, 1, &rt_index, 0);

@@ -19,7 +19,15 @@ namespace BruteForce
             SrvDesc shaderResourceViewDesc = {};
             shaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
             shaderResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-            shaderResourceViewDesc.Format = m_format;
+            if (m_format != TargetFormat_R32_Typeless)
+            {
+                shaderResourceViewDesc.Format = m_format;
+            }
+            else
+            {
+                shaderResourceViewDesc.Format = TargetFormat_R32_Float;
+            }
+
             shaderResourceViewDesc.Texture2D.MipLevels = static_cast<UINT>(m_Mips);
             shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
             shaderResourceViewDesc.Texture2D.ResourceMinLODClamp = 0.0f;
@@ -67,6 +75,26 @@ namespace BruteForce
             m_rtvDescriptor = rt_handle;
         }
 
+        void Texture::CreateDsv(Device& device, DescriptorHandle& dsv_handle)
+        {
+            if (!m_GpuBuffer)
+            {
+                return;
+            }
+
+            D3D12_DEPTH_STENCIL_VIEW_DESC dsv = {};
+            dsv.Format = m_format;
+            dsv.Format = TargetFormat_D32_Float;
+
+            dsv.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+            dsv.Texture2D.MipSlice = 0;
+            dsv.Flags = D3D12_DSV_FLAG_NONE;
+
+            device->CreateDepthStencilView(m_GpuBuffer.Get(), &dsv,
+                dsv_handle);
+            
+        }
+
         DescriptorHandle& Texture::GetRT()
         {
             return m_rtvDescriptor;
@@ -105,7 +133,7 @@ namespace BruteForce
             return true;
         }
 
-        void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, GpuAllocator gpu_allocator)
+        void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, bool is_depth, GpuAllocator gpu_allocator)
         {
             texture.m_render_target = render_target;
             ResourceDesc textureDesc = {};
@@ -115,6 +143,16 @@ namespace BruteForce
                 tmp_meta.dimension = DirectX::TEX_DIMENSION_TEXTURE2D;
                 tmp_meta.arraySize = 1;
                 tmp_meta.mipLevels = 1;
+                FillTextureDescriptor(tmp_meta, textureDesc);
+                texture.m_Mips = 1;
+            }
+            else if (is_depth)
+            {
+                TexMetadata tmp_meta(metadata);
+                tmp_meta.dimension = DirectX::TEX_DIMENSION_TEXTURE2D;
+                tmp_meta.arraySize = 1;
+                tmp_meta.mipLevels = 1;
+                tmp_meta.format = TargetFormat_R32_Typeless;
                 FillTextureDescriptor(tmp_meta, textureDesc);
                 texture.m_Mips = 1;
             }
@@ -129,12 +167,12 @@ namespace BruteForce
             D3D12_CLEAR_VALUE* pClearValue = nullptr;
             texture.m_state = ResourceStateCommon;
             textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+            D3D12_CLEAR_VALUE clearValue = { metadata.format, {} };
+
             if (render_target)
             {
                 texture.m_clearColor[0] = texture.m_clearColor[1] = texture.m_clearColor[2] = texture.m_clearColor[3] = 0.0f;
 
-                D3D12_CLEAR_VALUE clearValue = { metadata.format, {} };
-                memcpy(clearValue.Color, texture.m_clearColor, sizeof(clearValue.Color));
                 pClearValue = &clearValue;
 
                 textureDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
@@ -145,10 +183,20 @@ namespace BruteForce
                 textureDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
                 //pClearValue = nullptr;
             }
+
+            if (is_depth)
+            {
+                assert(!(is_uav||render_target));
+                textureDesc.Flags = ResourceFlagsDepthStencil;
+                clearValue.Format = TargetFormat_D32_Float;
+                clearValue.DepthStencil = { 1.0f, 0 };
+                pClearValue = &clearValue;
+            }
  
             CreateBufferResource(device, texture, &textureDesc, pClearValue, gpu_allocator);
             texture.m_Width = metadata.width;
             texture.m_Height = metadata.height;
+            texture.m_format = metadata.format;
         }
 
         void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, TextureLoadHlpr& helper)
@@ -201,7 +249,7 @@ namespace BruteForce
                     metadata.format = MakeSRGB(metadata.format);
                 }*/
 
-                CreateTexture(texture, metadata, helper.m_device, false, false, helper.m_gpu_allocator);
+                CreateTexture(texture, metadata, helper.m_device, false, false, false, helper.m_gpu_allocator);
 
                 std::vector<D3D12_SUBRESOURCE_DATA> subresources(scratchImage.GetImageCount());
                 const DirectX::Image* pImages = scratchImage.GetImages();

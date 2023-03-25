@@ -25,6 +25,8 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
     LuminanceUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames * 2), BruteForce::DescriptorRangeTypeUav, "LuminanceUavs");
     LuminanceSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames * 2), BruteForce::DescriptorRangeTypeSrv, "LuminanceSrvs");
 
+    DepthSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(1), BruteForce::DescriptorRangeTypeSrv, "DepthSrvs");
+
     BruteForce::Textures::TexMetadata metadata;
     const int shadowsize = BruteForce::Compute::ComputeTerrainShadow::GetTerrainShadowSize();
     metadata.width = shadowsize;
@@ -36,7 +38,7 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
     metadata.mipLevels = 1;
     for (size_t i = 0; i < SwapchainNumFrames; i++)
     {
-        BruteForce::Textures::CreateTexture(m_ShadowTextures[i], metadata, device, false, true);
+        BruteForce::Textures::CreateTexture(m_ShadowTextures[i], metadata, device, false, true, false);
         m_ShadowTextures[i].CreateSrv(device, *SunShadowSrvDescriptors, i);
         m_ShadowTextures[i].CreateUav(device, *SunShadowUavDescriptors, i);
     }
@@ -47,7 +49,7 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
         metadata.format = render_luminance_format;
         metadata.width = 32;
         metadata.height = 32;
-        BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[0], metadata, device, false, true);
+        BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[0], metadata, device, false, true, false);
         m_UAVLuminanceTextures[0].m_GpuBuffer->SetName(L"LuminanceLog32");
         m_UAVLuminanceTextures[0].CreateUav(device, *LuminanceUavDescriptors, i);
         m_UAVLuminanceTextures[0].CreateSrv(device, *LuminanceSrvDescriptors, i);
@@ -55,7 +57,7 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
 
         metadata.width = 1;
         metadata.height = 1;
-        BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[1], metadata, device, false, true);
+        BruteForce::Textures::CreateTexture(m_UAVLuminanceTextures[1], metadata, device, false, true, false);
         m_UAVLuminanceTextures[1].m_GpuBuffer->SetName(L"LuminanceLog1");
         m_UAVLuminanceTextures[1].CreateUav(device, *LuminanceUavDescriptors, i + 1);
         m_UAVLuminanceTextures[1].CreateSrv(device, *LuminanceSrvDescriptors, i + 1);
@@ -196,20 +198,35 @@ void TutorialRenderer::Resize()
         height = std::max(1, height);
         m_Camera.SetAspectRatio(m_Window->GetWidth() / static_cast<float>(m_Window->GetHeight()), true);
 
-        m_DepthBuffer.Assign(m_Device, width, height, BruteForce::TargetFormat_D32_Float);
-        BruteForce::DescriptorHandle d_handle = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
-        m_DepthBuffer.CreateSrv(m_Device, d_handle);
+        //m_DepthBuffer.Assign(m_Device, width, height, BruteForce::TargetFormat_D32_Float);
+        //BruteForce::DescriptorHandle d_handle = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
+        //m_DepthBuffer.CreateSrv(m_Device, d_handle);
 
+        
         BruteForce::DescriptorHandle rt_handle = m_RTHeap->GetCPUDescriptorHandleForHeapStart();
         BruteForce::DescriptorHandle srv_handle = RTSrvDescriptors->m_CpuHandle;
 
         BruteForce::Textures::TexMetadata metadata;
-        metadata.format = render_format;
+        metadata.format = depth_format;
         metadata.width = width;
         metadata.height = height;
+
+        {
+            BruteForce::Textures::CreateTexture(m_DepthTexture, metadata, m_Device, false, false, true);
+            BruteForce::DescriptorHandle d_handle = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
+            m_DepthTexture.CreateDsv(m_Device, d_handle);
+            BruteForce::DescriptorHandle depth_srv_handle = DepthSrvDescriptors->m_CpuHandle;
+            m_DepthTexture.CreateSrv(m_Device, depth_srv_handle);
+            m_DepthTexture.SetName(L"DepthBuffer");
+            //m_DepthTexture
+        }
+
+
+
+        metadata.format = render_format;
         for (int i = 0; i < RenderNumFrames; i++)
         {
-            BruteForce::Textures::CreateTexture(m_RTTextures[i], metadata, m_Device, true, true);
+            BruteForce::Textures::CreateTexture(m_RTTextures[i], metadata, m_Device, true, true, false);
             //RTUavDescriptors
             m_RTTextures[i].CreateUav(m_Device, *RTUavDescriptors, i);
             m_RTTextures[i].CreateSrv(m_Device, srv_handle);
@@ -228,7 +245,7 @@ void TutorialRenderer::Resize()
                 srv_handle = RTNoScreenSrvDescriptors->m_CpuHandle;
                 srv_handle.ptr += rt * m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
 
-                BruteForce::Textures::CreateTexture(m_RTNoScreenTextures[rt], metadata, m_Device, true, false);
+                BruteForce::Textures::CreateTexture(m_RTNoScreenTextures[rt], metadata, m_Device, true, false, false);
                 m_RTNoScreenTextures[rt].m_GpuBuffer->SetName(L"TBN_Quaternion");
 
                 m_RTNoScreenTextures[rt].CreateSrv(m_Device, srv_handle);
@@ -243,7 +260,7 @@ void TutorialRenderer::Resize()
                 srv_handle = RTNoScreenSrvDescriptors->m_CpuHandle;
                 srv_handle.ptr += rt * m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
 
-                BruteForce::Textures::CreateTexture(m_RTNoScreenTextures[rt], metadata, m_Device, true, false);
+                BruteForce::Textures::CreateTexture(m_RTNoScreenTextures[rt], metadata, m_Device, true, false, false);
                 m_RTNoScreenTextures[rt].m_GpuBuffer->SetName(L"Materials");
 
                 m_RTNoScreenTextures[rt].CreateSrv(m_Device, srv_handle);
@@ -253,12 +270,12 @@ void TutorialRenderer::Resize()
             }
 
             {
-                metadata.format = render_uvddxddy_format;
+                metadata.format = render_uv_format;
                 int rt = RT(enRenderTargets::TexUV);
                 srv_handle = RTNoScreenSrvDescriptors->m_CpuHandle;
                 srv_handle.ptr += rt * m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
 
-                BruteForce::Textures::CreateTexture(m_RTNoScreenTextures[rt], metadata, m_Device, true, false);
+                BruteForce::Textures::CreateTexture(m_RTNoScreenTextures[rt], metadata, m_Device, true, false, false);
                 m_RTNoScreenTextures[rt].m_GpuBuffer->SetName(L"TexUV");
                 m_RTNoScreenTextures[rt].CreateSrv(m_Device, srv_handle);
                 srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
@@ -272,7 +289,7 @@ void TutorialRenderer::Resize()
                 srv_handle = RTNoScreenSrvDescriptors->m_CpuHandle;
                 srv_handle.ptr += rt * m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
 
-                BruteForce::Textures::CreateTexture(m_RTNoScreenTextures[rt], metadata, m_Device, true, false);
+                BruteForce::Textures::CreateTexture(m_RTNoScreenTextures[rt], metadata, m_Device, true, false, false);
                 m_RTNoScreenTextures[rt].m_GpuBuffer->SetName(L"TexDdxDdy");
                 m_RTNoScreenTextures[rt].CreateSrv(m_Device, srv_handle);
                 srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
@@ -300,7 +317,7 @@ void TutorialRenderer::Resize()
                 //srv_handle.ptr += rt * m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 for (int i = 0; i < RenderNumFrames; i++)
                 {
-                    BruteForce::Textures::CreateTexture(m_RTLuminanceTextures[i], metadata, m_Device, true, false);
+                    BruteForce::Textures::CreateTexture(m_RTLuminanceTextures[i], metadata, m_Device, true, false, false);
                     m_RTLuminanceTextures[i].m_GpuBuffer->SetName(L"LuminanceLog");
                     m_RTLuminanceTextures[i].CreateSrv(m_Device, *RTLuminanceSrvDescriptors, i);
                     //srv_handle.ptr += m_Device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
@@ -359,6 +376,11 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         auto compute_deffered_command_list = m_ComputeSmartCommandQueue.GetCommandList();
         m_RTTextures[0].TransitionTo(compute_deffered_command_list, BruteForce::ResourceStateUav);
         m_RTTextures[1].TransitionTo(compute_deffered_command_list, BruteForce::ResourceStateUav);
+        m_RTNoScreenTextures[RT(enRenderTargets::TBN_Quaternion)].TransitionTo(compute_deffered_command_list, BruteForce::ResourceStateNonPixel);
+        m_RTNoScreenTextures[RT(enRenderTargets::Materials)].TransitionTo(compute_deffered_command_list, BruteForce::ResourceStateNonPixel);
+        m_RTNoScreenTextures[RT(enRenderTargets::TexUV)].TransitionTo(compute_deffered_command_list, BruteForce::ResourceStateNonPixel);
+        m_RTNoScreenTextures[RT(enRenderTargets::TexDdxDdy)].TransitionTo(compute_deffered_command_list, BruteForce::ResourceStateNonPixel);
+        m_DepthTexture.TransitionTo(compute_deffered_command_list, BruteForce::ResourceStateNonPixel);
         //c_helper.frame_index = m_rt_index;
         BruteForce::Compute::PrepareComputeHelper deffered_helper{
             &m_Viewport,
@@ -371,6 +393,8 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
 
         m_RTTextures[0].TransitionTo(compute_deffered_command_list, BruteForce::ResourceStateCommon);
         m_RTTextures[1].TransitionTo(compute_deffered_command_list, BruteForce::ResourceStateCommon);
+        m_DepthTexture.TransitionTo(compute_deffered_command_list, BruteForce::ResourceStateCommon);
+
         m_ComputeSmartCommandQueue.ExecuteCommandList(compute_deffered_command_list);
         m_ComputeSmartCommandQueue.Signal(m_fence_deffered);
     }
@@ -386,12 +410,14 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
 
     auto& SetRT_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
     SetRT_cl.BeginEvent(0, "Render to HDR RT");
+    m_DepthTexture.TransitionTo(SetRT_cl, BruteForce::ResourceStateDepthWrite);
+
     m_RTTextures[m_rt_index].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
     m_RTNoScreenTextures[RT(enRenderTargets::TBN_Quaternion)].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
     m_RTNoScreenTextures[RT(enRenderTargets::Materials)].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
     m_RTNoScreenTextures[RT(enRenderTargets::TexUV)].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
     m_RTNoScreenTextures[RT(enRenderTargets::TexDdxDdy)].TransitionTo(SetRT_cl, BruteForce::ResourceStatesRenderTarget);
-    //SetRT_cl.ClearRTV(m_RTTextures[0].GetRT(), clearColor);
+    SetRT_cl.ClearRTV(m_RTTextures[m_rt_index].GetRT(), clearColor);
     SetRT_cl.ClearRTV(m_RTNoScreenTextures[RT(enRenderTargets::TBN_Quaternion)].GetRT(), clearEmptyColor);
     SetRT_cl.ClearRTV(m_RTNoScreenTextures[RT(enRenderTargets::Materials)].GetRT(), clearEmptyColor);
     SetRT_cl.ClearDSV(dsv, true, false, 1.0f, 0);
@@ -434,20 +460,26 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         {
             subsystem->PrepareRenderCommandList(list, render_dest);
         }
+    
+    }
+
+    {
+        auto& list = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
+        m_DepthTexture.TransitionTo(list, BruteForce::ResourceStateCommon);
+
         m_RTTextures[0].TransitionTo(list, BruteForce::ResourceStateCommon);
         m_RTTextures[1].TransitionTo(list, BruteForce::ResourceStateCommon);
+        m_RTNoScreenTextures[RT(enRenderTargets::TBN_Quaternion)].TransitionTo(list, BruteForce::ResourceStateCommon);
+        m_RTNoScreenTextures[RT(enRenderTargets::Materials)].TransitionTo(list, BruteForce::ResourceStateCommon);
+        m_RTNoScreenTextures[RT(enRenderTargets::TexUV)].TransitionTo(list, BruteForce::ResourceStateCommon);
+        m_RTNoScreenTextures[RT(enRenderTargets::TexDdxDdy)].TransitionTo(list, BruteForce::ResourceStateCommon);
+
     }
 
     
 
     auto ResetRT_cl = in_SmartCommandQueue.GetCommandList();
     ResetRT_cl.command_list->SetName(L"ResetRT");
-    m_RTTextures[0].TransitionTo(ResetRT_cl, BruteForce::ResourceStateCommon);
-    m_RTTextures[1].TransitionTo(ResetRT_cl, BruteForce::ResourceStateCommon);
-    m_RTNoScreenTextures[RT(enRenderTargets::TBN_Quaternion)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
-    m_RTNoScreenTextures[RT(enRenderTargets::Materials)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
-    m_RTNoScreenTextures[RT(enRenderTargets::TexUV)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
-    m_RTNoScreenTextures[RT(enRenderTargets::TexDdxDdy)].TransitionTo(ResetRT_cl, BruteForce::ResourceStatePixelShader);
     
     ResetRT_cl.EndEvent();
 
@@ -465,7 +497,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
             &sr,
             LuminanceRts,
             1,
-            &dsv,
+            nullptr,
             m_Camera,
             static_cast<uint8_t>(m_CurrentBackBufferIndex),
             m_rt_index,
@@ -493,7 +525,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         &m_ScissorRect,
         &rtv,
         1,
-        &dsv,
+        nullptr,
         m_Camera,
         static_cast<uint8_t>(m_CurrentBackBufferIndex),
         m_rt_index,

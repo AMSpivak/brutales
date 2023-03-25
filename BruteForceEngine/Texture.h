@@ -44,6 +44,7 @@ namespace BruteForce
 			void CreateUav(Device& device, DescriptorHandle& descriptor_handle);
 			void CreateUav(Device& device, DescriptorHeapRange& descriptor_range, size_t index);
 			void CreateRtv(Device& device, DescriptorHandle& rt_handle);
+			void CreateDsv(Device& device, DescriptorHandle& rt_handle);
 
 			DescriptorHandle& GetRT();
 
@@ -51,10 +52,10 @@ namespace BruteForce
 			size_t GetHeight() { return m_Height; }
 
 		friend void LoadTextureFromFile(Texture&, const std::wstring& /*, TextureUsage textureUsage */, TextureLoadHlpr&);
-		friend void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, GpuAllocator gpu_allocator);
+		friend void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, bool is_depth, GpuAllocator gpu_allocator);
 		};
 
-		void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, GpuAllocator gpu_allocator = nullptr);
+		void CreateTexture(Texture& texture, const TexMetadata& metadata, Device& device, bool render_target, bool is_uav, bool is_depth, GpuAllocator gpu_allocator = nullptr);
 
 		void LoadTextureFromFile(Texture& texture, const std::wstring& fileName/*, TextureUsage textureUsage */, TextureLoadHlpr& helper);
 

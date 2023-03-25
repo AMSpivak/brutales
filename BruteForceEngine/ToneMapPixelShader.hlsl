@@ -68,7 +68,7 @@ float4 main(PixelShaderInput IN) : SV_Target
     float3 color = lerp(c_night, c_day, clamp((luminance -0.22) / (2.4 - 0.22), 0, 1.0)) * textures[FrameInfoCB.frame_index].Sample(sampl, IN.Tex).xyz;
     //float3 color = lerp(c_night, c_day, 0) * textures[FrameInfoCB.frame_index].Sample(sampl, IN.Tex).xyz;
 
-    float key = 1.03 - 2 / (2 + luminance);
+    float key = 1.03 - 2 / (2 + luminance) + Tonemap_CB[FrameInfoCB.frame_index].ExposureShift;
     luminance = exp( luminance) - 1.0;           
     
     float exposure_bias = key / luminance;// clamp(key / luminance, 0.25, 2);
