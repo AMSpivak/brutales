@@ -166,6 +166,14 @@ namespace BruteForce
 				 1.0f / sun_info.m_SunShadowScaler,
 				0.0f };
 			m_DefferedBuffers[buff_index].m_CpuBuffer->m_SunColor = sun_info.m_SunColor;
+			m_DefferedBuffers[buff_index].m_CpuBuffer->m_CameraInverse = *(compute_helper.camera.GetInverseCameraMatrixPointer());
+			Math::Store(&(m_DefferedBuffers[buff_index].m_CpuBuffer->m_CameraPosition), compute_helper.camera.GetPosition());
+			float plane_mesh_step = 1.0f / 100;
+
+			auto terrain_scaler = GlobalLevelInfo::ReadGlobalTerrainInfo().m_TerrainScaler;
+			terrain_scaler.w = plane_mesh_step;
+			m_DefferedBuffers[buff_index].m_CpuBuffer->m_TerrainScaler = terrain_scaler;
+
 			m_DefferedBuffers[buff_index].Update();
 			
 			smart_command_list.BeginEvent(0, "ComputeDeffered");

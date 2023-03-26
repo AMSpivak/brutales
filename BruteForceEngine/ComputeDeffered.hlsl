@@ -21,7 +21,7 @@ Texture2D<float4> Ddx_Ddy_tex : register(t6);
 
 
 Texture2D<float4> textures[] : register(t9);
-Texture2D<float4> depth : register(t8);
+Texture2D<float> depth : register(t8);
 RWTexture2D<float4> OutImage[2] : register(u0);
 
 sampler sampl : register(s0);
@@ -48,7 +48,24 @@ void main(ComputeShaderInput IN)
             //uint4 materials = NonUniformResourceIndex(Material_tex.Load(IN.DispatchThreadID.xyz));
             float4 UV = UV_tex.Load(int3(IN.DispatchThreadID.xy,0));
             float4 Ddx_Ddy = Ddx_Ddy_tex.Load(IN.DispatchThreadID.xyz);
+            float depth_val = depth.Load(IN.DispatchThreadID.xyz).r;// *2.0 - 1.0;
+            float4 screen_pos = float4(IN.DispatchThreadID.xy, depth_val, 1);
+            screen_pos.x = (screen_pos.x / w) * 2.0 - 1.0;
+            screen_pos.y = (screen_pos.y / h) * 2.0 - 1.0;
+            screen_pos.y *= -1.0;
+            float4 world_pos = mul(lighting_CB[FrameInfoCB.frame_index].m_CameraInverse, screen_pos);
+            world_pos /= world_pos.w;
+            world_pos.xyz += lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz;
 
+            float2 l_dir = lighting_CB[FrameInfoCB.frame_index].m_SunShadow.xy;
+
+            float2 pos = world_pos.xz * lighting_CB[FrameInfoCB.frame_index].m_TerrainScaler.xz;
+            float2 shadowUV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
+            shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
+            shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * lighting_CB[FrameInfoCB.frame_index].m_SunShadow.z;
+
+            float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, shadowUV, 0);
+            shadows.x = smoothstep(shadows.y, shadows.x, shadows.z);
             matrix TBN;
             mat_cast_xm(quat, TBN);
             //float3 Normal = Normal_smpl.x * T_Normal + Normal_smpl.z * face_Normal + Normal_smpl.y * B_Normal;
@@ -66,7 +83,7 @@ void main(ComputeShaderInput IN)
             float moon_light_diffuse = dot(Normal, normalize(moon_info.xyz));
             float moon_light = moon_info.w;
 
-            sun_light *= 0.2 + clamp(sun_light_diffuse, 0.0, 1.0);// *shadows.x;// *shadows.x;
+            sun_light *= 0.2 + clamp(sun_light_diffuse, 0.0, 1.0) * shadows.x;// *shadows.x;// *shadows.x;
             float sun_intens = smoothstep(-0.1, -0.0, sun_info.y);
             sun_light *= sun_intens * sun_intens * sun_intens;
             moon_light *= 0.2 + clamp(moon_light_diffuse, 0.0, 1.0);// *shadows.x;// *shadows.x;
@@ -80,7 +97,8 @@ void main(ComputeShaderInput IN)
             float3 res = sun_light * Color + moon_light * Color;
             //Color *= 0.01;
             //Color = pow(Color, 2.2);
-
+            
+            //OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(world_pos.xyz, 1.0);
             OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(res, 1.0);
         }
     }
