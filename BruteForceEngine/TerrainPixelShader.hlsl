@@ -60,7 +60,7 @@ PS_OUTPUT main(PixelShaderInput IN)// : SV_Target
     float3 B_Normal = normalize(cross(IN.Tangent,IN.Normal ));
     float3 T_Normal = normalize(cross( B_Normal,IN.Normal ));
 
-    matrix TBN2 = transpose(matrix(float4(T_Normal, 0), float4(B_Normal, 0), float4(face_Normal, 0), float4(0, 0, 0, 1)));
+    matrix TBN2 = transpose(matrix(float4(-B_Normal, 0), float4(T_Normal, 0), float4(face_Normal, 0), float4(0, 0, 0, 1)));
     //matrix TBN2 = matrix(float4(1, 0, 0, 0), float4(0, 1, 0, 0), float4(0, 0, 1, 0), float4(0,0,0, 1));
 
     float4 quat_xm;
