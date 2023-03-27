@@ -71,7 +71,7 @@ void main(ComputeShaderInput IN)
             //float3 Normal = Normal_smpl.x * T_Normal + Normal_smpl.z * face_Normal + Normal_smpl.y * B_Normal;
             //Normal_smpl.y = -Normal_smpl.y;
             float3 Normal_smpl = textures[materials.r * material_offset + 1].SampleGrad(sampl, UV.xy, Ddx_Ddy.xy, Ddx_Ddy.zw).xyz * 2.0 -1.0;
-            //Normal_smpl.y = -Normal_smpl.y;
+            Normal_smpl.y = -Normal_smpl.y;
             float3 Normal = mul(TBN, float4(Normal_smpl, 0.0f)).xyz;
             //float3 Normal = mul(TBN, float4(0.0,0.0,1.0 ,0.0f)).xyz;
 

@@ -4,7 +4,6 @@
 #include "IndexedGeometryGenerator.h"
 #include "RenderInstanced.h"
 #include "RenderTerrain.h"
-#include "ScreenSpaceSky.h"
 #include "ComputeTerrainShadow.h"
 #include "BruteForceMath.h"
 
@@ -108,7 +107,7 @@ TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Adapt
     constexpr UINT sun_shadows = 1;
     //SunShadowSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, sun_shadows, BruteForce::DescriptorRangeTypeSrv, "SunShadowsSrvs");
     //SunShadowUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, sun_shadows, BruteForce::DescriptorRangeTypeUav, "SunShadowsUavs");
-    m_RenderSystems.push_back(std::make_shared<BruteForce::Render::ScreenSpaceSky>());
+    //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::ScreenSpaceSky>());
 
     m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderTerrain>());
     //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderInstanced>());
@@ -136,6 +135,8 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
         subsystem->LoadContent(device, m_NumFrames, desc, m_CopyCommandQueue, m_SRV_Heap);
     }
 
+    m_SkyRender.LoadContent(device, m_NumFrames, desc, m_CopyCommandQueue, m_SRV_Heap);
+
     for (auto& subsystem : m_CalcSystems)
     {
         subsystem->LoadContent(device, m_NumFrames, m_SRV_Heap);
@@ -154,8 +155,11 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
                                                         BruteForce::TargetFormat_D32_Float,
                                                         nullptr
     };
+
     desc_lum.gpu_allocator_ptr = m_GpuAllocator;
     m_Luminance.LoadContent(device, m_NumFrames, desc_lum, m_CopyCommandQueue, m_SRV_Heap);
+
+
 
     m_CalculateLuminance.LoadContent(device, m_NumFrames, m_SRV_Heap);
     m_ComputeDeffered.LoadContent(device, m_NumFrames, m_SRV_Heap);
@@ -422,9 +426,25 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     SetRT_cl.ClearRTV(m_RTNoScreenTextures[RT(enRenderTargets::Materials)].GetRT(), clearEmptyColor);
     SetRT_cl.ClearDSV(dsv, true, false, 1.0f, 0);
 
-    const BruteForce::DescriptorHandle GbufferRts[NoScreenTextures + 1] = {
-        m_RTTextures[m_rt_index].GetRT()
-        , m_RTNoScreenTextures[RT(enRenderTargets::TBN_Quaternion)].GetRT()
+    const auto desc_rt = m_RTTextures[m_rt_index].GetRT();
+
+    BruteForce::Render::PrepareRenderHelper sky_dest{
+        &m_Viewport,
+        &m_ScissorRect,
+        &desc_rt,
+        1,
+        &dsv,
+        m_Camera,
+        static_cast<uint8_t>(m_CurrentBackBufferIndex),
+        m_rt_index,
+        m_Window->GetMaxNits(),
+        m_SRV_Heap
+    };
+    m_SkyRender.PrepareRenderCommandList(SetRT_cl, sky_dest);
+    SetRT_cl.BeginEvent(0, "Render to GBUFFER");
+
+    const BruteForce::DescriptorHandle GbufferRts[NoScreenTextures] = {
+         m_RTNoScreenTextures[RT(enRenderTargets::TBN_Quaternion)].GetRT()
         , m_RTNoScreenTextures[RT(enRenderTargets::Materials)].GetRT()
         , m_RTNoScreenTextures[RT(enRenderTargets::TexUV)].GetRT()
         , m_RTNoScreenTextures[RT(enRenderTargets::TexDdxDdy)].GetRT()
@@ -434,7 +454,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         &m_Viewport,
         &m_ScissorRect,
         GbufferRts,
-        NoScreenTextures + 1,
+        NoScreenTextures,
         &dsv,
         m_Camera,
         static_cast<uint8_t>(m_CurrentBackBufferIndex),
@@ -443,6 +463,8 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         m_SRV_Heap
     };
 
+    
+    
     constexpr bool separate_threads = false;
 
     if (separate_threads)
@@ -473,6 +495,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         m_RTNoScreenTextures[RT(enRenderTargets::Materials)].TransitionTo(list, BruteForce::ResourceStateCommon);
         m_RTNoScreenTextures[RT(enRenderTargets::TexUV)].TransitionTo(list, BruteForce::ResourceStateCommon);
         m_RTNoScreenTextures[RT(enRenderTargets::TexDdxDdy)].TransitionTo(list, BruteForce::ResourceStateCommon);
+        list.EndEvent();
 
     }
 

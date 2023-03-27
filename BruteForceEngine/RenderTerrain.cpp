@@ -225,12 +225,11 @@ namespace BruteForce
             } pipelineStateStream;
 
             D3D12_RT_FORMAT_ARRAY rtvFormats = {};
-            rtvFormats.NumRenderTargets = NoScreenTextures + 1;
-            rtvFormats.RTFormats[0] = desc.RTFormat;
-            rtvFormats.RTFormats[1] = render_normals_format;
-            rtvFormats.RTFormats[2] = render_materials_format;
-            rtvFormats.RTFormats[3] = render_uv_format;
-            rtvFormats.RTFormats[4] = render_uvddxddy_format;
+            rtvFormats.NumRenderTargets = NoScreenTextures;
+            rtvFormats.RTFormats[0] = render_normals_format;
+            rtvFormats.RTFormats[1] = render_materials_format;
+            rtvFormats.RTFormats[2] = render_uv_format;
+            rtvFormats.RTFormats[3] = render_uvddxddy_format;
 
             pipelineStateStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 

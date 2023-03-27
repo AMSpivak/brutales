@@ -9,6 +9,7 @@
 #include "RenderSubsystem.h"
 #include "ScreenSpaceToRt.h"
 #include "ScreenSpaceLuminance.h"
+#include "ScreenSpaceSky.h"
 #include "ComputeSubsystem.h"
 #include "ComputeLuminance.h"
 #include "ComputeDeffered.h"
@@ -39,6 +40,7 @@ private:
     std::vector<std::shared_ptr<BruteForce::Compute::ComputeSubsystem>> m_CalcSystems;
     BruteForce::Render::ScreenSpaceToRt m_ToneMapper;
     BruteForce::Render::ScreenSpaceLuminance m_Luminance;
+    BruteForce::Render::ScreenSpaceSky m_SkyRender;
     BruteForce::Compute::ComputeLuminance m_CalculateLuminance;
     BruteForce::Compute::ComputeDeffered m_ComputeDeffered;
     BruteForce::DescriptorHeapManager& m_SRV_Heap;

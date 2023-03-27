@@ -30,11 +30,10 @@ SamplerState sampl : register(s0);
 
 struct PS_OUTPUT
 {
-    float4 Color: SV_Target0;
-    float4 Normal: SV_Target1;
-    uint4 Material: SV_Target2;
-    float4 TexUV: SV_Target3;
-    float4 TexDdxDdy: SV_Target4;
+    float4 Normal: SV_Target0;
+    uint4 Material: SV_Target1;
+    float4 TexUV: SV_Target2;
+    float4 TexDdxDdy: SV_Target3;
 };
 
 PS_OUTPUT main(PixelShaderInput IN)// : SV_Target
@@ -94,7 +93,7 @@ PS_OUTPUT main(PixelShaderInput IN)// : SV_Target
     Color = pow(Color, 2.2);
 
     PS_OUTPUT output;
-    output.Color = float4(light * Color * PlanesCB[FrameInfoCB.frame_index].m_SunColor.xyz, 1.0f);//Set first output
+    //output.Color = float4(light * Color * PlanesCB[FrameInfoCB.frame_index].m_SunColor.xyz, 1.0f);//Set first output
 
     output.Normal = quat_xm;//Set second output
     output.Material = materials + 1;
