@@ -110,7 +110,7 @@ TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Adapt
     //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::ScreenSpaceSky>());
 
     m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderTerrain>());
-    //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderInstanced>());
+    m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderInstanced>());
     m_CalcSystems.push_back(std::make_shared<BruteForce::Compute::ComputeTerrainShadow>());
 
     m_Camera.SetPosition({0.0f, 3.0f, -10.0f}, false);

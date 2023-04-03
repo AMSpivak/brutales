@@ -2,7 +2,8 @@
 #include "Helpers.h"
 #include "IndexedGeometryGenerator.h"
 #include "Settings.h"
-
+#include "GameEnvironment.h"
+#include "CommonRenderParams.h"
 namespace BruteForce
 {
     namespace Render
@@ -69,7 +70,9 @@ namespace BruteForce
 
             D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
                 { "POSITION", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-                { "COLOR", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                { "UV", 0, TargetFormat_R32G32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                { "NORMAL", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                { "TANGENT", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
             };
 
 
@@ -80,15 +83,9 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;// |
                 //D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
-            CD3DX12_DESCRIPTOR_RANGE1 descRange[2];
-            descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0);
-            descRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);
-            CD3DX12_ROOT_PARAMETER1 rootParameters[3];
-            rootParameters[2].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+            CD3DX12_ROOT_PARAMETER1 rootParameters[1];
+            rootParameters[0].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
             //rootParameters[3].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
-
-            rootParameters[0].InitAsDescriptorTable(1, &descRange[0], D3D12_SHADER_VISIBILITY_PIXEL);
-            rootParameters[1].InitAsDescriptorTable(1, &descRange[1], D3D12_SHADER_VISIBILITY_PIXEL);
 
             //CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDescription;
             //rootSignatureDescription.Init(3, rootParameters);
@@ -122,13 +119,19 @@ namespace BruteForce
                 CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;
                 CD3DX12_PIPELINE_STATE_STREAM_VS VS;
                 CD3DX12_PIPELINE_STATE_STREAM_PS PS;
+                CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL DepthStencilState;
                 CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormat;
                 CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
             } pipelineStateStream;
 
             D3D12_RT_FORMAT_ARRAY rtvFormats = {};
-            rtvFormats.NumRenderTargets = 1;
-            rtvFormats.RTFormats[0] = desc.RTFormat;
+            rtvFormats.NumRenderTargets = NoScreenTextures;
+            rtvFormats.RTFormats[0] = render_normals_format;
+            rtvFormats.RTFormats[1] = render_materials_format;
+            rtvFormats.RTFormats[2] = render_uv_format;
+            rtvFormats.RTFormats[3] = render_uvddxddy_format;
+
+            pipelineStateStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);;
 
             pipelineStateStream.pRootSignature = m_RootSignature.Get();
             pipelineStateStream.InputLayout = { inputLayout, _countof(inputLayout) };
@@ -153,23 +156,23 @@ namespace BruteForce
             smart_command_list.SetPipelineState(m_PipelineState);
             smart_command_list.SetGraphicsRootSignature(m_RootSignature);
 
-            ID3D12DescriptorHeap* ppHeaps[] = { m_SVRHeap.Get(), m_SamplerHeap.Get() };
+            /*ID3D12DescriptorHeap* ppHeaps[] = { m_SVRHeap.Get(), m_SamplerHeap.Get() };
             commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
             commandList->SetGraphicsRootDescriptorTable(0,
                 m_SVRHeap->GetGPUDescriptorHandleForHeapStart());
             commandList->SetGraphicsRootDescriptorTable(1,
-                m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());
+                m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());*/
 
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             commandList->IASetVertexBuffers(0, 1, &m_cube.m_VertexBufferView);
             commandList->IASetIndexBuffer(&m_cube.m_IndexBufferView);
             commandList->RSSetViewports(1, render_dest.m_Viewport);
             commandList->RSSetScissorRects(1, render_dest.m_ScissorRect);
-            commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, render_dest.dsv);
-
+            //commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, render_dest.dsv);
+            commandList->OMSetRenderTargets(render_dest.m_rt_count, render_dest.rtv, FALSE, render_dest.dsv);
             auto const_size = sizeof(BruteForce::Math::Matrix) / 4;
-            commandList->SetGraphicsRoot32BitConstants(2, static_cast<UINT>(const_size), render_dest.camera.GetCameraMatrixPointer(), 0);
+            commandList->SetGraphicsRoot32BitConstants(0, static_cast<UINT>(const_size), render_dest.camera.GetCameraMatrixPointer(), 0);
 
 
             commandList->DrawIndexedInstanced(static_cast<UINT>(m_cube.m_IndexesCount), 1, 0, 0, 0);

@@ -10,6 +10,14 @@ namespace BruteForce
         BruteForce::Math::Vec3Float Color;
     };
 
+    struct VertexPosUvNormBinorm
+    {
+        BruteForce::Math::Vec3Float Position;
+        BruteForce::Math::Vec3Float Uv;
+        BruteForce::Math::Vec3Float Normal;
+        BruteForce::Math::Vec3Float Binormal;
+    };
+
     struct VertexPosNormTex
     {
         BruteForce::Math::Vec3Float Position;

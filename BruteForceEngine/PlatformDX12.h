@@ -119,6 +119,7 @@ namespace BruteForce
 	constexpr TargetFormat TargetFormat_R16G16B16A16_Float = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	constexpr TargetFormat TargetFormat_R32G32B32A32_Float = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	constexpr TargetFormat TargetFormat_R32G32B32_Float = DXGI_FORMAT_R32G32B32_FLOAT;
+	constexpr TargetFormat TargetFormat_R32G32_Float = DXGI_FORMAT_R32G32_FLOAT;
 
 	using OutputDescriptor = DXGI_OUTPUT_DESC1;
 
