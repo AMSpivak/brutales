@@ -303,9 +303,10 @@ void Update()
                 moon.z,//tang_dir * sin(-azimuth_rad),
                 moon_intencivity };
             atmosphere.m_MoonColor = {
-                1.0f,//0.85f,// tang_dir* cos(azimuth_rad),
-                1.0f,//0.9f,
-                1.0f,//tang_dir * sin(-azimuth_rad),
+                0.077f, 0.73f, 3.3f,
+                //1.0f,//0.85f,// tang_dir* cos(azimuth_rad),
+                //1.0f,//0.9f,
+                //1.0f,//tang_dir * sin(-azimuth_rad),
                 moon_intencivity };
             atmosphere.m_SunShadow.x = shadow_tg_1;
             atmosphere.m_SunShadow.y = shadow_tg_2;

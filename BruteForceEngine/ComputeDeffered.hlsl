@@ -89,12 +89,13 @@ void main(ComputeShaderInput IN)
             moon_light *= 0.2 + clamp(moon_light_diffuse, 0.0, 1.0);// *shadows.x;// *shadows.x;
             moon_light *= smoothstep(-0.3, -0.0, moon_info.y);// *shadows.x;// *shadows.x;
 
-            sun_light *= lighting_CB[FrameInfoCB.frame_index].m_SunColor;
+            float3 sun_light_color = sun_light * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
+            float3 moon_light_color = moon_light * lighting_CB[FrameInfoCB.frame_index].m_MoonColor.xyz;
 
             float3 Color = textures[materials.r * material_offset].SampleGrad(sampl, UV.xy, Ddx_Ddy.xy, Ddx_Ddy.zw).xyz;
             Color = pow(Color, 2.2);
 
-            float3 res = sun_light * Color + moon_light * Color;
+            float3 res = sun_light_color * Color + moon_light_color * Color;
             //Color *= 0.01;
             //Color = pow(Color, 2.2);
             
