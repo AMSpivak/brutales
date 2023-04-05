@@ -258,7 +258,7 @@ void Update()
             BruteForce::Math::Store(&shadow_dir, BruteForce::Math::Vector3Norm({ main_sky_light.x, 0.0f, main_sky_light.z, 0.0f }));
 
             //float sun_azimuth = sun_info.Azimuth;
-            float sun_intencivity = 100000.0f;
+            float sun_intencivity = 50000.0f;
             /*if (sun.y < 0.0f)
             {
                 sun_intencivity = 10.0f;
@@ -274,9 +274,9 @@ void Update()
             float mix_red = BruteForce::Math::Smoothstep(0.1f, 0.35f, sun.y);
             float mix_night = BruteForce::Math::Smoothstep(-0.3f, moon_edge, sun.y);
 
-            day_light = BruteForce::Math::MatrixVectorMix(day_light, yellow_light, mix_yellow);
-            day_light = BruteForce::Math::MatrixVectorMix(day_light, red_light, mix_red);
-            day_light = BruteForce::Math::MatrixVectorMix(day_light, nigth_light, mix_night);
+            //day_light = BruteForce::Math::MatrixVectorMix(day_light, yellow_light, mix_yellow);
+            //day_light = BruteForce::Math::MatrixVectorMix(day_light, red_light, mix_red);
+            //day_light = BruteForce::Math::MatrixVectorMix(day_light, nigth_light, mix_night);
             
             
 
