@@ -52,18 +52,17 @@ void main(ComputeShaderInput IN)
             float4 world_pos = mul(lighting_CB[FrameInfoCB.frame_index].m_CameraInverse, screen_pos);
             world_pos /= world_pos.w;
 
-            float3 direction = normalize(world_pos);
+            float3 direction = normalize(world_pos.xyz);
             float3 to_sun = normalize(sun_info.xyz);
-            float sun_light_scatter = dot(direction, -to_sun);
+            float sun_light_scatter = dot(direction, to_sun);
             float3 res = float3(0, 0, 0);
             float l = 0;
-
+            float sun = smoothstep(0.99996, 0.99997, sun_light_scatter);
+            sun_light_scatter = -lerp(sun_light_scatter, 1.0, sun);
             uint4 materials = (Material_tex.Load(IN.DispatchThreadID.xyz));
             if (materials.r == 0)
             {
                 l = AtmosphereLength(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz);
-  
-                float sun = smoothstep(0.99996, 0.99997, -sun_light_scatter);
                 res = sun * sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
 
             }
@@ -120,17 +119,16 @@ void main(ComputeShaderInput IN)
                 res = sun_light_color * Color + moon_light_color * Color;
             }
             float3 scattering = RayleighScatteringWavelength * RayleighScatteringMul;
-            static const int numpoints = 30;
-            static const int numsecondpoints = 10;
+            static const int numpoints = 10;
+            static const int numsecondpoints = 5;
 
             float3 light = sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
-            float3 scattering_l_prev = 0; 
+            float3 scattering_l_prev = scattering * RayleighDistribution(EarthHeight(world_pos.xyz + direction * l));
             float3 l_prev = l;
             //float tst_prev = EeartRadius * EeartRadius;
             float sqrEarthRadius = EarthRadius * EarthRadius;
             float tst_prev = sqrEarthRadius;
-
-            for (int i = numpoints; i > 0; i--)
+            for (int i = numpoints - 1; i > 0; i--)
             {
                 //float curr_l = l * FastInverse(i / numpoints);
                 float curr_l = l * (i / numpoints);
@@ -142,14 +140,19 @@ void main(ComputeShaderInput IN)
                 res *= RayleighTransmittance(d_l * (scattering_l + scattering_l_prev) * 0.5);
                 float tst = EarthTest(to_sun, curr_pos);
                 float sun_ray_l = AtmosphereLength(to_sun, curr_pos);
-                float distribution2 = distribution;
-                for (int k = numsecondpoints; k > 0; k--)
+                float distribution2 = 0;
+                float distribution_prev = distribution;
+                float distribution_now = 0;
+                float step_in_scatter = sun_ray_l / (numsecondpoints - 1);
+                for (int k = 1; k < numsecondpoints; k++)
                 {
-                    distribution2 += RayleighDistribution(EarthHeight(curr_pos + sun_ray_l * k/ numsecondpoints));
+                    distribution_now = RayleighDistribution(EarthHeight(curr_pos + step_in_scatter * k));
+                    distribution2 += (distribution_now + distribution_prev)* 0.5 * step_in_scatter;
+                    distribution_prev = distribution;
                 }
-                distribution2 /= numsecondpoints;
-                float vis = 1;// step((tst + tst_prev) * 0.5 - sqrEarthRadius);
-                float3 inlight = light * RayleighTransmittance(sun_ray_l * scattering * distribution2);
+
+                float vis = tst;// step((tst + tst_prev) * 0.5 - sqrEarthRadius);
+                float3 inlight = light * RayleighTransmittance( scattering * distribution2);
                 res += d_l * RayleighScatteringPhase(sun_light_scatter) * scattering_l * vis * inlight;
 
                 scattering_l_prev = scattering_l;

@@ -21,9 +21,9 @@ float EarthHeight(float3 position)
     return length(position - EarthCenter) - EarthRadius;
 }
 
-float3 RayleighTransmittance(float3 scattering)
+float3 RayleighTransmittance(float3 scatt_dot_l)
 {
-    return exp(- scattering);
+    return exp(-scatt_dot_l);
 }
 
 
@@ -79,7 +79,23 @@ float SphereRayOrt(float3 direction, float3 position, float3 spos)
 {
     float3 k = spos - position;
     float b = dot(k, direction);
-    return dot(k, k) - b * b;
+    if (b < 0)
+    {
+        return EarthRadius * EarthRadius + 2;
+    }
+
+    return (dot(k, k) - b * b);
+}
+
+float SphereRayOrt(float3 direction, float3 position, float r, float3 spos)
+{
+    float3 k = spos - position;
+    float b = dot(k, direction);
+    if (b < 0)
+    {
+        return b;
+    }
+    return r - length(position + b * direction);
 }
 
 float AtmosphereLength(float3 direction, float3 position)
@@ -90,7 +106,13 @@ float AtmosphereLength(float3 direction, float3 position)
 
 float EarthTest(float3 direction, float3 position)
 {
-    return SphereRayOrt(direction, position, EarthCenter);
+    float r = SphereRayOrt(direction, position, EarthRadius, EarthCenter);
+    //if (r < 0.1)
+    //{
+    //    return 1;
+    //}
+
+    return smoothstep(-10000.f, 0.f, -r);// r - EarthRadius * EarthRadius;
 }
 
 #endif
