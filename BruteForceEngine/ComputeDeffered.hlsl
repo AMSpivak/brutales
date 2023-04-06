@@ -53,7 +53,8 @@ void main(ComputeShaderInput IN)
             world_pos /= world_pos.w;
 
             float3 direction = normalize(world_pos);
-            float sun_light_scatter = dot(direction, -normalize(sun_info.xyz));
+            float3 to_sun = normalize(sun_info.xyz);
+            float sun_light_scatter = dot(direction, -to_sun);
             float3 res = float3(0, 0, 0);
             float l = 0;
 
@@ -118,9 +119,43 @@ void main(ComputeShaderInput IN)
                 Color = pow(Color, 2.2);
                 res = sun_light_color * Color + moon_light_color * Color;
             }
+            float3 scattering = RayleighScatteringWavelength * RayleighScatteringMul;
+            static const int numpoints = 30;
+            static const int numsecondpoints = 10;
 
-            res *= RayleighTransmittance(l);
-            res += l * RayleighScatteringMul * RayleighScatteringPhase(sun_light_scatter) * RayleighScatteringWavelength * sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
+            float3 light = sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
+            float3 scattering_l_prev = 0; 
+            float3 l_prev = l;
+            //float tst_prev = EeartRadius * EeartRadius;
+            float sqrEarthRadius = EarthRadius * EarthRadius;
+            float tst_prev = sqrEarthRadius;
+
+            for (int i = numpoints; i > 0; i--)
+            {
+                //float curr_l = l * FastInverse(i / numpoints);
+                float curr_l = l * (i / numpoints);
+                float3 curr_pos = world_pos.xyz + direction * curr_l;
+                float distribution = RayleighDistribution(EarthHeight(curr_pos));
+                float3 scattering_l = scattering * distribution;
+                float d_l = l_prev - curr_l;
+
+                res *= RayleighTransmittance(d_l * (scattering_l + scattering_l_prev) * 0.5);
+                float tst = EarthTest(to_sun, curr_pos);
+                float sun_ray_l = AtmosphereLength(to_sun, curr_pos);
+                float distribution2 = distribution;
+                for (int k = numsecondpoints; k > 0; k--)
+                {
+                    distribution2 += RayleighDistribution(EarthHeight(curr_pos + sun_ray_l * k/ numsecondpoints));
+                }
+                distribution2 /= numsecondpoints;
+                float vis = 1;// step((tst + tst_prev) * 0.5 - sqrEarthRadius);
+                float3 inlight = light * RayleighTransmittance(sun_ray_l * scattering * distribution2);
+                res += d_l * RayleighScatteringPhase(sun_light_scatter) * scattering_l * vis * inlight;
+
+                scattering_l_prev = scattering_l;
+                l_prev = curr_l;
+                tst_prev = tst;
+            }
             
             OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(res, 1.0);
             //Color *= 0.01;

@@ -5,7 +5,7 @@ static const float3 RayleighScatteringWavelength = float3(0.58,1.35,3.3);
 static const float RayleighScatteringMul = 1e-5;
 static const float EarthRadius = 6378000;
 static const float AtmosphereRadius = EarthRadius + 100000;
-
+static const float3 EarthCenter = float3(0, -EarthRadius, 0);
 float RayleighScatteringPhase(float cosTheta)
 {
 	return 0.0596831 * (1 + cosTheta * cosTheta);
@@ -16,12 +16,21 @@ float RayleighDistribution(float h)
 	return exp(-h/8000.0);
 }
 
-
-float3 RayleighTransmittance(float l)
+float EarthHeight(float3 position)
 {
-    return exp(-l* RayleighScatteringWavelength  * RayleighScatteringMul);
+    return length(position - EarthCenter) - EarthRadius;
 }
 
+float3 RayleighTransmittance(float3 scattering)
+{
+    return exp(- scattering);
+}
+
+
+float FastInverse(float x)
+{
+    return 2.0f/(2.0f - saturate(x)) -1.0f;
+}
 //float AtmosphereLength(float3 direction, float3 position)
 //{
 //	float3 EarthCenter = float3(0, -EarthRadius, 0);
@@ -37,11 +46,11 @@ float3 RayleighTransmittance(float l)
 //
 //	return length(V - position);
 //}
-float AtmosphereLength(float3 direction, float3 position)
+
+
+float SphereRay(float3 direction, float3 position, float r, float3 spos)
 {
-	float3 earthcenter = float3(0, -EarthRadius, 0);
-    float3 k = position - earthcenter;
-    float r = AtmosphereRadius;
+    float3 k = position - spos;
     float b = dot(k, direction);
     float c = dot(k, k) - r * r;
     float d = b * b - c;
@@ -59,10 +68,29 @@ float AtmosphereLength(float3 direction, float3 position)
         float max_t = max(t1, t2);
 
         float t = (min_t >= 0) ? min_t : max_t;
-        return max(t,0);
+        return max(t, 0);
 
     }
 
     return 0;
 }
+
+float SphereRayOrt(float3 direction, float3 position, float3 spos)
+{
+    float3 k = spos - position;
+    float b = dot(k, direction);
+    return dot(k, k) - b * b;
+}
+
+float AtmosphereLength(float3 direction, float3 position)
+{
+    float3 earthcenter = float3(0, -EarthRadius, 0);
+    return SphereRay(direction, position, AtmosphereRadius, EarthCenter);
+}
+
+float EarthTest(float3 direction, float3 position)
+{
+    return SphereRayOrt(direction, position, EarthCenter);
+}
+
 #endif
