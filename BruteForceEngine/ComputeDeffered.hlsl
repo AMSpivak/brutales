@@ -60,6 +60,7 @@ void main(ComputeShaderInput IN)
             float sun = smoothstep(0.99996, 0.99997, sun_light_scatter);
             sun_light_scatter = -lerp(sun_light_scatter, 1.0, sun);
             uint4 materials = (Material_tex.Load(IN.DispatchThreadID.xyz));
+            world_pos.xyz += lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz;
             if (materials.r == 0)
             {
                 l = AtmosphereLength(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz);
@@ -69,7 +70,7 @@ void main(ComputeShaderInput IN)
             else
             {
 
-                world_pos.xyz += lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz;
+                
 
                 materials -= 1;
                 const uint material_offset = 2;
@@ -139,6 +140,8 @@ void main(ComputeShaderInput IN)
 
                 res *= RayleighTransmittance(d_l * (scattering_l + scattering_l_prev) * 0.5);
                 float tst = EarthTest(to_sun, curr_pos);
+
+
                 float sun_ray_l = AtmosphereLength(to_sun, curr_pos);
                 float distribution2 = 0;
                 float distribution_prev = distribution;
@@ -151,7 +154,7 @@ void main(ComputeShaderInput IN)
                     distribution_prev = distribution;
                 }
 
-                float vis = tst;// step((tst + tst_prev) * 0.5 - sqrEarthRadius);
+                float vis = step(tst,0);// step((tst + tst_prev) * 0.5 - sqrEarthRadius);
                 float3 inlight = light * RayleighTransmittance( scattering * distribution2);
                 res += d_l * RayleighScatteringPhase(sun_light_scatter) * scattering_l * vis * inlight;
 

@@ -87,6 +87,15 @@ float SphereRayOrt(float3 direction, float3 position, float3 spos)
     return (dot(k, k) - b * b);
 }
 
+float SphereOnRay(float3 direction, float3 position, float r, float3 spos) // assume we are inside projection so only one result
+{
+    float3 k = spos - position;
+    float b = dot(k, direction);
+    return b + r;
+}
+
+
+
 float SphereRayOrt(float3 direction, float3 position, float r, float3 spos)
 {
     float3 k = spos - position;
@@ -106,13 +115,15 @@ float AtmosphereLength(float3 direction, float3 position)
 
 float EarthTest(float3 direction, float3 position)
 {
-    float r = SphereRayOrt(direction, position, EarthRadius, EarthCenter);
+    //return SphereOnRay(direction, position, EarthRadius, EarthCenter);
+    return SphereRay(direction, position, EarthRadius, EarthCenter);
     //if (r < 0.1)
     //{
     //    return 1;
     //}
 
-    return smoothstep(-10000.f, 0.f, -r);// r - EarthRadius * EarthRadius;
+    //return smoothstep(-10000.f, 0.f, -r);// r - EarthRadius * EarthRadius;
+    // return max(1.0 - r,1.0f);// r - EarthRadius * EarthRadius;
 }
 
 #endif
