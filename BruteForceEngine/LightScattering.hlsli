@@ -1,8 +1,8 @@
 #ifndef LIGHR_SCATTERING_HLSLI
 #define LIGHR_SCATTERING_HLSLI
-
-static const float3 RayleighScatteringWavelength = float3(0.58,1.35,3.3);
 static const float RayleighScatteringMul = 1e-5;
+static const float3 RayleighScatteringWavelength = float3(0.58,1.35,3.3) * RayleighScatteringMul;
+//static const float RayleighScatteringMul = 1e-5;
 static const float EarthRadius = 6378000;
 static const float AtmosphereRadius = EarthRadius + 100000;
 static const float3 EarthCenter = float3(0, -EarthRadius, 0);
@@ -13,7 +13,20 @@ float RayleighScatteringPhase(float cosTheta)
 
 float RayleighDistribution(float h)
 {
-	return exp(-h/8000.0);
+	return exp(-h/8000.0f);
+}
+
+static const float3 MieScatteringWavelength = float3(1, 1, 1) * 1e-5;
+
+float MieDistribution(float h)
+{
+    return exp(-h / 1200.0f);
+}
+
+float MieScatteringPhase(float cosTheta, float k)
+{
+    float div = 1 + k * cosTheta;
+    return (1.0 - k*k) / (div * div * 12.56637);
 }
 
 float EarthHeight(float3 position)
@@ -21,7 +34,7 @@ float EarthHeight(float3 position)
     return length(position - EarthCenter) - EarthRadius;
 }
 
-float3 RayleighTransmittance(float3 scatt_dot_l)
+float3 Transmittance(float3 scatt_dot_l)
 {
     return exp(-scatt_dot_l);
 }
@@ -87,13 +100,33 @@ float SphereRayOrt(float3 direction, float3 position, float3 spos)
     return (dot(k, k) - b * b);
 }
 
-float SphereOnRay(float3 direction, float3 position, float r, float3 spos) // assume we are inside projection so only one result
+
+
+float SphereOnRayShadow(float3 direction, float3 position, float3 tangent, float R, float3 spos) // assume we are inside projection so only one result
 {
-    float3 k = spos - position;
-    float b = dot(k, direction);
-    return b + r;
+    //if (tangent.y > 0)
+        //return 0;
+    float3 to_sphere = normalize(spos - position);
+    float3 b = cross(to_sphere, direction);
+    float3 r = cross(b,tangent);
+    float3 tangent_pos = R * r + spos;
+    float delta = dot(r, tangent_pos - position);
+    float res = delta / dot(direction, r);
+    return res;
 }
 
+float4 SphereOnRayShadow4(float3 direction, float3 position, float3 tangent, float R, float3 spos) // assume we are inside projection so only one result
+{
+    //if (tangent.y > 0)
+        //return 0;
+    float3 to_sphere = normalize(spos - position);
+    float3 b = cross(to_sphere, direction);
+    float3 r = cross(b, tangent);
+    float3 tangent_pos = R * r + spos;
+    float delta = dot(r, tangent_pos - position);
+    float res = delta / dot(direction, r);
+    return float4(r,res);
+}
 
 
 float SphereRayOrt(float3 direction, float3 position, float r, float3 spos)

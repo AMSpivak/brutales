@@ -239,6 +239,9 @@ void Update()
             BruteForce::Math::Store(&sun, Sky.SunDirection);
             BruteForce::Math::Vec4Float moon;
             BruteForce::Math::Store(&moon, Sky.MoonDirection);
+            sun.x = 0;
+            sun.y = -0.01;
+            sun.z = 1;
 
             BruteForce::Math::Vec4Float main_sky_light = sun;
 

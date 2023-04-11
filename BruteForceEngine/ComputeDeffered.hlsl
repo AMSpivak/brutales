@@ -55,16 +55,19 @@ void main(ComputeShaderInput IN)
             float3 direction = normalize(world_pos.xyz);
             float3 to_sun = normalize(sun_info.xyz);
             float sun_light_scatter = dot(direction, to_sun);
-            float3 res = float3(0, 0, 0);
+            float3 res = OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy].xyz;
+            //float3 res = float3(0, 0, 0);
             float l = 0;
-            float sun = smoothstep(0.99996, 0.99997, sun_light_scatter);
+            float sunscale = (smoothstep(0,to_sun.y,0.1)*3 + 1.0) *0.00004;
+            
+            float sun = smoothstep(1.0 - sunscale, 1.0 - sunscale * 0.55, sun_light_scatter);
             sun_light_scatter = -lerp(sun_light_scatter, 1.0, sun);
             uint4 materials = (Material_tex.Load(IN.DispatchThreadID.xyz));
             world_pos.xyz += lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz;
             if (materials.r == 0)
             {
                 l = AtmosphereLength(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz);
-                res = sun * sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
+                res += sun * sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
 
             }
             else
@@ -119,44 +122,63 @@ void main(ComputeShaderInput IN)
                 Color = pow(Color, 2.2);
                 res = sun_light_color * Color + moon_light_color * Color;
             }
-            float3 scattering = RayleighScatteringWavelength * RayleighScatteringMul;
+
+            float3 scattering = RayleighScatteringWavelength;
             static const int numpoints = 10;
             static const int numsecondpoints = 5;
 
             float3 light = sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
-            float3 scattering_l_prev = scattering * RayleighDistribution(EarthHeight(world_pos.xyz + direction * l));
-            float3 l_prev = l;
+            float h_l = EarthHeight(world_pos.xyz + direction * l);
+            float l_prev = l;
             //float tst_prev = EeartRadius * EeartRadius;
             float sqrEarthRadius = EarthRadius * EarthRadius;
             float tst_prev = sqrEarthRadius;
+            float RayleighPhase = RayleighScatteringPhase(sun_light_scatter);
+            float MiePhase = MieScatteringPhase(sun_light_scatter, 0.74f);
+            float3 scattering_l_prev = RayleighPhase * RayleighScatteringWavelength * RayleighDistribution(h_l) + MiePhase * MieScatteringWavelength * MieDistribution(h_l);
+            float l_shadow = SphereOnRayShadow(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz, to_sun, EarthRadius, EarthCenter);
             for (int i = numpoints - 1; i > 0; i--)
             {
                 //float curr_l = l * FastInverse(i / numpoints);
                 float curr_l = l * (i / numpoints);
                 float3 curr_pos = world_pos.xyz + direction * curr_l;
-                float distribution = RayleighDistribution(EarthHeight(curr_pos));
-                float3 scattering_l = scattering * distribution;
+                float h = EarthHeight(curr_pos);
+                float distribution_r = RayleighDistribution(h);
+                float distribution_m = MieDistribution(h);
+                float3 scattering_l = RayleighPhase * RayleighScatteringWavelength * distribution_r + MiePhase * MieScatteringWavelength * distribution_m;
+                
                 float d_l = l_prev - curr_l;
 
-                res *= RayleighTransmittance(d_l * (scattering_l + scattering_l_prev) * 0.5);
+                res *= Transmittance(d_l * (scattering_l + scattering_l_prev) * 0.5);
                 float tst = EarthTest(to_sun, curr_pos);
 
 
                 float sun_ray_l = AtmosphereLength(to_sun, curr_pos);
-                float distribution2 = 0;
-                float distribution_prev = distribution;
-                float distribution_now = 0;
+                
+                float distribution_prev_r = distribution_r;
+                float distribution_now_r = 0;
+
+                float distribution_prev_m = distribution_m;
+                float distribution_now_m = 0;
+
                 float step_in_scatter = sun_ray_l / (numsecondpoints - 1);
+
+                distribution_r = 0; distribution_m = 0;
                 for (int k = 1; k < numsecondpoints; k++)
                 {
-                    distribution_now = RayleighDistribution(EarthHeight(curr_pos + step_in_scatter * k));
-                    distribution2 += (distribution_now + distribution_prev)* 0.5 * step_in_scatter;
-                    distribution_prev = distribution;
+                    float  sec_h = EarthHeight(curr_pos + to_sun * step_in_scatter * k);
+                    distribution_now_r = RayleighDistribution(sec_h);
+                    distribution_now_m = MieDistribution(sec_h);
+                    distribution_r += (distribution_now_r + distribution_prev_r)* 0.5 * step_in_scatter; 
+                    distribution_m += (distribution_now_m + distribution_prev_m) * 0.5 * step_in_scatter;
+                    distribution_prev_r = distribution_now_r;
+                    distribution_prev_m = distribution_now_m;
                 }
 
-                float vis = step(tst,0);// step((tst + tst_prev) * 0.5 - sqrEarthRadius);
-                float3 inlight = light * RayleighTransmittance( scattering * distribution2);
-                res += d_l * RayleighScatteringPhase(sun_light_scatter) * scattering_l * vis * inlight;
+                //float vis = saturate((curr_l - l_shadow) / (l_prev - curr_l));// step((tst + tst_prev) * 0.5 - sqrEarthRadius);
+                float vis = step(l_shadow, curr_l); saturate((curr_l - l_shadow));// step((tst + tst_prev) * 0.5 - sqrEarthRadius);
+                float3 inlight = light * Transmittance(RayleighScatteringWavelength * distribution_r + MieScatteringWavelength * distribution_m);// +MieScatteringWavelength);
+                res += d_l * scattering_l * vis * inlight;
 
                 scattering_l_prev = scattering_l;
                 l_prev = curr_l;
@@ -167,8 +189,8 @@ void main(ComputeShaderInput IN)
             //Color *= 0.01;
             //Color = pow(Color, 2.2);
             
-            //OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(world_pos.xyz, 1.0);
-            OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(res, 1.0);
+            //OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(0.001 * l_shadow,0.001*l,0, 1.0);
+            OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = (SphereOnRayShadow4(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz, to_sun, EarthRadius, EarthCenter));
         }
     }
 }
