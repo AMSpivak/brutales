@@ -115,17 +115,51 @@ float SphereOnRayShadow(float3 direction, float3 position, float3 tangent, float
     return res;
 }
 
-float4 SphereOnRayShadow4(float3 direction, float3 position, float3 tangent, float R, float3 spos) // assume we are inside projection so only one result
+//float4 SphereOnRayShadow4(float3 direction, float3 position, float3 tangent, float R, float3 spos) // assume we are inside projection so only one result
+//{
+//    //if (tangent.y > 0)
+//        //return 0;
+//    float3 to_sphere = normalize(spos - position);
+//    float3 b = cross(to_sphere, direction);
+//    float3 r = cross(b, tangent);
+//
+//    float d = dot(direction, r);
+//    static const float edge = 0.000001f;
+//
+//    if (d > -edge && d < edge)
+//    {
+//        return float4( 0,-tangent.y,d,1);
+//    }
+//
+//    float3 tangent_pos = R * r + spos;
+//    float delta = dot(r, tangent_pos - position);
+//    float res = delta / d;
+//    float l = length(float3(tangent_pos.xz, 0));
+//    return float4(delta*0.001, l, d, res * 0.001);
+//}
+
+float4 SphereOnRayShadow4(float3 direction, float3 position, float3 to_light_dir, float R, float3 spos) // assume we are inside projection so only one result
 {
-    //if (tangent.y > 0)
-        //return 0;
-    float3 to_sphere = normalize(spos - position);
-    float3 b = cross(to_sphere, direction);
-    float3 r = cross(b, tangent);
-    float3 tangent_pos = R * r + spos;
-    float delta = dot(r, tangent_pos - position);
-    float res = delta / dot(direction, r);
-    return float4(r,res);
+    if (to_light_dir.y > 0)
+        return 0;
+    static const float sigma = 0.000001f;
+    static const float overlength = AtmosphereRadius * 2.0f;
+    float3 _position_sphere = position - spos;
+    float3 to_sphere = -normalize(_position_sphere);
+    float dir_check = dot(direction, to_light_dir);
+
+    //if ((dir_check * dir_check) + sigma > (1.0f))
+    //{
+    //    return float4(dot(to_sphere, to_light_dir) > 0 ? overlength : 0 , 0, 0, 1);
+    //}
+
+    float3 b = normalize(cross(direction, to_light_dir));
+    float3 r = cross(to_light_dir, b);
+    float vnr = dot(direction, r);
+    float pr = dot(_position_sphere, r);
+    float vr = R - pr;
+    float lv = vr / vnr;
+    return float4(lv, vr, pr,vnr);
 }
 
 

@@ -136,7 +136,7 @@ void main(ComputeShaderInput IN)
             float RayleighPhase = RayleighScatteringPhase(sun_light_scatter);
             float MiePhase = MieScatteringPhase(sun_light_scatter, 0.74f);
             float3 scattering_l_prev = RayleighPhase * RayleighScatteringWavelength * RayleighDistribution(h_l) + MiePhase * MieScatteringWavelength * MieDistribution(h_l);
-            float l_shadow = SphereOnRayShadow(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz, to_sun, EarthRadius, EarthCenter);
+            float l_shadow = SphereOnRayShadow4(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz, to_sun, EarthRadius, EarthCenter).x;
             for (int i = numpoints - 1; i > 0; i--)
             {
                 //float curr_l = l * FastInverse(i / numpoints);
@@ -175,8 +175,7 @@ void main(ComputeShaderInput IN)
                     distribution_prev_m = distribution_now_m;
                 }
 
-                //float vis = saturate((curr_l - l_shadow) / (l_prev - curr_l));// step((tst + tst_prev) * 0.5 - sqrEarthRadius);
-                float vis = step(l_shadow, curr_l); saturate((curr_l - l_shadow));// step((tst + tst_prev) * 0.5 - sqrEarthRadius);
+                float vis = step(l_shadow,curr_l); saturate((curr_l - l_shadow) / (l_prev - curr_l));
                 float3 inlight = light * Transmittance(RayleighScatteringWavelength * distribution_r + MieScatteringWavelength * distribution_m);// +MieScatteringWavelength);
                 res += d_l * scattering_l * vis * inlight;
 
@@ -190,7 +189,8 @@ void main(ComputeShaderInput IN)
             //Color = pow(Color, 2.2);
             
             //OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(0.001 * l_shadow,0.001*l,0, 1.0);
-            OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = (SphereOnRayShadow4(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz, to_sun, EarthRadius, EarthCenter));
+            OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(0.001 * l_shadow, 0.001 *l,0.001 * (l - l_shadow), 1.0);
+            //OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = (SphereOnRayShadow4(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz, to_sun, EarthRadius, EarthCenter));
         }
     }
 }
