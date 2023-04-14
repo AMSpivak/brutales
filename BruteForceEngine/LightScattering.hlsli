@@ -148,18 +148,39 @@ float4 SphereOnRayShadow4(float3 direction, float3 position, float3 to_light_dir
     float3 to_sphere = -normalize(_position_sphere);
     float dir_check = dot(direction, to_light_dir);
 
-    //if ((dir_check * dir_check) + sigma > (1.0f))
-    //{
-    //    return float4(dot(to_sphere, to_light_dir) > 0 ? overlength : 0 , 0, 0, 1);
-    //}
+    if ((dir_check * dir_check) + sigma > (1.0f))
+    {
+        return float4(/*dot(to_sphere, to_light_dir) > 0 ? overlength : */ 0, 0, 0, 1);
+    }
 
     float3 b = normalize(cross(direction, to_light_dir));
     float3 r = cross(to_light_dir, b);
-    float vnr = dot(direction, r);
-    float pr = dot(_position_sphere, r);
-    float vr = R - pr;
-    float lv = vr / vnr;
-    return float4(lv, vr, pr,vnr);
+
+    float3 cp = float3(dot(_position_sphere, r), dot(_position_sphere, b), /*dot(_position_sphere, to_light_dir)*/0);
+    float3 cdirection = float3(dot(direction, r), dot(direction, b), /*dot(direction, to_light_dir)*/0);
+
+    float cpd = dot(cp, cdirection);
+    float cpp = dot(cp, cp);
+    float RR = R * R;
+
+    if (RR < cpp)
+    {
+        return float4(/*dot(to_sphere, to_light_dir) > 0 ? overlength : */ 0, 0, 0, 1);
+    }
+
+    float D = cpd * cpd + R * R - cpp;
+
+    float cdd = dot(cdirection, cdirection);
+    float sqD = sqrt(D);
+    float lv = (-cpd - sqD) / cdd;
+    float lv2 = (-cpd + sqD) / cdd;
+
+    //float vnr = dot(direction, r);
+    //float pr = dot(_position_sphere, r);
+    //float vr = R - pr;
+    //float lv = vr / vnr;
+    //return float4(lv, vr, pr,vnr);
+    return float4(lv, lv2, cpd, cdd);
 }
 
 
