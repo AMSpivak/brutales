@@ -27,6 +27,31 @@ RWTexture2D<float4> OutImage[2] : register(u0);
 
 sampler sampl : register(s0);
 
+float EarthShadow(float2 position) //world_pos.xz
+{
+    float2 l_dir = lighting_CB[FrameInfoCB.frame_index].m_SunShadow.xy;
+
+    float2 pos = position * lighting_CB[FrameInfoCB.frame_index].m_TerrainScaler.xz;
+    float2 shadowUV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
+    shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
+    shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * lighting_CB[FrameInfoCB.frame_index].m_SunShadow.z;
+
+    float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, shadowUV, 0);
+    return smoothstep(shadows.y, shadows.x, shadows.z);
+}
+
+float EarthShadow(float3 position) //world_pos.xz
+{
+    float2 l_dir = lighting_CB[FrameInfoCB.frame_index].m_SunShadow.xy;
+
+    float2 pos = position.xz * lighting_CB[FrameInfoCB.frame_index].m_TerrainScaler.xz;
+    float2 shadowUV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
+    shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
+    shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * lighting_CB[FrameInfoCB.frame_index].m_SunShadow.z;
+
+    float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, shadowUV, 0);
+    return smoothstep(shadows.y, shadows.x, position.y);
+}
 
 #define BLOCK_SIZE 8
 [numthreads(BLOCK_SIZE, BLOCK_SIZE, 1)]
@@ -62,7 +87,7 @@ void main(ComputeShaderInput IN)
             
             float sun = smoothstep(1.0 - sunscale, 1.0 - sunscale * 0.55, sun_light_scatter);
             sun_light_scatter = -lerp(sun_light_scatter, 1.0, sun);
-            uint4 materials = (Material_tex.Load(IN.DispatchThreadID.xyz));
+            uint4 materials = /*NonUniformResourceIndex */ (Material_tex.Load(IN.DispatchThreadID.xyz));
             world_pos.xyz += lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz;
             if (materials.r == 0)
             {
@@ -71,20 +96,16 @@ void main(ComputeShaderInput IN)
 
             }
             else
-            {
-
-                
-
+            {             
                 materials -= 1;
                 const uint material_offset = 2;
 
-                //uint4 materials = NonUniformResourceIndex(Material_tex.Load(IN.DispatchThreadID.xyz));
                 float4 UV = UV_tex.Load(int3(IN.DispatchThreadID.xy, 0));
                 float4 Ddx_Ddy = Ddx_Ddy_tex.Load(IN.DispatchThreadID.xyz);
 
 
 
-                float2 l_dir = lighting_CB[FrameInfoCB.frame_index].m_SunShadow.xy;
+                /*float2 l_dir = lighting_CB[FrameInfoCB.frame_index].m_SunShadow.xy;
 
                 float2 pos = world_pos.xz * lighting_CB[FrameInfoCB.frame_index].m_TerrainScaler.xz;
                 float2 shadowUV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
@@ -92,15 +113,14 @@ void main(ComputeShaderInput IN)
                 shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * lighting_CB[FrameInfoCB.frame_index].m_SunShadow.z;
 
                 float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, shadowUV, 0);
-                shadows.x = smoothstep(shadows.y, shadows.x, shadows.z);
+                shadows.x = smoothstep(shadows.y, shadows.x, shadows.z);*/
+                float shadow = EarthShadow(world_pos.xz);
+                
                 matrix TBN;
                 mat_cast_xm(quat, TBN);
-                //float3 Normal = Normal_smpl.x * T_Normal + Normal_smpl.z * face_Normal + Normal_smpl.y * B_Normal;
-                //Normal_smpl.y = -Normal_smpl.y;
                 float3 Normal_smpl = textures[materials.r * material_offset + 1].SampleGrad(sampl, UV.xy, Ddx_Ddy.xy, Ddx_Ddy.zw).xyz * 2.0 - 1.0;
                 Normal_smpl.y = -Normal_smpl.y;
                 float3 Normal = mul(TBN, float4(Normal_smpl, 0.0f)).xyz;
-                //float3 Normal = mul(TBN, float4(0.0,0.0,1.0 ,0.0f)).xyz;
 
 
 
@@ -108,14 +128,21 @@ void main(ComputeShaderInput IN)
                 float sun_light = sun_info.w;
                 float moon_light_diffuse = dot(Normal, normalize(moon_info.xyz));
                 float moon_light = moon_info.w;
-
-                sun_light *= 0.2 + clamp(sun_light_diffuse, 0.0, 1.0) * shadows.x;// *shadows.x;// *shadows.x;
+                sun_light *= 0.2;
+                
                 float sun_intens = smoothstep(-0.1, -0.0, sun_info.y);
                 sun_light *= sun_intens * sun_intens * sun_intens;
-                moon_light *= 0.2 + clamp(moon_light_diffuse, 0.0, 1.0);// *shadows.x;// *shadows.x;
-                moon_light *= smoothstep(-0.3, -0.0, moon_info.y);// *shadows.x;// *shadows.x;
+                moon_light *= 0.2 + clamp(moon_light_diffuse, 0.0, 1.0);
+                moon_light *= smoothstep(-0.3, -0.0, moon_info.y);
 
-                float3 sun_light_color = sun_light * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
+                float sun_ray_l = AtmosphereLength(to_sun, world_pos.xyz);
+                float3 od = OpticalDepth(5, world_pos.xyz, to_sun, sun_ray_l);
+
+                float3 sun_color = lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz * sun_info.w * od;
+
+                float3 sun_light_color_direct = clamp(sun_light_diffuse, 0.0, 1.0) * shadow * sun_color;// smoothstep(-0.001, -0.0, sun_info.y);
+                float3 sun_light_color_ambient = sun_color * (0.05f + 0.15 *clamp(to_sun.y, 0.0, 1.0));
+                float3 sun_light_color = sun_light_color_ambient + sun_light_color_direct;
                 float3 moon_light_color = moon_light * lighting_CB[FrameInfoCB.frame_index].m_MoonColor.xyz;
 
                 float3 Color = textures[materials.r * material_offset].SampleGrad(sampl, UV.xy, Ddx_Ddy.xy, Ddx_Ddy.zw).xyz;
@@ -124,7 +151,7 @@ void main(ComputeShaderInput IN)
             }
 
             float3 scattering = RayleighScatteringWavelength;
-            static const int numpoints = 10;
+            static const int numpoints = 100;
             static const int numsecondpoints = 5;
 
             float3 light = sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
@@ -134,8 +161,10 @@ void main(ComputeShaderInput IN)
             float sqrEarthRadius = EarthRadius * EarthRadius;
             float tst_prev = sqrEarthRadius;
             float RayleighPhase = RayleighScatteringPhase(sun_light_scatter);
-            float MiePhase = MieScatteringPhase(sun_light_scatter, 0.74f);
+            float MiePhase = MieScatteringPhase(sun_light_scatter, -0.55f);
             float3 scattering_l_prev = RayleighPhase * RayleighScatteringWavelength * RayleighDistribution(h_l) + MiePhase * MieScatteringWavelength * MieDistribution(h_l);
+
+
             float4 l_shadow4 = SphereOnRayShadow4(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz, to_sun, EarthRadius, EarthCenter);
             float l_shadow = l_shadow4.y;
             for (int i = numpoints - 1; i > 0; i--)
@@ -147,50 +176,35 @@ void main(ComputeShaderInput IN)
                 float distribution_r = RayleighDistribution(h);
                 float distribution_m = MieDistribution(h);
                 float3 scattering_l = RayleighPhase * RayleighScatteringWavelength * distribution_r + MiePhase * MieScatteringWavelength * distribution_m;
-                
+
                 float d_l = l_prev - curr_l;
 
                 res *= Transmittance(d_l * (scattering_l + scattering_l_prev) * 0.5);
-                float tst = EarthTest(to_sun, curr_pos);
+                //float tst = EarthTest(to_sun, curr_pos);
 
 
-                float sun_ray_l = AtmosphereLength(to_sun, curr_pos);
-                
-                float distribution_prev_r = distribution_r;
-                float distribution_now_r = 0;
-
-                float distribution_prev_m = distribution_m;
-                float distribution_now_m = 0;
-
-                float step_in_scatter = sun_ray_l / (numsecondpoints - 1);
-
-                distribution_r = 0; distribution_m = 0;
-                for (int k = 1; k < numsecondpoints; k++)
+                if (l_shadow < l_prev)
                 {
-                    float  sec_h = EarthHeight(curr_pos + to_sun * step_in_scatter * k);
-                    distribution_now_r = RayleighDistribution(sec_h);
-                    distribution_now_m = MieDistribution(sec_h);
-                    distribution_r += (distribution_now_r + distribution_prev_r)* 0.5 * step_in_scatter; 
-                    distribution_m += (distribution_now_m + distribution_prev_m) * 0.5 * step_in_scatter;
-                    distribution_prev_r = distribution_now_r;
-                    distribution_prev_m = distribution_now_m;
-                }
+                    float sun_ray_l = AtmosphereLength(to_sun, curr_pos);
 
-                float vis = step(l_shadow, curr_l);// saturate((curr_l - l_shadow) / (l_prev - curr_l));
-                //float vis = 1.0 - saturate((curr_l - l_shadow) / d_l); //step(l_shadow, l);
-                float3 inlight = light * Transmittance(RayleighScatteringWavelength * distribution_r + MieScatteringWavelength * distribution_m);// +MieScatteringWavelength);
-                res += d_l * scattering_l * vis * inlight;
+                    float3 od = OpticalDepth(numsecondpoints, curr_pos, to_sun, sun_ray_l);
+                    float vis = step(l_shadow, curr_l);// saturate((curr_l - l_shadow) / (l_prev - curr_l));
+                    //float vis = saturate((l_prev -l_shadow) / d_l); //step(l_shadow, l);
+                    //float3 inlight = light * Transmittance(RayleighScatteringWavelength * distribution_r + MieScatteringWavelength * distribution_m);// +MieScatteringWavelength);
+                    float3 inlight = light * od;// +MieScatteringWavelength);
+                    float shadow = EarthShadow(curr_pos);
+                    res += d_l * scattering_l * vis * inlight;
+                }
 
                 scattering_l_prev = scattering_l;
                 l_prev = curr_l;
-                tst_prev = tst;
             }
             
             OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(res, 1.0);
             //Color *= 0.01;
             //Color = pow(Color, 2.2);
             
-            OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = 0.001 * l_shadow4;// float4(0.001 * l_shadow, 0.001 * l, 0, 1.0);
+            //OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = 0.001 * l_shadow4;// float4(0.001 * l_shadow, 0.001 * l, 0, 1.0);
             //OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(0.001 * l_shadow, 0.001 *l,0.001 * (l - l_shadow), 1.0);
             //OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = (SphereOnRayShadow4(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz, to_sun, EarthRadius, EarthCenter));
         }

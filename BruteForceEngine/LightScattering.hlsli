@@ -1,7 +1,8 @@
 #ifndef LIGHR_SCATTERING_HLSLI
 #define LIGHR_SCATTERING_HLSLI
 static const float RayleighScatteringMul = 1e-5;
-static const float3 RayleighScatteringWavelength = float3(0.58,1.35,3.3) * RayleighScatteringMul;
+static const float3 RayleighScatteringWavelength = float3(0.58, 1.35, 3.3) * RayleighScatteringMul;
+//static const float3 RayleighScatteringWavelength = float3(0.58,1.35,3.3) * RayleighScatteringMul;
 //static const float RayleighScatteringMul = 1e-5;
 static const float EarthRadius = 6378000;
 static const float AtmosphereRadius = EarthRadius + 100000;
@@ -16,17 +17,20 @@ float RayleighDistribution(float h)
 	return exp(-h/8000.0f);
 }
 
-static const float3 MieScatteringWavelength = float3(1, 1, 1) * 1e-5;
+static const float3 MieScatteringWavelength = float3(3, 3, 3) * 1e-6;
 
 float MieDistribution(float h)
 {
-    return exp(-h / 1200.0f);
+    return exp(-h / 800.0f);
 }
 
-float MieScatteringPhase(float cosTheta, float k)
+float MieScatteringPhase(float cosTheta, float g)
 {
-    float div = 1 + k * cosTheta;
-    return (1.0 - k*k) / (div * div * 12.56637);
+    static const float PI = 3.141593;
+    g = clamp(g, -0.99, 0.99);
+    float g2 = (g * g);
+
+    return 3.0 / (8 * PI) * (1 - g2) / (2 + g2) * (1 + (cosTheta * cosTheta)) / pow(1 + g2 - 2 * g * cosTheta, 1.5);
 }
 
 float EarthHeight(float3 position)
@@ -156,31 +160,33 @@ float4 SphereOnRayShadow4(float3 direction, float3 position, float3 to_light_dir
     float3 b = normalize(cross(direction, to_light_dir));
     float3 r = cross(to_light_dir, b);
 
-    float3 cp = float3(dot(_position_sphere, r), dot(_position_sphere, b), /*dot(_position_sphere, to_light_dir)*/0);
-    float3 cdirection = float3(dot(direction, r), dot(direction, b), /*dot(direction, to_light_dir)*/0);
+    float2 cp = float2(dot(_position_sphere, r), dot(_position_sphere, b));
+    float2 cdirection = float2(dot(direction, r), dot(direction, b));
 
     float cpd = dot(cp, cdirection);
     float cpp = dot(cp, cp);
     float RR = R * R;
 
-    if (RR < cpp)
-    {
-        return float4(/*dot(to_sphere, to_light_dir) > 0 ? overlength : */ 0, 0, 0, 1);
-    }
-
-    float D = cpd * cpd + R * R - cpp;
-
+    //if (RR < cpp)
+    //{
+    //    return float4(/*dot(to_sphere, to_light_dir) > 0 ? overlength : */ 0, 0, 0, 1);
+    //}
     float cdd = dot(cdirection, cdirection);
-    float sqD = sqrt(D);
-    float lv = (-cpd - sqD) / cdd;
-    float lv2 = (-cpd + sqD) / cdd;
+    float D = cpd * cpd + (RR - cpp) * cdd;
 
+    
+    float sqD = sqrt(D);
+    //float lv = -cpd;// -sqD;
+    float lv2 = -cpd + sqD ;
+       //{
+        //    return float4(/*dot(to_sphere, to_light_dir) > 0 ? overlength : */ 0, 0, 0, 1);
+        //}
     //float vnr = dot(direction, r);
     //float pr = dot(_position_sphere, r);
     //float vr = R - pr;
     //float lv = vr / vnr;
     //return float4(lv, vr, pr,vnr);
-    return float4(lv, lv2, cpd, cdd);
+    return float4(min(0.0, lv2/ cdd), lv2, lv2, cdd);
 }
 
 
@@ -212,6 +218,32 @@ float EarthTest(float3 direction, float3 position)
 
     //return smoothstep(-10000.f, 0.f, -r);// r - EarthRadius * EarthRadius;
     // return max(1.0 - r,1.0f);// r - EarthRadius * EarthRadius;
+}
+
+float3 OpticalDepth(in int numpoints, float3 position, float3 direction, float l)
+{
+    float  sec_h = EarthHeight(position);
+    float distribution_r = RayleighDistribution(sec_h);
+    float distribution_m = MieDistribution(sec_h);
+
+    float distribution_prev_r = distribution_r;
+    float distribution_now_r = 0;
+
+    float distribution_prev_m = distribution_m;
+    float distribution_now_m = 0;
+
+    float step_in_scatter = l / (numpoints - 1);
+    for (int k = 1; k < numpoints; k++)
+    {
+        sec_h = EarthHeight(position + direction * step_in_scatter * k);
+        distribution_now_r = RayleighDistribution(sec_h);
+        distribution_now_m = MieDistribution(sec_h);
+        distribution_r += (distribution_now_r + distribution_prev_r) * 0.5 * step_in_scatter;
+        distribution_m += (distribution_now_m + distribution_prev_m) * 0.5 * step_in_scatter;
+        distribution_prev_r = distribution_now_r;
+        distribution_prev_m = distribution_now_m;
+    }
+    return Transmittance(RayleighScatteringWavelength * distribution_r + MieScatteringWavelength * distribution_m);
 }
 
 #endif
