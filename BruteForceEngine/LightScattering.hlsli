@@ -5,11 +5,13 @@ static const float3 RayleighScatteringWavelength = float3(0.58, 1.35, 3.3) * Ray
 //static const float3 RayleighScatteringWavelength = float3(0.58,1.35,3.3) * RayleighScatteringMul;
 //static const float RayleighScatteringMul = 1e-5;
 static const float EarthRadius = 6378000;
-static const float AtmosphereRadius = EarthRadius + 100000;
+static const float AtmosphereRadius = EarthRadius + 60000;
 static const float3 EarthCenter = float3(0, -EarthRadius, 0);
+static const float PI = 3.141593;
 float RayleighScatteringPhase(float cosTheta)
 {
-	return 0.0596831 * (1 + cosTheta * cosTheta);
+	//return 0.0596831 * (1 + cosTheta * cosTheta);
+    return 3.0 / (16 * PI) * (1 + cosTheta * cosTheta);
 }
 
 float RayleighDistribution(float h)
@@ -17,20 +19,21 @@ float RayleighDistribution(float h)
 	return exp(-h/8000.0f);
 }
 
-static const float3 MieScatteringWavelength = float3(3, 3, 3) * 1e-6;
+static const float3 MieScatteringWavelength = float3(2, 2, 2) * 1e-6;
 
 float MieDistribution(float h)
 {
-    return exp(-h / 800.0f);
+    return exp(-h / 1200.0f);
 }
 
 float MieScatteringPhase(float cosTheta, float g)
 {
-    static const float PI = 3.141593;
+    
     g = clamp(g, -0.99, 0.99);
     float g2 = (g * g);
 
-    return 3.0 / (8 * PI) * (1 - g2) / (2 + g2) * (1 + (cosTheta * cosTheta)) / pow(1 + g2 - 2 * g * cosTheta, 1.5);
+    //return 3.0 / (8 * PI) * (1 - g2) / (2 + g2) * (1 + (cosTheta * cosTheta)) / pow(1 + g2 - 2 * g * cosTheta, 1.5);
+    return 1.0 / (4 * PI) * (1 - g2) / pow(1 + g2 - 2 * g * cosTheta, 1.5);
 }
 
 float EarthHeight(float3 position)
@@ -144,8 +147,8 @@ float SphereOnRayShadow(float3 direction, float3 position, float3 tangent, float
 
 float4 SphereOnRayShadow4(float3 direction, float3 position, float3 to_light_dir, float R, float3 spos) // assume we are inside projection so only one result
 {
-    if (to_light_dir.y > 0)
-        return 0;
+    //if (to_light_dir.y > 0)
+        //return 0;
     static const float sigma = 0.000001f;
     static const float overlength = AtmosphereRadius * 2.0f;
     float3 _position_sphere = position - spos;
@@ -154,7 +157,7 @@ float4 SphereOnRayShadow4(float3 direction, float3 position, float3 to_light_dir
 
     if ((dir_check * dir_check) + sigma > (1.0f))
     {
-        return float4(/*dot(to_sphere, to_light_dir) > 0 ? overlength : */ 0, 0, 0, 1);
+        return float4(dot(to_sphere, to_light_dir) > 0 ? overlength : 0, 0, 0, 1);
     }
 
     float3 b = normalize(cross(direction, to_light_dir));
@@ -177,6 +180,7 @@ float4 SphereOnRayShadow4(float3 direction, float3 position, float3 to_light_dir
     
     float sqD = sqrt(D);
     //float lv = -cpd;// -sqD;
+    float lv1 = -cpd - sqD;
     float lv2 = -cpd + sqD ;
        //{
         //    return float4(/*dot(to_sphere, to_light_dir) > 0 ? overlength : */ 0, 0, 0, 1);
@@ -243,7 +247,7 @@ float3 OpticalDepth(in int numpoints, float3 position, float3 direction, float l
         distribution_prev_r = distribution_now_r;
         distribution_prev_m = distribution_now_m;
     }
-    return Transmittance(RayleighScatteringWavelength * distribution_r + MieScatteringWavelength * distribution_m);
+    return Transmittance(RayleighScatteringWavelength * distribution_r + MieScatteringWavelength * distribution_m *1.11);
 }
 
 #endif
