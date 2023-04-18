@@ -92,7 +92,16 @@ void main(ComputeShaderInput IN)
             if (materials.r == 0)
             {
                 l = AtmosphereLength(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz);
-                res += sun * sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
+                float3 ray_end = lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz + direction * l;
+                float l_shadow = SphereRay(to_sun, ray_end, EarthRadius, EarthCenter);
+                float vis = step(l_shadow, 0);
+
+                float sun_ray_l = AtmosphereLength(to_sun, ray_end);
+                float3 od = OpticalDepth(5, ray_end, to_sun, sun_ray_l);
+
+                float3 sun_color = lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz * sun_info.w * od;
+                // temp hack to check
+                res += sun * sun_color * vis;
 
             }
             else
@@ -162,13 +171,14 @@ void main(ComputeShaderInput IN)
             float sqrEarthRadius = EarthRadius * EarthRadius;
             float tst_prev = sqrEarthRadius;
             float RayleighPhase = RayleighScatteringPhase(sun_light_scatter);
-            float MiePhase = MieScatteringPhase(sun_light_scatter, -0.75f);
+            float MiePhase = MieScatteringPhase(sun_light_scatter, -0.35f);
             float3 scattering_l_prev = RayleighPhase * RayleighScatteringWavelength * RayleighDistribution(h_l) + MiePhase * MieScatteringWavelength * MieDistribution(h_l);
+            float3 transmittance_l_prev = RayleighScatteringWavelength * RayleighDistribution(h_l) + MieScatteringWavelength * MieDistribution(h_l) * 1.11;
 
 
             //float4 l_shadow4 = SphereOnRayShadow4(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz, to_sun, EarthRadius, EarthCenter);
             //float l_shadow = l_shadow4.y;
-            //l_shadow =  SphereRay(to_sun, ray_end, EarthRadius, EarthCenter);// temp hack to check
+            float l_shadow =  SphereRay(to_sun, ray_end, EarthRadius, EarthCenter);// temp hack to check
             for (int i = numpoints - 1; i > 0; i--)
             {
                 //float curr_l = l * FastInverse(i / numpoints);
@@ -177,14 +187,15 @@ void main(ComputeShaderInput IN)
                 float h = EarthHeight(curr_pos);
                 float distribution_r = RayleighDistribution(h);
                 float distribution_m = MieDistribution(h);
-                float3 scattering_l = RayleighPhase * RayleighScatteringWavelength * distribution_r + MiePhase * MieScatteringWavelength * distribution_m * 1.11;
-
+               // float3 scattering_l = RayleighPhase * RayleighScatteringWavelength * distribution_r + MiePhase * MieScatteringWavelength * distribution_m * 1.11;
+                float3 scattering_l = RayleighPhase * RayleighScatteringWavelength * distribution_r + MiePhase * MieScatteringWavelength * distribution_m;
+                float3 transmittance_l = RayleighScatteringWavelength * distribution_r + MieScatteringWavelength * distribution_m * 1.11;
                 float d_l = l_prev - curr_l;
 
-                res *= Transmittance(d_l * (scattering_l + scattering_l_prev) * 0.5);
+                res *= Transmittance(d_l * (transmittance_l + transmittance_l_prev) * 0.5);
                 //float tst = EarthTest(to_sun, curr_pos);
 
-
+                
                 //if (l_shadow < l_prev)
                 
                 float sun_ray_l = AtmosphereLength(to_sun, curr_pos);
@@ -195,14 +206,16 @@ void main(ComputeShaderInput IN)
 
                     float3 od = OpticalDepth(numsecondpoints, curr_pos, to_sun, sun_ray_l);
                     //float vis = step(l_shadow, curr_l);// saturate((curr_l - l_shadow) / (l_prev - curr_l));
-                    //float vis = step(l_shadow, 0);// saturate((curr_l - l_shadow) / (l_prev - curr_l));
-                    float vis = 1;// saturate((l_prev - l_shadow) / d_l); //step(l_shadow, l);
+                    float vis = step(l_shadow, 0);// saturate((curr_l - l_shadow) / (l_prev - curr_l));
+                    //float vis = 1;// saturate((l_prev - l_shadow) / d_l); //step(l_shadow, l);
                     float3 inlight = light * od;
+                    
                     //float shadow = EarthShadow(curr_pos);
-                    res += d_l * scattering_l * vis * inlight;
+                    res += d_l * (scattering_l + scattering_l_prev) * 0.5 * vis * inlight;
                 }
-                //l_shadow = SphereRay(to_sun, curr_pos, EarthRadius, EarthCenter);
+                l_shadow = SphereRay(to_sun, curr_pos, EarthRadius, EarthCenter);
                 scattering_l_prev = scattering_l;
+                transmittance_l_prev = transmittance_l;
                 l_prev = curr_l;
             }
             

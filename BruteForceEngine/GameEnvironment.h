@@ -26,11 +26,22 @@ namespace BruteForce
             Math::Vec4Float m_TerrainScaler;
         };
 
+        struct GameCameraInfo
+        {
+            bool m_EyeAdapt;
+            GameCameraInfo():m_EyeAdapt(true)
+            {}
+        };
+
+
         TerrainInfo& GetGlobalTerrainInfo();
         const TerrainInfo& ReadGlobalTerrainInfo();
 
         AtmosphereInfo& GetGlobalAtmosphereInfo();
         const AtmosphereInfo& ReadGlobalAtmosphereInfo();
+
+        GameCameraInfo& GetGlobalGameCameraInfo();
+        const GameCameraInfo& ReadGlobalGameCameraInfo();
 
         // ConstantBuffer<AtmosphereCB>* GetAtmosphereCB(uint8_t frame_index);
     }
