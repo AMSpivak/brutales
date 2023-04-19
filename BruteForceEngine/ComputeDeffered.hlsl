@@ -92,13 +92,13 @@ void main(ComputeShaderInput IN)
             world_pos.xyz += camera;
             if (materials.r == 0)
             {
-                l = AtmosphereLength(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz);
+                l = AtmosphereLength(direction, camera);
                 float3 ray_end = camera + direction * (l);
                 float l_shadow = SphereRay(to_sun, ray_end, EarthRadius, EarthCenter);
                 float vis = step(l_shadow, 0);
-
-                float sun_ray_l = AtmosphereLength(to_sun, ray_end);
-                float3 od = OpticalDepth(5, ray_end, to_sun, sun_ray_l);
+                float sun_ray_l = SphereRay(to_sun, ray_end, AtmosphereRadius, EarthCenter); //AtmosphereLength(to_sun, ray_end + to_sun * 100);
+                float2 sun_ray_l2 = SphereRayMine(to_sun, ray_end, AtmosphereRadius, EarthCenter); //AtmosphereLength(to_sun, ray_end + to_sun * 100);
+                float3 od = OpticalDepth(5, ray_end, to_sun, dot(direction, to_sun)> 0 ? 0 : sun_ray_l2.y);
 
                 float3 sun_color = lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz * sun_info.w * od;
 
@@ -107,7 +107,8 @@ void main(ComputeShaderInput IN)
                 //float distribution_m = MieDistribution(h);
                 // temp hack to check
                 res += sun * sun_color * vis;
-
+                OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(sun_ray_l *0.001,sun_ray_l2 * 0.001, dot(direction, to_sun));
+                return;
             }
             else
             {             

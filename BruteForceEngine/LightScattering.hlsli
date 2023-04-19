@@ -51,25 +51,104 @@ float FastInverse(float x)
 {
     return 2.0f/(2.0f - saturate(x)) -1.0f;
 }
-//float AtmosphereLength(float3 direction, float3 position)
-//{
-//	float3 EarthCenter = float3(0, -EarthRadius, 0);
-//	float3 ToEarthCenter = EarthCenter - position;
-//	float lp = dot(direction, ToEarthCenter);
-//	float3 P = position + direction * lp;
-//	float sq_lp = dot(P, P);
-//	static const float sq_AtmosphereRadius = AtmosphereRadius * AtmosphereRadius;
-//	if (sq_lp > sq_AtmosphereRadius)
-//		return 0;
-//	float  pv = sqrt(sq_AtmosphereRadius - sq_lp);
-//	float3 V = P + direction * pv;
-//
-//	return length(V - position);
-//}
+
+
+float2 solveQuadratic(const float a, const float b, const float c)
+{
+
+    float discr = b * b - 4 * a * c;
+    float x0 = 0;
+    float x1 =0;
+    if (discr < 0) return float2(0, 0);
+    else if (discr == 0)
+    {
+        float x = -0.5 * b / a;
+        return float2(x, x);
+    }
+    else {
+        float q = (b > 0) ?
+            -0.5 * (b + sqrt(discr)) :
+            -0.5 * (b - sqrt(discr));
+        x0 = q / a;
+        x1 = c / q;
+    }
+
+    return float2(min(x0, x1), max(x0, x1));;
+}
+
+float2 SphereRay2(float3 direction, float3 position, float r, float3 spos)
+{
+    float t0, t1; // solutions for t if the ray intersects
+//#if 0
+        // geometric solution
+    float radius2 = r * r;
+    float3 L = spos - position;
+    float tca = dot(L,direction);
+    // if (tca < 0) return false;
+    float d2 = dot(L, L) - tca * tca;
+    if (d2 > radius2) return float2(0, 0);
+    float thc = sqrt(radius2 - d2);
+    t0 = tca - thc;
+    t1 = tca + thc;
+//#else
+//        // analytic solution
+//    Vec3f L = orig - center;
+//    float a = dir.dotProduct(dir);
+//    float b = 2 * dir.dotProduct(L);
+//    float c = L.dotProduct(L) - radius2;
+//    if (!solveQuadratic(a, b, c, t0, t1));
+//#endif
+
+    float x0 = min(t0, t1);
+    float x1 = max(t0, t1);
+
+    //if (x0 < 0) {
+    //    x0 = x1; // if t0 is negative, let's use t1 instead
+    //    if (x0 < 0) return float2(0, 0); // both t0 and t1 are negative
+    //}
+
+    return float2(x0, x1);
+}
+
+
+float2 SphereRayMine(float3 direction, float3 position, float r, float3 spos)
+{
+	float3 EarthCenter = spos;
+	float3 ToEarthCenter = EarthCenter - position;
+	float lp = dot(direction, ToEarthCenter);
+	float sq_tc = dot(ToEarthCenter, ToEarthCenter);
+    float sq_p = sq_tc - lp * lp;
+	float sq_AtmosphereRadius = r * r;
+	if (sq_p > sq_AtmosphereRadius)
+		return float2(0, 0);
+
+	float  pv = sqrt(sq_AtmosphereRadius - sq_p);
+    if (lp < 0)
+    {
+        lp = -lp;
+        pv = -pv;
+    }
+
+	return float2(lp - pv, lp + pv);
+}
 
 
 float SphereRay(float3 direction, float3 position, float r, float3 spos)
 {
+
+    float2 res = SphereRayMine(direction, position, r, spos);
+
+    float x0 = min(res.x, res.y);
+    float x1 = max(res.x, res.y);
+
+    if (x0 < 0) {
+        x0 = x1; // if t0 is negative, let's use t1 instead
+        if (x0 < 0) return 0; // both t0 and t1 are negative
+    }
+
+    return x0;
+
+   // return SphereRay2(direction, position, r, spos);
     float3 k = position - spos;
     float b = dot(k, direction);
     float c = dot(k, k) - r * r;
@@ -208,7 +287,7 @@ float SphereRayOrt(float3 direction, float3 position, float r, float3 spos)
 float AtmosphereLength(float3 direction, float3 position)
 {
     float3 earthcenter = float3(0, -EarthRadius, 0);
-    return SphereRay(direction, position, AtmosphereRadius, EarthCenter);
+    return SphereRay(direction, position * 0.001, AtmosphereRadius * 0.001, EarthCenter * 0.001) * 1000;
 }
 
 float EarthTest(float3 direction, float3 position)
