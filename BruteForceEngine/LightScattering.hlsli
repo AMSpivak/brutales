@@ -32,8 +32,8 @@ float MieScatteringPhase(float cosTheta, float g)
     g = clamp(g, -0.99, 0.99);
     float g2 = (g * g);
 
-    //return 3.0 / (8 * PI) * (1 - g2) / (2 + g2) * (1 + (cosTheta * cosTheta)) / pow(1 + g2 - 2 * g * cosTheta, 1.5);
-    return 1.0 / (4 * PI) * (1 - g2) / pow(1 + g2 - 2 * g * cosTheta, 1.5);
+    return 3.0 / (8 * PI) * (1 - g2) / (2 + g2) * (1 + (cosTheta * cosTheta)) / pow(1 + g2 - 2 * g * cosTheta, 1.5);
+    //return 1.0 / (4 * PI) * (1 - g2) / pow(1 + g2 - 2 * g * cosTheta, 1.5);
 }
 
 float EarthHeight(float3 position)

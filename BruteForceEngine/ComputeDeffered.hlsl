@@ -88,11 +88,12 @@ void main(ComputeShaderInput IN)
             float sun = smoothstep(1.0 - sunscale, 1.0 - sunscale * 0.55, sun_light_scatter);
             sun_light_scatter = -lerp(sun_light_scatter, 1.0, sun);
             uint4 materials = /*NonUniformResourceIndex */ (Material_tex.Load(IN.DispatchThreadID.xyz));
-            world_pos.xyz += lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz;
+            float3 camera = lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz;
+            world_pos.xyz += camera;
             if (materials.r == 0)
             {
                 l = AtmosphereLength(direction, lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz);
-                float3 ray_end = lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz + direction * l;
+                float3 ray_end = camera + direction * (l);
                 float l_shadow = SphereRay(to_sun, ray_end, EarthRadius, EarthCenter);
                 float vis = step(l_shadow, 0);
 
@@ -100,6 +101,10 @@ void main(ComputeShaderInput IN)
                 float3 od = OpticalDepth(5, ray_end, to_sun, sun_ray_l);
 
                 float3 sun_color = lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz * sun_info.w * od;
+
+                //float h = EarthHeight(curr_pos);
+                //float distribution_r = RayleighDistribution(h);
+                //float distribution_m = MieDistribution(h);
                 // temp hack to check
                 res += sun * sun_color * vis;
 
@@ -164,7 +169,7 @@ void main(ComputeShaderInput IN)
             static const int numsecondpoints = 5;
 
             float3 light = sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
-            float3 ray_end = world_pos.xyz + direction * l;
+            float3 ray_end = camera + direction * l;
             float h_l = EarthHeight(ray_end);
             float l_prev = l;
             //float tst_prev = EeartRadius * EeartRadius;
@@ -183,7 +188,7 @@ void main(ComputeShaderInput IN)
             {
                 //float curr_l = l * FastInverse(i / numpoints);
                 float curr_l = l * (i / numpoints);
-                float3 curr_pos = world_pos.xyz + direction * curr_l;
+                float3 curr_pos = camera + direction * curr_l;
                 float h = EarthHeight(curr_pos);
                 float distribution_r = RayleighDistribution(h);
                 float distribution_m = MieDistribution(h);
@@ -211,6 +216,7 @@ void main(ComputeShaderInput IN)
                     float3 inlight = light * od;
                     
                     //float shadow = EarthShadow(curr_pos);
+                    //res += d_l * (scattering_l + scattering_l_prev) * 0.5 * vis * inlight;
                     res += d_l * (scattering_l + scattering_l_prev) * 0.5 * vis * inlight;
                 }
                 l_shadow = SphereRay(to_sun, curr_pos, EarthRadius, EarthCenter);

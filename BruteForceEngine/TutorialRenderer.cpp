@@ -6,7 +6,7 @@
 #include "RenderTerrain.h"
 #include "ComputeTerrainShadow.h"
 #include "BruteForceMath.h"
-
+#include "GameEnvironment.h"
 #include <DirectXMath.h>
 
 
@@ -348,11 +348,6 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         m_Camera.RecalculateMatrixes();
     }
 
-   /* auto ResetRT_cl = in_SmartCommandQueue.GetCommandList();
-    ResetRT_cl.command_list->SetName(L"ResetRT");
-    m_RTTextures[0].TransitionTo(ResetRT_cl, BruteForce::ResourceStateCommon);
-    m_RTTextures[1].TransitionTo(ResetRT_cl, BruteForce::ResourceStateCommon);*/
-
     
     {
         auto smart_compute_command_list = m_ComputeSmartCommandQueue.GetCommandList();
@@ -370,11 +365,15 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
             //m_ComputeSmartCommandQueue
         }
         //m_UAVLuminanceTextures[1].TransitionTo(smart_compute_command_list, BruteForce::ResourceStatesRenderTarget);
-        m_CalculateLuminance.PrepareRenderCommandList(smart_compute_command_list, c_helper);
+        auto& game_info = BruteForce::GlobalLevelInfo::ReadGlobalGameCameraInfo();
+        if(game_info.m_EyeAdapt)
+        {
+            m_CalculateLuminance.PrepareRenderCommandList(smart_compute_command_list, c_helper);
+        }
         //m_UAVLuminanceTextures[1].TransitionTo(smart_compute_command_list, BruteForce::ResourceStatesRenderTarget);
 
         m_ComputeSmartCommandQueue.ExecuteCommandList(smart_compute_command_list);
-        m_ComputeSmartCommandQueue.Signal(m_fence_sky_shadow);
+        //m_ComputeSmartCommandQueue.Signal(m_fence_sky_shadow);
         m_ComputeSmartCommandQueue.GpuWaitNext(m_fence_gbuffer);
 
         auto compute_deffered_command_list = m_ComputeSmartCommandQueue.GetCommandList();
@@ -561,7 +560,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     m_ToneMapper.PrepareRenderCommandList(ResetRT_cl, render_dest_rt);
 
     //uint64_t fence_value = 0;
-    in_SmartCommandQueue.GpuWait(m_fence_sky_shadow);
+    //in_SmartCommandQueue.GpuWait(m_fence_sky_shadow);
     for (auto& execute_list : command_lists)
     {
         //SetCurrentFenceValue(in_SmartCommandQueue.ExecuteCommandList(execute_list));

@@ -49,6 +49,7 @@ using namespace Microsoft::WRL;
 #include "GameEnvironment.h"
 #include "BruteForceMath.h"
 #include "SkyAstronomy.h"
+#include "GameEnvironment.h"
 
 // Use WARP adapter
 bool g_UseWarp = false;
@@ -188,6 +189,19 @@ void Update()
             do_day_cycle_switch = press;
         }
 
+        {
+            static bool do_eye_adapt_switch = false;
+
+            bool press = test_controller->GetKeyPressed(BruteForce::Controller::Keys::DbgSwitch4);
+
+            if (press && (!do_eye_adapt_switch))
+            {
+                auto& game_info = BruteForce::GlobalLevelInfo::GetGlobalGameCameraInfo();
+                game_info.m_EyeAdapt = !game_info.m_EyeAdapt;
+            }
+            do_eye_adapt_switch = press;
+        }
+
 
         float msecs_up = (0.000001f * (t1 - t_up).count());
         if (msecs_up > 12)
@@ -239,9 +253,9 @@ void Update()
             BruteForce::Math::Store(&sun, Sky.SunDirection);
             BruteForce::Math::Vec4Float moon;
             BruteForce::Math::Store(&moon, Sky.MoonDirection);
-            sun.x = 0;
-            sun.y = -0.01;
-            sun.z = 1;
+            //sun.x = 0;
+            //sun.y = -0.039;
+            //sun.z = 1;
 
             BruteForce::Math::Vec4Float main_sky_light = sun;
 
@@ -268,19 +282,11 @@ void Update()
             }*/
 
             //BruteForce::Math::Vector red_light = { 0.6f, 0.05f, 0.0f, 0.0f };
-            BruteForce::Math::Vector red_light = {0.6f, 0.15f, 0.0f, 0.0f };
-            BruteForce::Math::Vector yellow_light = { 0.8f, 0.2f, 0.0f, 0.0f };
-            BruteForce::Math::Vector day_light = { 1.0f, 1.0f, 1.0f, 0.0f };
-            BruteForce::Math::Vector nigth_light = { 0.05f, 0.1f, 0.9f, 0.0f };
 
-            float mix_yellow = BruteForce::Math::Smoothstep(0.15f, 0.45f, sun.y);
-            float mix_red = BruteForce::Math::Smoothstep(0.1f, 0.35f, sun.y);
-            float mix_night = BruteForce::Math::Smoothstep(-0.3f, moon_edge, sun.y);
+            BruteForce::Math::Vector day_light = { 1.0f, 1.0f, 1.0f,sun_intencivity };
 
-            //day_light = BruteForce::Math::MatrixVectorMix(day_light, yellow_light, mix_yellow);
-            //day_light = BruteForce::Math::MatrixVectorMix(day_light, red_light, mix_red);
-            //day_light = BruteForce::Math::MatrixVectorMix(day_light, nigth_light, mix_night);
-            
+
+           
             
 
             auto& atmosphere = BruteForce::GlobalLevelInfo::GetGlobalAtmosphereInfo();
