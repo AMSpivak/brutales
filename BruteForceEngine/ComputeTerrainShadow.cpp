@@ -6,6 +6,44 @@ namespace BruteForce
 {
     namespace Compute
     {
+        void ComputeTerrainShadow::PrepareCB(uint32_t buff_index)
+        {
+			auto terrain_scaler = GlobalLevelInfo::ReadGlobalTerrainInfo().m_TerrainScaler;
+			int shadow_size = GetTerrainShadowSize();
+			//float lateral_scaler = 1 / terrain_scaler.x;
+			const auto& sun_info = GlobalLevelInfo::ReadGlobalAtmosphereInfo();
+			//Math::Vector sun_vec_tg = Math::Vector3Norm(Math::VectorSet(sun_info.m_SunInfo.x, 0.0, sun_info.m_SunInfo.z, 0.0));
+			//Math::Vec4Float sun_info_dir;
+			//Math::Store(&sun_info_dir, sun_vec_tg);
+
+
+			//float lateral_scaler = 1 / 0.0002f;
+			//float first_shadow_tg = sun_info.m_SunShadow.x * lateral_scaler / shadow_size;
+			//float second_shadow_tg = sun_info.m_SunShadow.y * lateral_scaler / shadow_size;
+
+            float shadow_tg_mul = 1.0f / (shadow_size * terrain_scaler.x);
+
+			m_TerrainShadowBuffers[buff_index].m_CpuBuffer->srcTextureSize.x = shadow_size;
+			m_TerrainShadowBuffers[buff_index].m_CpuBuffer->srcTextureSize.y = shadow_size;
+
+			m_TerrainShadowBuffers[buff_index].m_CpuBuffer->LightSpace1 = { sun_info.m_SunShadow.z , sun_info.m_SunShadow.w ,
+                                                                             abs(sun_info.m_SunShadow.z) + abs(sun_info.m_SunShadow.w),
+																			0.0f };
+			m_TerrainShadowBuffers[buff_index].m_CpuBuffer->LightSpace2 = { 0.0f, terrain_scaler.y,
+                                                                            sun_info.m_SunShadow.x * shadow_tg_mul,
+                                                                            sun_info.m_SunShadow.y * shadow_tg_mul };
+
+			m_TerrainShadowBuffers[buff_index].m_CpuBuffer->LightSpace1_moon = { sun_info.m_MoonShadow.z , sun_info.m_MoonShadow.w ,
+																sun_info.m_MoonShadowScaler,
+																0.0f };
+			m_TerrainShadowBuffers[buff_index].m_CpuBuffer->LightSpace2_moon = { 0.0f, terrain_scaler.y,
+																sun_info.m_MoonShadow.x * shadow_tg_mul,
+																sun_info.m_MoonShadow.y * shadow_tg_mul };
+			m_TerrainShadowBuffers[buff_index].Update();
+
+        }
+
+
         ComputeTerrainShadow::ComputeTerrainShadow() :m_TerrainShadowBuffers(nullptr)
         {
         }
@@ -20,6 +58,7 @@ namespace BruteForce
         void ComputeTerrainShadow::Update(float delta_time, uint8_t frame_index)
         {
         }
+
         void ComputeTerrainShadow::LoadContent(Device& device, uint8_t frames_count, DescriptorHeapManager& descriptor_heap_manager)
         {
             SunShadowUavDescriptors = descriptor_heap_manager.GetManagedRange("TerrainShadowUavs");
@@ -129,38 +168,9 @@ namespace BruteForce
         {
             smart_command_list.BeginEvent(0, "ComputeTerrainShadow");
 
-            auto terrain_scaler = GlobalLevelInfo::ReadGlobalTerrainInfo().m_TerrainScaler;
-
-
             uint32_t buff_index = compute_helper.frame_index;
-            int shadow_size = GetTerrainShadowSize();
-            float lateral_scaler = 1 / terrain_scaler.x;
-            const auto& sun_info = GlobalLevelInfo::ReadGlobalAtmosphereInfo();
-            Math::Vector sun_vec_tg = Math::Vector3Norm(Math::VectorSet(sun_info.m_SunInfo.x, 0.0, sun_info.m_SunInfo.z, 0.0));
+            PrepareCB(buff_index);
 
-            //Math::Vector sun_vec_length = Math::VectorNorm3(sun_vec);
-
-            Math::Vec4Float sun_info_dir;
-            //Math::Store(&sun_info_norm, sun_vec_norm);
-            //Math::Vector sun_vec_tang = Math::VectorSet(sun_info_norm.x, 0.0f, sun_info_norm.z, 0.0);
-            //Math::Vector sun_vec_length = Math::Vector3Lenght(sun_vec_tang);
-            //constexpr float offset = 0.00001f;
-            //sun_vec_length = Math::VectorAdd(sun_vec_length, Math::VectorSet(offset, offset, offset, offset));
-            //sun_vec_norm = Math::VectorDivide(sun_vec_norm, sun_vec_length);
-            Math::Store(&sun_info_dir, sun_vec_tg);
-
-            
-            //float lateral_scaler = 1 / 0.0002f;
-            float first_shadow_tg = sun_info.m_SunShadow.x * lateral_scaler / shadow_size;
-            float second_shadow_tg = sun_info.m_SunShadow.y * lateral_scaler / shadow_size;
-            m_TerrainShadowBuffers[buff_index].m_CpuBuffer->srcTextureSize.x = shadow_size;
-            m_TerrainShadowBuffers[buff_index].m_CpuBuffer->srcTextureSize.y = shadow_size;
-
-            m_TerrainShadowBuffers[buff_index].m_CpuBuffer->LightSpace1 = { sun_info.m_SunShadow.z , sun_info.m_SunShadow.w ,
-                                                                            sun_info.m_SunShadowScaler,
-                                                                            0.0f };
-            m_TerrainShadowBuffers[buff_index].m_CpuBuffer->LightSpace2 = { 0.0f, terrain_scaler.y, first_shadow_tg, second_shadow_tg };
-            m_TerrainShadowBuffers[buff_index].Update();
 
             auto& command_list = smart_command_list.command_list;
             smart_command_list.SetPipelineState(m_PipelineState);
@@ -172,6 +182,8 @@ namespace BruteForce
             command_list->SetComputeRoot32BitConstants(0, 1, &buff_index, 0);
 
             int dispatch_size = 64;
+
+            int shadow_size = GetTerrainShadowSize();
 
             command_list->Dispatch(static_cast<UINT>((shadow_size + dispatch_size - 1) / dispatch_size), 1, 1);
             //command_list

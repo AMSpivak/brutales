@@ -6,6 +6,10 @@ struct TerrainShadowCB
 {
     float4 LightSpace1; // x,y - direction x; z,w - offset
     float4 LightSpace2; // x -reserved,y - height scale; z -first shadow height decrease, w - second shadow height decrease
+
+	float4 LightSpace1_moon; // x,y - direction x; z,w - offset
+	float4 LightSpace2_moon; // x -reserved,y - height scale; z -first shadow height decrease, w - second shadow height decrease
+
     int2 srcTextureSize;
 
 };

@@ -52,14 +52,6 @@ namespace BruteForce
             auto terrain_scaler = GlobalLevelInfo::ReadGlobalTerrainInfo().m_TerrainScaler;
             terrain_scaler.w = plane_mesh_step;
             m_TerrainBuffers[index].m_CpuBuffer->m_TerrainScaler = terrain_scaler;
-
-            const auto& sun_info = GlobalLevelInfo::ReadGlobalAtmosphereInfo();
-            m_TerrainBuffers[index].m_CpuBuffer->m_SunInfo = sun_info.m_Moonlight ? sun_info.m_MoonInfo: sun_info.m_SunInfo;
-
-            m_TerrainBuffers[index].m_CpuBuffer->m_SunShadow = { sun_info.m_SunShadow.z, -sun_info.m_SunShadow.w,
-                 1.0f / sun_info.m_SunShadowScaler,
-                0.0f};
-            m_TerrainBuffers[index].m_CpuBuffer->m_SunColor = sun_info.m_SunColor;
             m_TerrainBuffers[index].Update();
             
             return counter;
@@ -146,8 +138,8 @@ namespace BruteForce
                 }
 
                 std::vector<std::wstring> tex_names = { 
-                                                        {L"Desert_Sand_albedo.dds"}, {L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
-                                                        ,{ L"Desert_Rock_albedo.dds"},  { L"Desert_Rock_normal.dds"}
+                                                        {L"Desert_Sand_albedo.dds"}, {L"norm_no.png"}//{L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
+                                                        ,{ L"Desert_Rock_albedo.dds"}, {L"norm_no.png"}// { L"Desert_Rock_normal.dds"}
                 };
                 size_t textures_count = tex_names.size();
                 TexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(textures_count), BruteForce::DescriptorRangeTypeSrv, "TerrainMaterialTextures");

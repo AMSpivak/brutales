@@ -36,7 +36,8 @@ float EarthShadow(float2 position) //world_pos.xz
     shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
     shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * lighting_CB[FrameInfoCB.frame_index].m_SunShadow.z;
 
-    float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, shadowUV, 0);
+    //float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, shadowUV, 0);
+    float4 shadows = shadow_tex[0].SampleLevel(sampl, shadowUV, 0);
     return smoothstep(shadows.y, shadows.x, shadows.z);
 }
 
@@ -49,7 +50,8 @@ float EarthShadow(float3 position) //world_pos.xz
     shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
     shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * lighting_CB[FrameInfoCB.frame_index].m_SunShadow.z;
 
-    float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, shadowUV, 0);
+    //float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, shadowUV, 0);
+    float4 shadows = shadow_tex[0].SampleLevel(sampl, shadowUV, 0);
     return smoothstep(shadows.y, shadows.x, position.y);
 }
 
@@ -90,6 +92,9 @@ void main(ComputeShaderInput IN)
             uint4 materials = /*NonUniformResourceIndex */ (Material_tex.Load(IN.DispatchThreadID.xyz));
             float3 camera = lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz;
             world_pos.xyz += camera;
+
+            float3 od_prev = float3(1, 1, 1);
+
             if (materials.r == 0)
             {
                 l = AtmosphereLength(direction, camera);
@@ -99,7 +104,7 @@ void main(ComputeShaderInput IN)
                 float sun_ray_l = SphereRay(to_sun, ray_end, AtmosphereRadius, EarthCenter); //AtmosphereLength(to_sun, ray_end + to_sun * 100);
                 float2 sun_ray_l2 = SphereRayMine(to_sun, ray_end, AtmosphereRadius, EarthCenter); //AtmosphereLength(to_sun, ray_end + to_sun * 100);
                 float3 od = OpticalDepth(5, ray_end, to_sun, dot(direction, to_sun)> 0 ? 0 : sun_ray_l2.y);
-
+                od_prev = od;
                 float3 sun_color = lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz * sun_info.w * od;
 
                 //float h = EarthHeight(curr_pos);
@@ -107,8 +112,8 @@ void main(ComputeShaderInput IN)
                 //float distribution_m = MieDistribution(h);
                 // temp hack to check
                 res += sun * sun_color * vis;
-                OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(sun_ray_l *0.001,sun_ray_l2 * 0.001, dot(direction, to_sun));
-                return;
+                //OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(sun_ray_l *0.001,sun_ray_l2 * 0.001, dot(direction, to_sun));
+                //return;
             }
             else
             {             
@@ -152,7 +157,7 @@ void main(ComputeShaderInput IN)
 
                 float sun_ray_l = AtmosphereLength(to_sun, world_pos.xyz);
                 float3 od = OpticalDepth(5, world_pos.xyz, to_sun, sun_ray_l);
-
+                od_prev = od;
                 float3 sun_color = lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz * sun_info.w * od;
 
                 float3 sun_light_color_direct = clamp(sun_light_diffuse, 0.0, 1.0) * shadow * sun_color;// smoothstep(-0.001, -0.0, sun_info.y);
@@ -214,8 +219,9 @@ void main(ComputeShaderInput IN)
                     //float vis = step(l_shadow, curr_l);// saturate((curr_l - l_shadow) / (l_prev - curr_l));
                     float vis = step(l_shadow, 0);// saturate((curr_l - l_shadow) / (l_prev - curr_l));
                     //float vis = 1;// saturate((l_prev - l_shadow) / d_l); //step(l_shadow, l);
+                    //float3 inlight = light * (od + od_prev) * 0.5f;
                     float3 inlight = light * od;
-                    
+                    od_prev = od;
                     //float shadow = EarthShadow(curr_pos);
                     //res += d_l * (scattering_l + scattering_l_prev) * 0.5 * vis * inlight;
                     res += d_l * (scattering_l + scattering_l_prev) * 0.5 * vis * inlight;

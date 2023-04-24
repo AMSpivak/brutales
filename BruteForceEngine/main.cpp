@@ -257,32 +257,23 @@ void Update()
             //sun.y = -0.039;
             //sun.z = 1;
 
-            BruteForce::Math::Vec4Float main_sky_light = sun;
+            //BruteForce::Math::Vec4Float main_sky_light = sun;
 
             constexpr float moon_edge = -0.05f;
             bool moonlight = false;
-            float moon_mul = 1.0f;
+
             if (sun.y < moon_edge)
             {
-                main_sky_light = moon;
+                //main_sky_light = moon;
                 moonlight = true;
-                moon_mul = 1.0f - BruteForce::Math::Smoothstep(-0.3f, moon_edge, sun.y);
             }
 
-            float sun_h = main_sky_light.y < 0.0f ? 0.0f : main_sky_light.y;
+            float sun_h = sun.y < 0.0f ? 0.0f : sun.y;
 
             BruteForce::Math::Vec4Float shadow_dir;
-            BruteForce::Math::Store(&shadow_dir, BruteForce::Math::Vector3Norm({ main_sky_light.x, 0.0f, main_sky_light.z, 0.0f }));
+            BruteForce::Math::Store(&shadow_dir, BruteForce::Math::Vector3Norm({ sun.x, 0.0f, sun.z, 0.0f }));
 
-            //float sun_azimuth = sun_info.Azimuth;
             float sun_intencivity = 50000.0f;
-            /*if (sun.y < 0.0f)
-            {
-                sun_intencivity = 10.0f;
-            }*/
-
-            //BruteForce::Math::Vector red_light = { 0.6f, 0.05f, 0.0f, 0.0f };
-
             BruteForce::Math::Vector day_light = { 1.0f, 1.0f, 1.0f,sun_intencivity };
 
 
@@ -321,13 +312,29 @@ void Update()
             atmosphere.m_SunShadow.y = shadow_tg_2;
             atmosphere.m_SunShadow.z = -shadow_dir.x;
             atmosphere.m_SunShadow.w = -shadow_dir.z;
-            atmosphere.m_SunShadowScaler = abs(atmosphere.m_SunShadow.z) + abs(atmosphere.m_SunShadow.w);
+            //atmosphere.m_SunShadowScaler = abs(atmosphere.m_SunShadow.z) + abs(atmosphere.m_SunShadow.w);
             BruteForce::Math::Store(&(atmosphere.m_SunColor), day_light);
             //atmosphere.m_SunColor = {
             //    1.0f,//0.85f,// tang_dir* cos(azimuth_rad),
             //    1.0f,//0.9f,
             //    1.0f,//tang_dir * sin(-azimuth_rad),
             //    sun_intencivity };
+
+			// Moon
+
+            float moon_h = moon.y < 0.0f ? 0.0f : moon.y;
+			shadow_tg_1 = sun_h / sqrt(1.0f - moon_h * moon_h + offset);
+			a2 = acos(moon_h) - shadow_angle_delta;
+			a2 = a2 < 0.0f ? 0.0f : a2;
+			shadow_tg_2 = 1.f / (tan(a2) + offset);
+            BruteForce::Math::Store(&shadow_dir, BruteForce::Math::Vector3Norm({ moon.x, 0.0f, moon.z, 0.0f }));
+
+			atmosphere.m_MoonShadow.x = shadow_tg_1;
+			atmosphere.m_MoonShadow.y = shadow_tg_2;
+			atmosphere.m_MoonShadow.z = -shadow_dir.x;
+			atmosphere.m_MoonShadow.w = -shadow_dir.z;
+            atmosphere.m_MoonShadowScaler = abs(atmosphere.m_MoonShadow.z) + abs(atmosphere.m_MoonShadow.w);
+
             atmosphere.m_Moonlight = moonlight;
             chng = false;
         }

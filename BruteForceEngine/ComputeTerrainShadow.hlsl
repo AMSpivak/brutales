@@ -33,7 +33,8 @@ void main( uint3 DTid : SV_DispatchThreadID )
 
     const float shadow_height_decrease = terrain_shadowCB[FrameInfoCB.frame_index].LightSpace2.z;
     const float shadow_height_decrease_second = terrain_shadowCB[FrameInfoCB.frame_index].LightSpace2.w;
-
+    const float shadow_height_decrease_moon = terrain_shadowCB[FrameInfoCB.frame_index].LightSpace2_moon.z;
+    const float shadow_height_decrease_second_moon = terrain_shadowCB[FrameInfoCB.frame_index].LightSpace2_moon.w;
     //OutShadow[int2(DTid.x, DTid.y)] = float4(1, 1, 1.0f, 0.0f);
 
     int row = DTid.x;
@@ -47,8 +48,16 @@ void main( uint3 DTid : SV_DispatchThreadID )
         float shadow_height_second = 0;
         int shadow_index_second = -1;
 
-        const float h_offset = 0.01;
-        float h_old = 0.0f;
+        float2 l_dir_moon = terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1_moon.xy / terrain_shadowCB[FrameInfoCB.frame_index].srcTextureSize.x;
+
+        float shadow_height_moon = 0;
+        int shadow_index_moon = -1;
+
+        float shadow_height_second_moon = 0;
+        int shadow_index_second_moon = -1;
+
+        //const float h_offset = 0.01;
+        //float h_old = 0.0f;
         for (int i = 0; i < terrain_shadowCB[FrameInfoCB.frame_index].srcTextureSize.x; i++)
         {
             float2 UV = l_dir * i + float2(-l_dir.y, l_dir.x) * row;// +terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.zw;
@@ -59,20 +68,39 @@ void main( uint3 DTid : SV_DispatchThreadID )
             float calc_h = (shadow_height - (i - shadow_index) * shadow_height_decrease);
             if (h > calc_h)
             {
-                shadow_height = h;// -h_offset;
+                shadow_height = h;
                 shadow_index = i;
-                //calc_h = h + shadow_height_decrease *0.5;
             }
 
             float calc_h_second = (shadow_height_second - (i - shadow_index_second) * shadow_height_decrease_second);
             if (h > calc_h_second)
             {
-                shadow_height_second = h;// -h_offset;
+                shadow_height_second = h;
                 shadow_index_second = i;
-                //calc_h_second = h - shadow_height_decrease_second;
+            }
+            OutShadow[0][int2(i, row)] = float4(calc_h, calc_h_second, h, calc_h_second - h);
+
+            UV = l_dir_moon * i + float2(-l_dir_moon.y, l_dir_moon.x) * row;// +terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.zw;
+            UV -= float2(terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1_moon.x - terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1_moon.y,
+                terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1_moon.y + terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1_moon.x) * 0.5f;// terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.zw;
+            UV = float2(0.5f, 0.5f) + terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1_moon.z * UV;
+
+            h = SrcTerrain.SampleLevel(TerrainSampler, UV, 0).r * terrain_shadowCB[FrameInfoCB.frame_index].LightSpace2_moon.y;
+            calc_h = (shadow_height_moon - (i - shadow_index_moon) * shadow_height_decrease_moon);
+            if (h > calc_h)
+            {
+                shadow_height_moon = h;
+                shadow_index_moon = i;
             }
 
-            OutShadow[FrameInfoCB.frame_index][int2(i, row)] = float4(calc_h, calc_h_second, h, calc_h_second - h);
+            calc_h_second = (shadow_height_second_moon - (i - shadow_index_second_moon) * shadow_height_decrease_second_moon);
+            if (h > calc_h_second)
+            {
+                shadow_height_second_moon = h;
+                shadow_index_second_moon = i;
+            }
+
+            OutShadow[1][int2(i, row)] = float4(calc_h, calc_h_second, h, calc_h_second - h);
         }
     }
 

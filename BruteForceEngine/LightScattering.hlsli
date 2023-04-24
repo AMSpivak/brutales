@@ -123,11 +123,11 @@ float2 SphereRayMine(float3 direction, float3 position, float r, float3 spos)
 		return float2(0, 0);
 
 	float  pv = sqrt(sq_AtmosphereRadius - sq_p);
-    if (lp < 0)
+    /*if (lp < 0)
     {
         lp = -lp;
         pv = -pv;
-    }
+    }*/
 
 	return float2(lp - pv, lp + pv);
 }
@@ -136,17 +136,17 @@ float2 SphereRayMine(float3 direction, float3 position, float r, float3 spos)
 float SphereRay(float3 direction, float3 position, float r, float3 spos)
 {
 
-    float2 res = SphereRayMine(direction, position, r, spos);
+    //float2 res = SphereRayMine(direction, position, r, spos);
 
-    float x0 = min(res.x, res.y);
-    float x1 = max(res.x, res.y);
+    //float x0 = min(res.x, res.y);
+    //float x1 = max(res.x, res.y);
 
-    if (x0 < 0) {
-        x0 = x1; // if t0 is negative, let's use t1 instead
-        if (x0 < 0) return 0; // both t0 and t1 are negative
-    }
+    //if (x0 < 0) {
+    //    x0 = x1; // if t0 is negative, let's use t1 instead
+    //    if (x0 < 0) return 0; // both t0 and t1 are negative
+    //}
 
-    return x0;
+    //return x0;
 
    // return SphereRay2(direction, position, r, spos);
     float3 k = position - spos;

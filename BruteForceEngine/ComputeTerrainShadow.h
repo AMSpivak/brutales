@@ -23,6 +23,7 @@ namespace BruteForce
             std::shared_ptr <DescriptorHeapRange> CbvRange;
 
             ConstantBuffer<TerrainShadowCB>* m_TerrainShadowBuffers;
+            void PrepareCB(uint32_t buff_index);
         public:
             static const int GetTerrainShadowSize() { return 2048; }
             ComputeTerrainShadow();
