@@ -34,6 +34,9 @@ struct PixelShaderInput
     float2 Tex : TexCoord1;
 };
 
+Texture2D SkyTextures[2] : register(t0);
+SamplerState LinearClampSampler : register(s0);
+
 float4 main(PixelShaderInput IN) : SV_TARGET
 {
 	float4 normal = float4(IN.Tex * 2 - 1.0 , 1.0f, 1.0f);
@@ -77,14 +80,14 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 	float3 day = float3(atmosphere * (atm)+sky * (1.0 - atm));
 	float star_intens = min(0, sun_dir.y);
 	float star = smoothstep(0.99994,1.0,Noise3d(Normal));
-	float3 night = star * star * float3(1.0,1.0,1.0) *0.01;
+	float3 night = star * star * float3(1.0,1.0,1.0) *0.1;
 	//float night_intens = 1.0 - smoothstep(0.0,0.5,-star_intens + (1.0 - to_sun) * 0.08);
 	//float3 sky_color = lerp(night,day,night_intens);
 
 	float day_intencivity = smoothstep(-0.1, 0.0, sun_dir.y);
 	float3 sky_color = night;// +day_intencivity * (day * LightColor.w);
 
-	sky_color += sun_l * float3(0.5,0.5,1.0);// SkyPixelsCB[FrameInfoCB.frame_index].MoonColor; //sky += sun_l * SkyPixelsCB[FrameInfoCB.frame_index].MoonColor;
+	sky_color += sun_l * float3(0.5,0.5,1.0) * SkyTextures[0].Sample(LinearClampSampler,((Normal - to_moon) * (0.9f/ 0.0003)));// SkyPixelsCB[FrameInfoCB.frame_index].MoonColor; //sky += sun_l * SkyPixelsCB[FrameInfoCB.frame_index].MoonColor;
 	//return float4(LightColor.w * lerp(EarthColor * a_earth, sky_color, l_earth), 1.0);
 	return float4(sky_color, 1.0);
 	//return float4(0,0,100, 1.0);

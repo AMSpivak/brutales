@@ -2,6 +2,9 @@
 #define SCREEN_SPACE_SKY_H
 #include "RenderSubsystem.h"
 #include "ConstantBuffer.h"
+#include "Texture.h"
+#include <vector>
+#include <memory>
 
 namespace BruteForce
 {
@@ -18,6 +21,8 @@ namespace BruteForce
 
             ConstantBuffer<SkyPixelCB>* m_SkyBuffers;
             std::shared_ptr <DescriptorHeapRange> CbvRange;
+            std::vector<std::shared_ptr<Textures::Texture>> m_textures;
+            std::shared_ptr<DescriptorHeapRange> TexturesRange;
         public:
             ScreenSpaceSky() :m_SkyBuffers{ nullptr } {};
             virtual ~ScreenSpaceSky();

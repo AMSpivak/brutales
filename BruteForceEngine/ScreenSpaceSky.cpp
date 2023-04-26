@@ -47,6 +47,21 @@ namespace BruteForce
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path{ settings.GetExecuteDirWchar() };
 
+			{
+				BruteForce::Textures::TextureLoadHlpr helper{ device, copy_queue, desc.gpu_allocator_ptr };
+
+				std::vector<std::wstring> tex_names = {
+														{L"moon_diff.png"}//{L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
+														,{ L"moon_normal.png"}//{ L"Desert_Rock_normal.dds"}
+				};
+				size_t textures_count = tex_names.size();
+				TexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(textures_count), BruteForce::DescriptorRangeTypeSrv, "SkyTextures");
+				auto& srv_handle = TexturesRange->m_CpuHandle;
+				BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_path, m_textures, helper, srv_handle);
+			}
+
+
+
             BruteForce::DataBlob vertexShaderBlob;
             ThrowIfFailed(D3DReadFileToBlob((content_path + L"SkyVertexShader.cso").c_str(), &vertexShaderBlob));
             BruteForce::DataBlob pixelShaderBlob;
@@ -65,8 +80,9 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-            DescriptorRange descRange[1];
-            CbvRange->Fill(descRange[0], 17);
+            DescriptorRange descRange[2];
+			CbvRange->Fill(descRange[0], 17);
+			TexturesRange->Fill(descRange[1], 0);
 
             CD3DX12_ROOT_PARAMETER1 rootParameters[3];
             rootParameters[1].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 1, 0, D3D12_SHADER_VISIBILITY_ALL);
