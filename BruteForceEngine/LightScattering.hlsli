@@ -19,7 +19,7 @@ float RayleighDistribution(float h)
 	return exp(-h/8000.0f);
 }
 
-static const float3 MieScatteringWavelength = float3(2, 2, 2) * 1e-6;
+static const float3 MieScatteringWavelength = float3(2, 2, 0.5) * 1e-6;
 
 float MieDistribution(float h)
 {

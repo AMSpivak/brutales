@@ -380,6 +380,7 @@
   <ItemGroup>
     <None Include=".editorconfig" />
     <None Include="color.hlsli" />
+    <None Include="LightScattering.hlsli" />
     <None Include="math.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
