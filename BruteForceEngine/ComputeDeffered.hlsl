@@ -100,15 +100,15 @@ void main(ComputeShaderInput IN)
             if (materials.r == 0)
             {
                 l = AtmosphereLength(direction, camera);
-                //float3 ray_end = camera + direction * (l);
-                //float l_shadow = SphereRay(to_sun, ray_end, EarthRadius, EarthCenter);
-                //float sun_ray_l = SphereRay(to_sun, ray_end, AtmosphereRadius, EarthCenter); //AtmosphereLength(to_sun, ray_end + to_sun * 100);
-                //float3 od = OpticalDepth(5, ray_end, to_sun, sun_ray_l - 10);
-                //od_prev = od;
-                //float3 sun_color = lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz * sun_info.w * od;
-                //float vis = 1;
-                //res += sun * sun_color * vis;
-                res += sun;
+                float3 ray_end = camera + direction * (l);
+                float l_shadow = SphereRay(to_sun, ray_end, EarthRadius, EarthCenter);
+                float sun_ray_l = SphereRay(to_sun, ray_end, AtmosphereRadius, EarthCenter); //AtmosphereLength(to_sun, ray_end + to_sun * 100);
+                float3 od = OpticalDepth(5, ray_end, to_sun, sun_ray_l - 10);
+                od_prev = od;
+                float3 sun_color = lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz * sun_info.w * od;
+                float vis = 1;
+                res += sun * sun_color * vis;
+                //res += sun;
             }
             else
             {             
