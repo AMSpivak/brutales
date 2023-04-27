@@ -42,6 +42,7 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 	float4 normal = float4(IN.Tex * 2 - 1.0 , 1.0f, 1.0f);
 	normal.y = -normal.y;
 	float4 normal_m = mul(InvModelViewProjectionCB.IMVP, normal);
+	normal_m.xyz /= normal_m.w;
 	float3 Normal = normalize(normal_m.xyz);
 
 	float l = smoothstep(0.0,0.3, Normal.y);
@@ -86,9 +87,26 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 
 	float day_intencivity = smoothstep(-0.1, 0.0, sun_dir.y);
 	float3 sky_color = night;// +day_intencivity * (day * LightColor.w);
+	if (sun_l > 0)
+	{
+		float2 uv = float2(0.5, 0.5);
+		float4 normal_x = mul(InvModelViewProjectionCB.IMVP, normal + float4(0.1f, 0 , 0, 0));
+		normal_x.xyz /= normal_x.w;
+		float4 normal_y = mul(InvModelViewProjectionCB.IMVP, normal + float4(0, 0.1f, 0, 0));
+		normal_y.xyz /= normal_y.w;
 
-	sky_color += sun_l * float3(0.5,0.5,1.0) * SkyTextures[0].Sample(LinearClampSampler,((Normal - to_moon) * (0.9f/ 0.0003)));// SkyPixelsCB[FrameInfoCB.frame_index].MoonColor; //sky += sun_l * SkyPixelsCB[FrameInfoCB.frame_index].MoonColor;
-	//return float4(LightColor.w * lerp(EarthColor * a_earth, sky_color, l_earth), 1.0);
+		float3 v_x = normalize(normal_x.xyz - normal_m.xyz);
+		float3 v_y = normalize(normal_y.xyz - normal_m.xyz);
+		float3 d_uv = Normal - moon_dir;
+		float x = dot(d_uv, v_x);
+		float y = dot(d_uv, v_y);
+		uv.x += x * (0.45f/ 0.03);
+		uv.y += y * (0.45f / 0.03);
+		//uv += ((Normal - to_moon) * (0.45f / 0.0003)).xy;
+		sky_color += sun_l * float3(0.5, 0.5, 1.0) * SkyTextures[0].Sample(LinearClampSampler, uv);// SkyPixelsCB[FrameInfoCB.frame_index].MoonColor; //sky += sun_l * SkyPixelsCB[FrameInfoCB.frame_index].MoonColor;
+	}
+																																					
+																																					//return float4(LightColor.w * lerp(EarthColor * a_earth, sky_color, l_earth), 1.0);
 	return float4(sky_color, 1.0);
 	//return float4(0,0,100, 1.0);
 }
