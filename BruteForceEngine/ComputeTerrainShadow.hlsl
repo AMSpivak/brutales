@@ -78,7 +78,8 @@ void main( uint3 DTid : SV_DispatchThreadID )
                 shadow_height_second = h;
                 shadow_index_second = i;
             }
-            OutShadow[0][int2(i, row)] = float4(calc_h, calc_h_second, h, calc_h_second - h);
+            //OutShadow[0][int2(i, row)] = float4(calc_h, calc_h_second, h, calc_h_second - h);
+            float4 shadow_tex = float4(calc_h, calc_h_second, h, calc_h_second - h);
 
             UV = l_dir_moon * i + float2(-l_dir_moon.y, l_dir_moon.x) * row;// +terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1.zw;
             UV -= float2(terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1_moon.x - terrain_shadowCB[FrameInfoCB.frame_index].LightSpace1_moon.y,
@@ -99,8 +100,11 @@ void main( uint3 DTid : SV_DispatchThreadID )
                 shadow_height_second_moon = h;
                 shadow_index_second_moon = i;
             }
+            shadow_tex.zw = float2(calc_h, calc_h_second);
+            OutShadow[0][int2(i, row)] = shadow_tex;//float4(calc_h, calc_h_second, h, calc_h_second - h);
 
-            OutShadow[1][int2(i, row)] = float4(calc_h, calc_h_second, h, calc_h_second - h);
+
+            //OutShadow[1][int2(i, row)] = float4(calc_h, calc_h_second, h, calc_h_second - h);
         }
     }
 

@@ -27,22 +27,37 @@ RWTexture2D<float4> OutImage[2] : register(u0);
 
 sampler sampl : register(s0);
 
-float EarthShadow(float2 position) //world_pos.xz
-{
-    float2 l_dir = lighting_CB[FrameInfoCB.frame_index].m_SunShadow.xy;
+//float EarthShadow(float2 position) //world_pos.xz
+//{
+//    float2 l_dir = lighting_CB[FrameInfoCB.frame_index].m_SunShadow.xy;
+//
+//    float2 pos = position * lighting_CB[FrameInfoCB.frame_index].m_TerrainScaler.xz;
+//    float2 shadowUV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
+//    shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
+//    shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * lighting_CB[FrameInfoCB.frame_index].m_SunShadow.z;
+//    if (shadowUV.x < 0 || shadowUV.x > 1 || shadowUV.y < 0 || shadowUV.y > 1)
+//        return 1.0;
+//    //float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, shadowUV, 0);
+//    float4 shadows = shadow_tex[0].SampleLevel(sampl, shadowUV, 0);
+//    return smoothstep(shadows.y, shadows.x, shadows.z);
+//}
+//
+//float EarthShadow(float3 position) //world_pos.xz
+//{
+//    float2 l_dir = lighting_CB[FrameInfoCB.frame_index].m_SunShadow.xy;
+//
+//    float2 pos = position.xz * lighting_CB[FrameInfoCB.frame_index].m_TerrainScaler.xz;
+//    float2 shadowUV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
+//    shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
+//    shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * lighting_CB[FrameInfoCB.frame_index].m_SunShadow.z;
+//    if (shadowUV.x < 0 || shadowUV.x > 1 || shadowUV.y < 0 || shadowUV.y > 1)
+//        return 1.0;
+//    //float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, shadowUV, 0);
+//    float4 shadows = shadow_tex[0].SampleLevel(sampl, shadowUV, 0);
+//    return smoothstep(shadows.y, shadows.x, position.y);
+//}
 
-    float2 pos = position * lighting_CB[FrameInfoCB.frame_index].m_TerrainScaler.xz;
-    float2 shadowUV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
-    shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
-    shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * lighting_CB[FrameInfoCB.frame_index].m_SunShadow.z;
-    if (shadowUV.x < 0 || shadowUV.x > 1 || shadowUV.y < 0 || shadowUV.y > 1)
-        return 1.0;
-    //float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, shadowUV, 0);
-    float4 shadows = shadow_tex[0].SampleLevel(sampl, shadowUV, 0);
-    return smoothstep(shadows.y, shadows.x, shadows.z);
-}
-
-float EarthShadow(float3 position) //world_pos.xz
+float2 EarthShadow(float3 position) //world_pos.xz
 {
     float2 l_dir = lighting_CB[FrameInfoCB.frame_index].m_SunShadow.xy;
 
@@ -50,16 +65,19 @@ float EarthShadow(float3 position) //world_pos.xz
     float2 shadowUV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
     shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
     shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * lighting_CB[FrameInfoCB.frame_index].m_SunShadow.z;
-
+    if (shadowUV.x < 0 || shadowUV.x > 1 || shadowUV.y < 0 || shadowUV.y > 1)
+        return 1.0;
     //float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, shadowUV, 0);
     float4 shadows = shadow_tex[0].SampleLevel(sampl, shadowUV, 0);
-    return smoothstep(shadows.y, shadows.x, position.y);
+    return float2(smoothstep(shadows.y, shadows.x, position.y), smoothstep(shadows.w, shadows.z, position.y));
 }
 
 #define BLOCK_SIZE 8
 [numthreads(BLOCK_SIZE, BLOCK_SIZE, 1)]
 void main(ComputeShaderInput IN)
 {
+    static const float3 ZeroEdge = float3(0.001, 0.001, 0.001);
+
     uint w = 0;
     uint h = 0;
     TBN_Quat_tex.GetDimensions(w, h);
@@ -107,7 +125,7 @@ void main(ComputeShaderInput IN)
                 od_prev = od;
                 float3 sun_color = lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz * sun_info.w * od;
                 float vis = 1;
-                res += sun * sun_color * vis;
+                res += max(ZeroEdge, sun * sun_color * vis);
                 //res += sun;
             }
             else
@@ -118,7 +136,8 @@ void main(ComputeShaderInput IN)
                 float4 UV = UV_tex.Load(int3(IN.DispatchThreadID.xy, 0));
                 float4 Ddx_Ddy = Ddx_Ddy_tex.Load(IN.DispatchThreadID.xyz);
 
-                float shadow = EarthShadow(world_pos.xz);
+                //float shadow = EarthShadow(world_pos.xz);
+                float2 shadow = EarthShadow(world_pos.xyz);
                 
                 matrix TBN;
                 mat_cast_xm(quat, TBN);
@@ -144,7 +163,7 @@ void main(ComputeShaderInput IN)
 
                 float3 sun_color = lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz * sun_info.w * od;
 
-                float3 sun_light_color_direct = clamp(sun_light_diffuse, 0.0, 1.0) * shadow * sun_color;// smoothstep(-0.001, -0.0, sun_info.y);
+                float3 sun_light_color_direct = clamp(sun_light_diffuse, 0.0, 1.0) * shadow.x * sun_color;// smoothstep(-0.001, -0.0, sun_info.y);
                 float3 sun_light_color_ambient = sun_color * (0.05f + 0.15 *clamp(to_sun.y+0.1, 0.0, 1.0));
                 float3 sun_light_color = sun_light_color_ambient + sun_light_color_direct;
 
@@ -153,13 +172,13 @@ void main(ComputeShaderInput IN)
                 od = OpticalDepth(5, world_pos.xyz, to_moon, sun_ray_l);
                 float3 moon_color = lighting_CB[FrameInfoCB.frame_index].m_MoonColor.xyz * moon_info.w * od;
 
-                float3 moon_light_color_direct = clamp(moon_light_diffuse, 0.0, 1.0) * /*shadow **/ moon_color;// smoothstep(-0.001, -0.0, sun_info.y);
+                float3 moon_light_color_direct = clamp(moon_light_diffuse, 0.0, 1.0) * /*shadow.y **/ moon_color;// smoothstep(-0.001, -0.0, sun_info.y);
                 float3 moon_light_color_ambient = moon_color * (0.05f + 0.15 * clamp(to_moon.y + 0.1, 0.0, 1.0));
                 float3 moon_light_color = moon_light_color_direct + moon_light_color_ambient;
 
                 float3 Color = textures[materials.r * material_offset].SampleGrad(sampl, UV.xy, Ddx_Ddy.xy, Ddx_Ddy.zw).xyz;
                 Color = pow(Color, 2.2);
-                res = sun_light_color * Color + moon_light_color * Color;
+                res = max(ZeroEdge, sun_light_color * Color + moon_light_color * Color);
             }
 
             float3 scattering = RayleighScatteringWavelength;
