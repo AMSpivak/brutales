@@ -323,7 +323,7 @@ void Update()
 			// Moon
 
             float moon_h = moon.y < 0.0f ? 0.0f : moon.y;
-			shadow_tg_1 = sun_h / sqrt(1.0f - moon_h * moon_h + offset);
+			shadow_tg_1 = moon_h / sqrt(1.0f - moon_h * moon_h + offset);
 			a2 = acos(moon_h) - shadow_angle_delta;
 			a2 = a2 < 0.0f ? 0.0f : a2;
 			shadow_tg_2 = 1.f / (tan(a2) + offset);

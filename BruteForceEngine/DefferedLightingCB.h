@@ -11,6 +11,7 @@ struct DefferedLightingCB
     float4 m_SunInfo;
     float4 m_SunShadow; // x,y - direction x; z,w - offset
     float4 m_SunColor; // w - intensivity
+    float4 m_MoonShadow; // x,y - direction x; z,w - offset
     float4 m_MoonInfo;
     float4 m_MoonColor; // w - intensivity
     float4 m_TerrainScaler; 

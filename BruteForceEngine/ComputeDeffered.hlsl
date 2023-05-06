@@ -57,18 +57,47 @@ sampler sampl : register(s0);
 //    return smoothstep(shadows.y, shadows.x, position.y);
 //}
 
+//float2 EarthShadow(float3 position) //world_pos.xz
+//{
+//    float2 l_dir = lighting_CB[FrameInfoCB.frame_index].m_SunShadow.xy;
+//
+//    float2 pos = position.xz * lighting_CB[FrameInfoCB.frame_index].m_TerrainScaler.xz;
+//    float2 shadowUV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
+//    shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
+//    shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * lighting_CB[FrameInfoCB.frame_index].m_SunShadow.z;
+//    if (shadowUV.x < 0 || shadowUV.x > 1 || shadowUV.y < 0 || shadowUV.y > 1)
+//        return 1.0;
+//    //float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, shadowUV, 0);
+//    float4 shadows = shadow_tex[0].SampleLevel(sampl, shadowUV, 0);
+//    return float2(smoothstep(shadows.y, shadows.x, position.y), smoothstep(shadows.w, shadows.z, position.y));
+//}
+
 float2 EarthShadow(float3 position) //world_pos.xz
 {
-    float2 l_dir = lighting_CB[FrameInfoCB.frame_index].m_SunShadow.xy;
+    float4 shadows = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
 
     float2 pos = position.xz * lighting_CB[FrameInfoCB.frame_index].m_TerrainScaler.xz;
-    float2 shadowUV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
-    shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
-    shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * lighting_CB[FrameInfoCB.frame_index].m_SunShadow.z;
-    if (shadowUV.x < 0 || shadowUV.x > 1 || shadowUV.y < 0 || shadowUV.y > 1)
-        return 1.0;
-    //float4 shadows = shadow_tex[FrameInfoCB.frame_index].SampleLevel(sampl, shadowUV, 0);
-    float4 shadows = shadow_tex[0].SampleLevel(sampl, shadowUV, 0);
+    //if (pos.x > 0 && pos.x < 1 && pos.y > 0 && pos.y < 1)
+    {
+        float3 l_dir = lighting_CB[FrameInfoCB.frame_index].m_SunShadow.xyz;
+        float2 shadowUV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
+        shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
+        shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * l_dir.z;
+        if (shadowUV.x > 0 && shadowUV.x < 1 && shadowUV.y > 0 && shadowUV.y < 1)
+        {
+            shadows.xy = shadow_tex[0].SampleLevel(sampl, shadowUV, 0).xy;
+        }
+
+        l_dir = lighting_CB[FrameInfoCB.frame_index].m_MoonShadow.xyz;
+        shadowUV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
+        shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
+        shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * l_dir.z;
+        if (shadowUV.x > 0 && shadowUV.x < 1 && shadowUV.y > 0 && shadowUV.y < 1)
+        {
+            shadows.zw = shadow_tex[0].SampleLevel(sampl, shadowUV, 0).zw;;
+        }
+    }
     return float2(smoothstep(shadows.y, shadows.x, position.y), smoothstep(shadows.w, shadows.z, position.y));
 }
 
@@ -172,7 +201,7 @@ void main(ComputeShaderInput IN)
                 od = OpticalDepth(5, world_pos.xyz, to_moon, sun_ray_l);
                 float3 moon_color = lighting_CB[FrameInfoCB.frame_index].m_MoonColor.xyz * moon_info.w * od;
 
-                float3 moon_light_color_direct = clamp(moon_light_diffuse, 0.0, 1.0) * /*shadow.y **/ moon_color;// smoothstep(-0.001, -0.0, sun_info.y);
+                float3 moon_light_color_direct = clamp(moon_light_diffuse, 0.0, 1.0) * shadow.y * moon_color;// smoothstep(-0.001, -0.0, sun_info.y);
                 float3 moon_light_color_ambient = moon_color * (0.05f + 0.15 * clamp(to_moon.y + 0.1, 0.0, 1.0));
                 float3 moon_light_color = moon_light_color_direct + moon_light_color_ambient;
 

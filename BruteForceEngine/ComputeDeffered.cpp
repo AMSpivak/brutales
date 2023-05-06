@@ -163,10 +163,13 @@ namespace BruteForce
 			m_DefferedBuffers[buff_index].m_CpuBuffer->m_MoonInfo = sun_info.m_MoonInfo;
 
 			m_DefferedBuffers[buff_index].m_CpuBuffer->m_SunShadow = { sun_info.m_SunShadow.z, -sun_info.m_SunShadow.w,
-				 //1.0f / sun_info.m_SunShadowScaler,
-				 1.0f / (abs(sun_info.m_SunShadow.z) + abs(sun_info.m_SunShadow.w)),
-				0.0f };
+																		1.0f / (abs(sun_info.m_SunShadow.z) + abs(sun_info.m_SunShadow.w)),
+																		0.0f };
 			m_DefferedBuffers[buff_index].m_CpuBuffer->m_SunColor = sun_info.m_SunColor;
+
+			m_DefferedBuffers[buff_index].m_CpuBuffer->m_MoonShadow = { sun_info.m_MoonShadow.z, -sun_info.m_MoonShadow.w,
+															1.0f / (abs(sun_info.m_MoonShadow.z) + abs(sun_info.m_MoonShadow.w)),
+															0.0f };
 			m_DefferedBuffers[buff_index].m_CpuBuffer->m_MoonColor = sun_info.m_MoonColor;
 			m_DefferedBuffers[buff_index].m_CpuBuffer->m_CameraInverse = *(compute_helper.camera.GetInverseCameraMatrixPointer());
 			Math::Store(&(m_DefferedBuffers[buff_index].m_CpuBuffer->m_CameraPosition), compute_helper.camera.GetPosition());

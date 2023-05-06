@@ -102,16 +102,22 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 		float2 xy = float2(dot(d_uv, v_x),-dot(d_uv, v_y));
 		xy *= scaler;
 		uv += xy;
-		float3 moon_normal = SkyTextures[1].Sample(LinearClampSampler, uv).xyz;
+		//float3 moon_normal = SkyTextures[1].Sample(LinearClampSampler, uv).xyz;
 
 		float3 v_z = -Normal;
 		v_x = cross(Normal, v_y);
 		v_y = cross(v_z, v_x);
 		//moon_normal = normalize(moon_normal.x * v_x + moon_normal.y * v_y + moon_normal.z * v_z);
-		moon_normal = normalize(moon_normal.x  * v_x + moon_normal.y * v_y + moon_normal.z * v_z);
-		sun_dir = float3(0, -1, 0);
-		float lighted = max(dot(sun_dir, moon_normal), 0);
-		sky_color += lighted * sun_l * float3(0.5, 0.5, 1.0) * SkyTextures[0].Sample(LinearClampSampler, uv);// SkyPixelsCB[FrameInfoCB.frame_index].MoonColor; //sky += sun_l * SkyPixelsCB[FrameInfoCB.frame_index].MoonColor;
+		//moon_normal = normalize(moon_normal.x  * v_x + moon_normal.y * v_y + moon_normal.z * v_z);
+		//sun_dir = float3(0, -1, 0);
+		//float lighted = max(dot(sun_dir, moon_normal), 0);
+
+		//float3 v_z = cross(v_y, v_x);
+		float3 normalmap = SkyTextures[1].Sample(LinearClampSampler, uv).xyz;
+		float3 moon_normal = normalize(v_x * uv.x + v_y * uv.y + v_z * sqrt(dot(uv.xy, uv.xy)));
+		float moon_shadow = max(0.0f, dot(moon_normal, sun_dir));
+		sky_color += moon_normal;// 
+		//sky_color += lighted * sun_l * float3(0.5, 0.5, 1.0) * SkyTextures[0].Sample(LinearClampSampler, uv);// SkyPixelsCB[FrameInfoCB.frame_index].MoonColor; //sky += sun_l * SkyPixelsCB[FrameInfoCB.frame_index].MoonColor;
 	}
 																																					
 																																					//return float4(LightColor.w * lerp(EarthColor * a_earth, sky_color, l_earth), 1.0);

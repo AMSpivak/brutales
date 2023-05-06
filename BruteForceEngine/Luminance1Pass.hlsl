@@ -8,7 +8,7 @@ struct PixelShaderInput
 
 float Luminance(in float3 color)
 {
-    return log(0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b + 1.0);
+    return log(max(0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b,  0.0f)+ 1.0);
 }
 
 Texture2D textureHDR : register(t0);
