@@ -50,7 +50,13 @@ using namespace Microsoft::WRL;
 #include "BruteForceMath.h"
 #include "SkyAstronomy.h"
 #include "GameEnvironment.h"
+//threads
+#include <thread>
+#include <mutex>
 
+std::mutex g_update_lock;
+bool g_DoRender;
+bool g_Destroy;
 // Use WARP adapter
 bool g_UseWarp = false;
 
@@ -253,20 +259,7 @@ void Update()
             BruteForce::Math::Store(&sun, Sky.SunDirection);
             BruteForce::Math::Vec4Float moon;
             BruteForce::Math::Store(&moon, Sky.MoonDirection);
-            //sun.x = 0;
-            //sun.y = -0.039;
-            //sun.z = 1;
 
-            //BruteForce::Math::Vec4Float main_sky_light = sun;
-
-            constexpr float moon_edge = -0.05f;
-            bool moonlight = false;
-
-            if (sun.y < moon_edge)
-            {
-                //main_sky_light = moon;
-                moonlight = true;
-            }
 
             float sun_h = sun.y < 0.0f ? 0.0f : sun.y;
 
@@ -275,10 +268,7 @@ void Update()
 
             float sun_intencivity = 50000.0f;
             BruteForce::Math::Vector day_light = { 1.0f, 1.0f, 1.0f,sun_intencivity };
-
-
-           
-            
+  
 
             auto& atmosphere = BruteForce::GlobalLevelInfo::GetGlobalAtmosphereInfo();
             constexpr float offset = 0.0001f;
@@ -293,32 +283,27 @@ void Update()
             float moon_intencivity = 0.25f;// *0.5f;
 
             atmosphere.m_SunInfo = {
-                sun.x,// tang_dir* cos(azimuth_rad),
+                sun.x,
                 sun.y,
-                sun.z,//tang_dir * sin(-azimuth_rad),
+                sun.z,
                 sun_intencivity };
+
             atmosphere.m_MoonInfo = {
-                moon.x,// tang_dir* cos(azimuth_rad),
+                moon.x,
                 moon.y,
-                moon.z,//tang_dir * sin(-azimuth_rad),
+                moon.z,
                 moon_intencivity };
+
             atmosphere.m_MoonColor = {
                 0.037f, 0.23f, 3.3f,
-                //1.0f,//0.85f,// tang_dir* cos(azimuth_rad),
-                //1.0f,//0.9f,
-                //1.0f,//tang_dir * sin(-azimuth_rad),
                 moon_intencivity };
+
             atmosphere.m_SunShadow.x = shadow_tg_1;
             atmosphere.m_SunShadow.y = shadow_tg_2;
             atmosphere.m_SunShadow.z = -shadow_dir.x;
             atmosphere.m_SunShadow.w = -shadow_dir.z;
-            //atmosphere.m_SunShadowScaler = abs(atmosphere.m_SunShadow.z) + abs(atmosphere.m_SunShadow.w);
+
             BruteForce::Math::Store(&(atmosphere.m_SunColor), day_light);
-            //atmosphere.m_SunColor = {
-            //    1.0f,//0.85f,// tang_dir* cos(azimuth_rad),
-            //    1.0f,//0.9f,
-            //    1.0f,//tang_dir * sin(-azimuth_rad),
-            //    sun_intencivity };
 
 			// Moon
 
@@ -335,7 +320,6 @@ void Update()
 			atmosphere.m_MoonShadow.w = -shadow_dir.z;
             atmosphere.m_MoonShadowScaler = abs(atmosphere.m_MoonShadow.z) + abs(atmosphere.m_MoonShadow.w);
 
-            atmosphere.m_Moonlight = moonlight;
             chng = false;
         }
     }
@@ -385,7 +369,9 @@ void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Win
 
 void Resize(uint32_t width, uint32_t height, BruteForce::Window * pWindow)
 {
+    g_update_lock.lock();
     p_Renderer->Resize();
+    g_update_lock.unlock();
 }
 
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
@@ -412,6 +398,22 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     //pWindow->SetOnPaint([] {Update(); Render(p_Renderer->m_SmartCommandQueue, pWindow); });
     pWindow->SetOnResize(Resize);
     pWindow->Show();
+
+    g_Destroy = false;
+    g_DoRender = true;
+
+    auto render_func = [&] {while (g_DoRender) {
+        
+            Update();
+            g_update_lock.lock();
+            Render(p_Renderer->m_SmartCommandQueue, pWindow);
+            g_update_lock.unlock();
+        }
+        g_Destroy = true;
+    };
+
+    std::thread render_thread(render_func);
+    render_thread.detach();
     //pWindow->SetFullscreen(true);
     MSG msg = {};
     while (msg.message != WM_QUIT)
@@ -427,11 +429,19 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
         {
         }
         else*/
-        {
+        /*{
             Update();
             Render(p_Renderer->m_SmartCommandQueue, pWindow);
-        }
+        }*/
     }
+
+    g_DoRender = false;
+
+    while (!g_Destroy)
+    {
+        Sleep(100);
+    }
+
     delete(test_controller);
     delete(p_Renderer);
     delete(p_HeapManager);
