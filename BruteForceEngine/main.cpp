@@ -416,23 +416,37 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     render_thread.detach();
     //pWindow->SetFullscreen(true);
     MSG msg = {};
-    while (msg.message != WM_QUIT)
-    {
-		if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		//while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-        {
-            ::TranslateMessage(&msg);
-            ::DispatchMessage(&msg);
-        }
+  //  while (msg.message != WM_QUIT)
+  //  {
+		//while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)&&(msg.message != WM_QUIT))
+  //      {
+  //          ::TranslateMessage(&msg);
+  //          ::DispatchMessage(&msg);
+  //      }
+  //      Sleep(10);
+  //      /*if(msg.message != WM_)
+  //      {
+  //      }
+  //      else*/
+  //      /*{
+  //          Update();
+  //          Render(p_Renderer->m_SmartCommandQueue, pWindow);
+  //      }*/
+  //  }
 
-        /*if(msg.message != WM_)
+    BOOL bRet;
+
+    while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0)
+    {
+        if (bRet == -1)
         {
+            // handle the error and possibly exit
         }
-        else*/
-        /*{
-            Update();
-            Render(p_Renderer->m_SmartCommandQueue, pWindow);
-        }*/
+        else
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
     }
 
     g_DoRender = false;
