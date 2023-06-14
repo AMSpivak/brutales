@@ -179,9 +179,9 @@ void Update()
             fullscreen_switch = press;
         }
 
-        static float day_hour = 0.5f;
+        static float day_hour = 0.77f;
         static bool chng = true;
-        static bool do_day_cycle = true;
+        static bool do_day_cycle = false;
 
         {
             static bool do_day_cycle_switch = false;
@@ -341,7 +341,9 @@ void Update()
 void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Window* pWindow)
 {
 
-    p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
+	//p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
+	p_Renderer->WaitForSwapReadyFence(in_SmartCommandQueue);
+    
     p_Renderer->SwapFrame();
 
     //auto smart_command_list = in_SmartCommandQueue.GetCommandList();
@@ -395,6 +397,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     p_Renderer->LoadContent(g_Device);
     test_controller = new BruteForce::Controller::ControllerWinKey();
     test_camera = p_Renderer->GetCameraPtr();
+    test_camera->SetPosition(BruteForce::Math::Vec3Float(0, 30, 0), true);
     //pWindow->SetOnPaint([] {Update(); Render(p_Renderer->m_SmartCommandQueue, pWindow); });
     pWindow->SetOnResize(Resize);
     pWindow->Show();

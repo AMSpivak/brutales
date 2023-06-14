@@ -182,6 +182,13 @@ namespace BruteForce
             in_SmartCommandQueue.WaitForFenceValue(GetCurrentFence());
         }
 
+		void WaitForSwapReadyFence(BruteForce::SmartCommandQueue& in_SmartCommandQueue)
+		{
+            auto i = m_CurrentBackBufferIndex;// (m_CurrentBackBufferIndex == 0 ? t_NumFrames : m_CurrentBackBufferIndex) - 1;
+
+			in_SmartCommandQueue.WaitForFenceValue(m_FrameFenceValues[i]);
+		}
+
         virtual Camera* GetCameraPtr() { return nullptr; }
     };
 }

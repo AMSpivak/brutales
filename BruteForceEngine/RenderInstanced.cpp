@@ -46,6 +46,7 @@ namespace BruteForce
 
             }
             {
+                std::wstring content_dir_path{ settings.GetContentDirWchar() };
                 std::vector<std::wstring> tex_names = { { L"test1.png"} ,{L"test2.png"} };
                 size_t textures_count = tex_names.size();
 
@@ -57,7 +58,7 @@ namespace BruteForce
 
 
                 auto srv_handle = m_SVRHeap->GetCPUDescriptorHandleForHeapStart();
-                BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_path, m_textures, device, srv_handle);
+                BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_dir_path, m_textures, device, srv_handle);
             }
 
             BruteForce::DataBlob vertexShaderBlob;

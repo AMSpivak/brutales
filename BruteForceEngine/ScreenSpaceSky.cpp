@@ -48,6 +48,7 @@ namespace BruteForce
             std::wstring content_path{ settings.GetExecuteDirWchar() };
 
 			{
+                std::wstring content_dir_path{ settings.GetContentDirWchar() };
 				BruteForce::Textures::TextureLoadHlpr helper{ device, copy_queue, desc.gpu_allocator_ptr };
 
 				std::vector<std::wstring> tex_names = {
@@ -57,7 +58,7 @@ namespace BruteForce
 				size_t textures_count = tex_names.size();
 				TexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(textures_count), BruteForce::DescriptorRangeTypeSrv, "SkyTextures");
 				auto& srv_handle = TexturesRange->m_CpuHandle;
-				BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_path, m_textures, helper, srv_handle);
+				BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_dir_path, m_textures, helper, srv_handle);
 			}
 
 

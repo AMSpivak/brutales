@@ -127,14 +127,16 @@ namespace BruteForce
             }
 
             {
+                std::wstring content_dir_path{ settings.GetContentDirWchar() };
+
                 BruteForce::Textures::TextureLoadHlpr helper { device, copy_queue, desc.gpu_allocator_ptr };
 
                 {
                     HeightmapTexturesRange = descriptor_heap_manager.GetManagedRange("TerrainHeightmapTextures");
                     assert(HeightmapTexturesRange);
                     auto& srv_handle = HeightmapTexturesRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(textures_count), TexturesRange);
-                    BruteForce::Textures::AddTexture(content_path, { L"desert_map_16_2.png" }, m_textures, helper, srv_handle);
-                    BruteForce::Textures::AddTexture(content_path, { L"map_materials.png" }, m_textures, helper, srv_handle, TargetFormat_R8G8B8A8_UInt);
+                    BruteForce::Textures::AddTexture(content_dir_path, { L"desert_map_16_2.png" }, m_textures, helper, srv_handle);
+                    BruteForce::Textures::AddTexture(content_dir_path, { L"map_materials.png" }, m_textures, helper, srv_handle, TargetFormat_R8G8B8A8_UInt);
                 }
 
                 std::vector<std::wstring> tex_names = { 
@@ -145,7 +147,7 @@ namespace BruteForce
                 size_t textures_count = tex_names.size();
                 TexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(textures_count), BruteForce::DescriptorRangeTypeSrv, "TerrainMaterialTextures");
                 auto& srv_handle = TexturesRange->m_CpuHandle;
-                BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_path, m_textures, helper, srv_handle);
+                BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_dir_path, m_textures, helper, srv_handle);
             }
 
             SunShadowSrvDescriptors = descriptor_heap_manager.GetManagedRange("TerrainShadowSrvs");
