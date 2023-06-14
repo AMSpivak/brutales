@@ -116,8 +116,8 @@ float4 main(PixelShaderInput IN) : SV_TARGET
 		float3 normalmap = SkyTextures[1].Sample(LinearClampSampler, uv).xyz;
 		float3 moon_normal = normalize(v_x * uv.x + v_y * uv.y + v_z * sqrt(dot(uv.xy, uv.xy)));
 		float moon_shadow = max(0.0f, dot(moon_normal, sun_dir));
-		sky_color += moon_normal;// 
-		//sky_color += lighted * sun_l * float3(0.5, 0.5, 1.0) * SkyTextures[0].Sample(LinearClampSampler, uv);// SkyPixelsCB[FrameInfoCB.frame_index].MoonColor; //sky += sun_l * SkyPixelsCB[FrameInfoCB.frame_index].MoonColor;
+		//sky_color += moon_normal;// 
+		sky_color += sun_l * float3(0.5, 0.5, 1.0) * SkyTextures[0].Sample(LinearClampSampler, uv);// SkyPixelsCB[FrameInfoCB.frame_index].MoonColor; //sky += sun_l * SkyPixelsCB[FrameInfoCB.frame_index].MoonColor;
 	}
 																																					
 																																					//return float4(LightColor.w * lerp(EarthColor * a_earth, sky_color, l_earth), 1.0);

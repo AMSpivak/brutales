@@ -13,12 +13,13 @@ namespace BruteForce
 		size_t m_heap_range_uav_index;
 
 		GpuAllocation* m_p_allocation;
+		int32_t m_descriptor_index;
 		ResourceStates      m_state;
 		//float               m_clearColor[4];
 	public:
 		Resource            m_GpuBuffer;
 
-		GpuResource() : m_p_allocation(nullptr) {};
+		GpuResource() : m_p_allocation(nullptr), m_descriptor_index(-1) {};
 		GpuResource(const GpuResource&) = default;
 		~GpuResource()
 		{

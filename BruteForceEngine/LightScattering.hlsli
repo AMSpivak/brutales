@@ -1,5 +1,8 @@
 #ifndef LIGHR_SCATTERING_HLSLI
 #define LIGHR_SCATTERING_HLSLI
+
+#include "RaymarchFogCB.h"
+
 static const float RayleighScatteringMul = 1e-5;
 static const float3 RayleighScatteringWavelength = float3(0.58, 1.35, 3.3) * RayleighScatteringMul;
 //static const float3 RayleighScatteringWavelength = float3(0.58,1.35,3.3) * RayleighScatteringMul;
@@ -8,11 +11,27 @@ static const float EarthRadius = 6378000;
 static const float AtmosphereRadius = EarthRadius + 60000;
 static const float3 EarthCenter = float3(0, -EarthRadius, 0);
 static const float PI = 3.141593;
-float RayleighScatteringPhase(float cosTheta)
-{
-	//return 0.0596831 * (1 + cosTheta * cosTheta);
-    return 3.0 / (16 * PI) * (1 + cosTheta * cosTheta);
-}
+
+#define FOGS 2
+static const RaymarchFogCB fogs[FOGS] = {
+    {
+        float4(0.58 * RayleighScatteringMul, 1.35 * RayleighScatteringMul, 3.3 * RayleighScatteringMul, 1.0),
+        float4(0.0, 8000.0, 0.0, 1.0),
+        int4(0,0,0,0)
+    },
+    {
+        float4(2 * 1e-6, 2 * 1e-6, 0.5 * 1e-6, 1.11),
+        float4(0.0, 1200.0, 0.0, -0.95f),
+        int4(1,0,0,0)
+    }
+    /*,
+    {
+        float4(4 * 1e-5, 2 * 1e-5, 0.5 * 1e-5, 1.11),
+        float4(0.0, 50.0, 0.0, -0.95f),
+        int4(1,0,0,0)
+    }*/
+};
+
 
 float RayleighDistribution(float h)
 {
@@ -20,10 +39,32 @@ float RayleighDistribution(float h)
 }
 
 static const float3 MieScatteringWavelength = float3(2, 2, 0.5) * 1e-6;
+//static const float3 MieScatteringWavelength = float3(2, 2, 0.5) * 1e-5;
 
 float MieDistribution(float h)
 {
     return exp(-h / 1200.0f);
+    //return exp(-h / 50.0f);
+}
+
+float DistributionClassic(float2 h0, float h)
+{
+    return exp(-abs(h - h0.x) / h0.y);
+}
+
+float FogDistribution(RaymarchFogCB fog, float h)
+{
+    if (fog.m_Types.y == 0)
+    {
+        return DistributionClassic(fog.m_ScatteringParams1.xy, h);
+    }
+    return 0;
+}
+
+float RayleighScatteringPhase(float cosTheta)
+{
+    //return 0.0596831 * (1 + cosTheta * cosTheta);
+    return 3.0 / (16 * PI) * (1 + cosTheta * cosTheta);
 }
 
 float MieScatteringPhase(float cosTheta, float g)
@@ -34,6 +75,29 @@ float MieScatteringPhase(float cosTheta, float g)
 
     return 3.0 / (8 * PI) * (1 - g2) / (2 + g2) * (1 + (cosTheta * cosTheta)) / pow(1 + g2 - 2 * g * cosTheta, 1.5);
     //return 1.0 / (4 * PI) * (1 - g2) / pow(1 + g2 - 2 * g * cosTheta, 1.5);
+}
+
+float FogScatteringPhase(RaymarchFogCB fog, float cosTheta)
+{
+    [branch] switch (fog.m_Types.x)
+    {
+    case 0:
+        return RayleighScatteringPhase(cosTheta);
+    case 1:
+        return MieScatteringPhase(cosTheta, fog.m_ScatteringParams1.w);
+    default:
+        return 0;
+    }
+}
+
+const float3 MieTransmittance()
+{
+    return MieScatteringWavelength * 1.11f;
+}
+
+const float3 FogTransmittance(RaymarchFogCB fog)
+{
+    return fog.m_ScatteringParams0.xyz * fog.m_ScatteringParams0.w;
 }
 
 float EarthHeight(float3 position)
@@ -306,27 +370,36 @@ float EarthTest(float3 direction, float3 position)
 float3 OpticalDepth(in int numpoints, float3 position, float3 direction, float l)
 {
     float  sec_h = EarthHeight(position);
-    float distribution_r = RayleighDistribution(sec_h);
-    float distribution_m = MieDistribution(sec_h);
+    //float distribution_r = 0;// RayleighDistribution(sec_h);
+    //float distribution_m = 0;// MieDistribution(sec_h);
 
-    float distribution_prev_r = distribution_r;
-    float distribution_now_r = 0;
+    //float distribution_prev_r = distribution_r;
+    //float distribution_now_r = 0;
 
-    float distribution_prev_m = distribution_m;
-    float distribution_now_m = 0;
-
+    //float distribution_prev_m = distribution_m;
+    //float distribution_now_m = 0;
+    float3 transmittance_l = float3(0, 0, 0);
     float step_in_scatter = l / (numpoints - 1);
-    for (int k = 1; k < numpoints; k++)
+    for (int k = 0; k < numpoints; k++)
     {
         sec_h = EarthHeight(position + direction * step_in_scatter * k);
-        distribution_now_r = RayleighDistribution(sec_h);
-        distribution_now_m = MieDistribution(sec_h);
-        distribution_r += (distribution_now_r + distribution_prev_r) * 0.5 * step_in_scatter;
-        distribution_m += (distribution_now_m + distribution_prev_m) * 0.5 * step_in_scatter;
-        distribution_prev_r = distribution_now_r;
-        distribution_prev_m = distribution_now_m;
+        
+        //distribution_now_r = RayleighDistribution(sec_h);
+        //distribution_now_m = MieDistribution(sec_h);
+        //distribution_r += (distribution_now_r + distribution_prev_r) * 0.5 * step_in_scatter;
+        //distribution_m += (distribution_now_m + distribution_prev_m) * 0.5 * step_in_scatter;
+        //distribution_r += (distribution_now_r) * step_in_scatter;
+        //distribution_m += (distribution_now_m ) * step_in_scatter;
+       // distribution_prev_r = distribution_now_r;
+        //distribution_prev_m = distribution_now_m;
+        for (int f = 0; f < FOGS; f++)
+        {
+            float3 distribution = FogDistribution(fogs[f], sec_h) * fogs[f].m_ScatteringParams0.xyz;
+            transmittance_l += distribution * fogs[f].m_ScatteringParams0.w;
+        }
     }
-    return Transmittance(RayleighScatteringWavelength * distribution_r + MieScatteringWavelength * distribution_m *1.11);
+    //return Transmittance(RayleighScatteringWavelength * distribution_r + MieScatteringWavelength * distribution_m * 1.11);
+    return Transmittance(transmittance_l);
 }
 
 #endif

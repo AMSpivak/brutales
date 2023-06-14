@@ -105,6 +105,8 @@ float2 EarthShadow(float3 position) //world_pos.xz
 [numthreads(BLOCK_SIZE, BLOCK_SIZE, 1)]
 void main(ComputeShaderInput IN)
 {
+
+
     static const float3 ZeroEdge = float3(0.001, 0.001, 0.001);
 
     uint w = 0;
@@ -133,7 +135,7 @@ void main(ComputeShaderInput IN)
             float sun_light_scatter = dot(direction, to_sun);
             float3 res = OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy].xyz;
             //float3 res = float3(0, 0, 0);
-            float l = 0;
+            float l = length(world_pos.xyz);
             float sunscale = (smoothstep(0,abs(to_sun).y,0.1)*3 + 1.0) *0.00004;
             
             float sun = smoothstep(1.0 - sunscale, 1.0 - sunscale * 0.55, sun_light_scatter);
@@ -143,7 +145,7 @@ void main(ComputeShaderInput IN)
             world_pos.xyz += camera;
 
             float3 od_prev = float3(1, 1, 1);
-
+            float3 ray_end = world_pos.xyz;
             if (materials.r == 0)
             {
                 l = AtmosphereLength(direction, camera);
@@ -212,11 +214,11 @@ void main(ComputeShaderInput IN)
 
             float3 scattering = RayleighScatteringWavelength;
             static const int numpoints = 10;
-            static const int numsecondpoints = 5;
+            static const int numsecondpoints = 10;
 
             float3 light = sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
             float3 moon_source_light = moon_info.w * lighting_CB[FrameInfoCB.frame_index].m_MoonColor.xyz;
-            float3 ray_end = camera + direction * l;
+            //float3 ray_end = camera + direction * l;
             float h_l = EarthHeight(ray_end);
             float l_prev = l;
 
@@ -224,8 +226,16 @@ void main(ComputeShaderInput IN)
             float tst_prev = sqrEarthRadius;
             float RayleighPhase = RayleighScatteringPhase(sun_light_scatter);
             float MiePhase = MieScatteringPhase(sun_light_scatter, -0.95f);
+            
             float3 scattering_l_prev = RayleighPhase * RayleighScatteringWavelength * RayleighDistribution(h_l) + MiePhase * MieScatteringWavelength * MieDistribution(h_l);
-            float3 transmittance_l_prev = RayleighScatteringWavelength * RayleighDistribution(h_l) + MieScatteringWavelength * MieDistribution(h_l) * 1.11;
+            float3 transmittance_l_prev = RayleighScatteringWavelength * RayleighDistribution(h_l) + MieDistribution(h_l) * MieTransmittance();
+
+            float fogsPhase[FOGS];
+            for (int f = 0; f < FOGS; f++)
+            {
+                fogsPhase[f] = FogScatteringPhase(fogs[f], sun_light_scatter);
+            }
+
 
             float3 moon_light = sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
 
@@ -237,11 +247,19 @@ void main(ComputeShaderInput IN)
                 //float curr_l = l * ((float)i) / numpoints;
                 float3 curr_pos = camera + direction * curr_l;
                 float h = EarthHeight(curr_pos);
-                float distribution_r = RayleighDistribution(h);
-                float distribution_m = MieDistribution(h);
+                //float distribution_r = RayleighDistribution(h);
+                //float distribution_m = MieDistribution(h);
                // float3 scattering_l = RayleighPhase * RayleighScatteringWavelength * distribution_r + MiePhase * MieScatteringWavelength * distribution_m * 1.11;
-                float3 scattering_l = RayleighPhase * RayleighScatteringWavelength * distribution_r + MiePhase * MieScatteringWavelength * distribution_m;
-                float3 transmittance_l = RayleighScatteringWavelength * distribution_r + MieScatteringWavelength * distribution_m * 1.11;
+                float3 scattering_l = 0;// RayleighPhase* RayleighScatteringWavelength* distribution_r + MiePhase * MieScatteringWavelength * distribution_m;
+                float3 transmittance_l = 0;// RayleighScatteringWavelength* distribution_r + distribution_m * MieTransmittance();
+
+                for (int f = 0; f < FOGS; f++)
+                {
+                    float3 distribution = FogDistribution(fogs[f], h) * fogs[f].m_ScatteringParams0.xyz;
+                    transmittance_l += distribution * fogs[f].m_ScatteringParams0.w;
+                    scattering_l += distribution * fogsPhase[f];
+                }
+
                 float d_l = l_prev - curr_l;
 
                 res *= Transmittance(d_l * (transmittance_l + transmittance_l_prev) * 0.5);

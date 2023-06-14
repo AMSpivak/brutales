@@ -263,6 +263,9 @@
     <ClInclude Include="CommonComputeInput.h">
       <Filter>Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="RaymarchFogCB.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicVertexShader.hlsl">
