@@ -28,3 +28,7 @@
 *.obj
 BruteForceEngine.zip
 /x64
+/packages
+/ThirdParty/OpenFBX
+/Data
+/Built
