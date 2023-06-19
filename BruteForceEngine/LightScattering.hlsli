@@ -4,7 +4,6 @@
 #include "RaymarchFogCB.h"
 
 static const float RayleighScatteringMul = 1e-5;
-static const float3 RayleighScatteringWavelength = float3(0.58, 1.35, 3.3) * RayleighScatteringMul;
 //static const float3 RayleighScatteringWavelength = float3(0.58,1.35,3.3) * RayleighScatteringMul;
 //static const float RayleighScatteringMul = 1e-5;
 static const float EarthRadius = 6378000;
@@ -12,7 +11,7 @@ static const float AtmosphereRadius = EarthRadius + 60000;
 static const float3 EarthCenter = float3(0, -EarthRadius, 0);
 static const float PI = 3.141593;
 
-#define FOGS 2
+#define FOGS 3
 static const RaymarchFogCB fogs[FOGS] = {
     {
         float4(0.58 * RayleighScatteringMul, 1.35 * RayleighScatteringMul, 3.3 * RayleighScatteringMul, 1.0),
@@ -23,29 +22,16 @@ static const RaymarchFogCB fogs[FOGS] = {
         float4(2 * 1e-6, 2 * 1e-6, 0.5 * 1e-6, 1.11),
         float4(0.0, 1200.0, 0.0, -0.95f),
         int4(1,0,0,0)
-    }
-    /*,
+    },
     {
-        float4(4 * 1e-5, 2 * 1e-5, 0.5 * 1e-5, 1.11),
-        float4(0.0, 50.0, 0.0, -0.95f),
+        float4(0.0, 30.0, 0.0, 0.0f),
         int4(1,0,0,0)
-    }*/
+    }
 };
 
 
-float RayleighDistribution(float h)
-{
-	return exp(-h/8000.0f);
-}
 
-static const float3 MieScatteringWavelength = float3(2, 2, 0.5) * 1e-6;
-//static const float3 MieScatteringWavelength = float3(2, 2, 0.5) * 1e-5;
 
-float MieDistribution(float h)
-{
-    return exp(-h / 1200.0f);
-    //return exp(-h / 50.0f);
-}
 
 float DistributionClassic(float2 h0, float h)
 {
@@ -88,11 +74,6 @@ float FogScatteringPhase(RaymarchFogCB fog, float cosTheta)
     default:
         return 0;
     }
-}
-
-const float3 MieTransmittance()
-{
-    return MieScatteringWavelength * 1.11f;
 }
 
 const float3 FogTransmittance(RaymarchFogCB fog)

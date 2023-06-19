@@ -72,7 +72,7 @@ sampler sampl : register(s0);
 //    return float2(smoothstep(shadows.y, shadows.x, position.y), smoothstep(shadows.w, shadows.z, position.y));
 //}
 
-float2 EarthShadow(float3 position) //world_pos.xz
+float2 EarthShadow(float3 position) 
 {
     float4 shadows = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -212,7 +212,6 @@ void main(ComputeShaderInput IN)
                 res = max(ZeroEdge, sun_light_color * Color + moon_light_color * Color);
             }
 
-            float3 scattering = RayleighScatteringWavelength;
             static const int numpoints = 10;
             static const int numsecondpoints = 10;
 
@@ -224,34 +223,32 @@ void main(ComputeShaderInput IN)
 
             float sqrEarthRadius = EarthRadius * EarthRadius;
             float tst_prev = sqrEarthRadius;
-            float RayleighPhase = RayleighScatteringPhase(sun_light_scatter);
-            float MiePhase = MieScatteringPhase(sun_light_scatter, -0.95f);
             
-            float3 scattering_l_prev = RayleighPhase * RayleighScatteringWavelength * RayleighDistribution(h_l) + MiePhase * MieScatteringWavelength * MieDistribution(h_l);
-            float3 transmittance_l_prev = RayleighScatteringWavelength * RayleighDistribution(h_l) + MieDistribution(h_l) * MieTransmittance();
+            float3 scattering_l_prev = 0; 
+            float3 transmittance_l_prev = 0;
 
             float fogsPhase[FOGS];
             for (int f = 0; f < FOGS; f++)
             {
                 fogsPhase[f] = FogScatteringPhase(fogs[f], sun_light_scatter);
+                float3 distribution = FogDistribution(fogs[f], h) * fogs[f].m_ScatteringParams0.xyz;
+                transmittance_l_prev += distribution * fogs[f].m_ScatteringParams0.w;
+                scattering_l_prev += distribution * fogsPhase[f];
             }
-
 
             float3 moon_light = sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
 
 
             float l_shadow =  SphereRay(to_sun, ray_end, EarthRadius, EarthCenter);// temp hack to check
-            for (int i = numpoints - 1; i > 0; i--)
+            for (int i = numpoints  - 1; i > 0; i--)
             {
-                float curr_l = l * FastInverse((float)i / numpoints);
-                //float curr_l = l * ((float)i) / numpoints;
+                //float curr_l = l * FastInverse((float)i / numpoints);
+                float curr_l = l * ((float)i) / numpoints;
                 float3 curr_pos = camera + direction * curr_l;
                 float h = EarthHeight(curr_pos);
-                //float distribution_r = RayleighDistribution(h);
-                //float distribution_m = MieDistribution(h);
-               // float3 scattering_l = RayleighPhase * RayleighScatteringWavelength * distribution_r + MiePhase * MieScatteringWavelength * distribution_m * 1.11;
-                float3 scattering_l = 0;// RayleighPhase* RayleighScatteringWavelength* distribution_r + MiePhase * MieScatteringWavelength * distribution_m;
-                float3 transmittance_l = 0;// RayleighScatteringWavelength* distribution_r + distribution_m * MieTransmittance();
+
+                float3 scattering_l = 0;
+                float3 transmittance_l = 0;
 
                 for (int f = 0; f < FOGS; f++)
                 {
@@ -268,20 +265,22 @@ void main(ComputeShaderInput IN)
                                
                 float sun_ray_l = AtmosphereLength(to_sun, curr_pos);
                 float moon_ray_l = AtmosphereLength(to_moon, curr_pos);
+                l_shadow = SphereRay(to_sun, curr_pos, EarthRadius, EarthCenter);
+
                 //if((l_shadow==0) )
                 {
                     //l_shadow = SphereRay(to_sun, curr_pos, EarthRadius, EarthCenter);
-                    //float sun_ray_l = AtmosphereLength(to_sun, curr_pos);
-
+                    //float sun_ray_l = AtmosphereLength(to_sun, curr_pos);float vis = 1;
+                    float2 shadow = EarthShadow(curr_pos);
                     float3 od = OpticalDepth(numsecondpoints, curr_pos, to_sun, sun_ray_l);
                     //float vis = step(l_shadow, curr_l);// saturate((l_prev - l_shadow) / (l_prev - curr_l));
-                    float vis = 1;// saturate((l_prev - l_shadow) / (l_prev - curr_l)); //step(l_shadow, 0);
-                    float3 inlight = light * od;
+                    // saturate((l_prev - l_shadow) / (l_prev - curr_l)); //step(l_shadow, 0);
+                    float3 inlight = light * od * shadow.x;
                     od = OpticalDepth(numsecondpoints, curr_pos, to_moon, moon_ray_l);
-                    inlight += od * moon_source_light;
-                    res += d_l * (scattering_l + scattering_l_prev) * 0.5 * vis * inlight;
+                    inlight += od * moon_source_light *shadow.y;
+                    res += d_l * (scattering_l + scattering_l_prev) * 0.5 * /*vis * */inlight;
                 }
-                l_shadow = SphereRay(to_sun, curr_pos, EarthRadius, EarthCenter);
+                //l_shadow = SphereRay(to_sun, curr_pos, EarthRadius, EarthCenter);
                 scattering_l_prev = scattering_l;
                 transmittance_l_prev = transmittance_l;
                 l_prev = curr_l;
