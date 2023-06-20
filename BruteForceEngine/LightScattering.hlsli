@@ -16,16 +16,24 @@ static const RaymarchFogCB fogs[FOGS] = {
     {
         float4(0.58 * RayleighScatteringMul, 1.35 * RayleighScatteringMul, 3.3 * RayleighScatteringMul, 1.0),
         float4(0.0, 8000.0, 0.0, 1.0),
+        float4(0.0, 1200.0, 0.0, 1.0f),
+        float4(0.0, 0.0, 0.0, 1.0f),
         int4(0,0,0,0)
     },
     {
         float4(2 * 1e-6, 2 * 1e-6, 0.5 * 1e-6, 1.11),
         float4(0.0, 1200.0, 0.0, -0.95f),
-        int4(1,0,0,0)
-    },
+        float4(1.0, 0.5, 0.5, -0.95f),
+        float4(0.0, 0.0, 0.0, 1.0f),
+        int4(2,0,0,0)
+    }
+    ,
     {
-        float4(0.0, 30.0, 0.0, 0.0f),
-        int4(1,0,0,0)
+        float4(0.99 * 1e-2, 0.59 * 1e-2, 0.59 * 1e-2, 1.11),
+        float4(0.0, 20.0, 0.0, 0.2f),
+        float4(0.7, 0.5, 0.5, 0.9f),
+        float4(0.0, 0.0, 0.0, 1.0f),
+        int4(2,0,0,0)
     }
 };
 
@@ -63,7 +71,37 @@ float MieScatteringPhase(float cosTheta, float g)
     //return 1.0 / (4 * PI) * (1 - g2) / pow(1 + g2 - 2 * g * cosTheta, 1.5);
 }
 
-float FogScatteringPhase(RaymarchFogCB fog, float cosTheta)
+float HGPhase(float cosTheta, float g)
+{
+
+    g = clamp(g, -0.99, 0.99);
+    float g2 = (g * g);
+
+    //return 3.0 / (8 * PI) * (1 - g2) / (2 + g2) * (1 + (cosTheta * cosTheta)) / pow(1 + g2 - 2 * g * cosTheta, 1.5);
+    return 1.0 / (4 * PI) * (1 - g2) / pow(1 + g2 - 2 * g * cosTheta, 1.5);
+}
+
+float3 MultiHGPhase(float cosTheta, RaymarchFogCB fog)
+{
+
+    float g = clamp(fog.m_ScatteringParams2.w, -0.99, 0.99);
+    float g2 = (g * g);
+    const float c_mul = 2.f / 3.f;
+    float m_mul = 1;
+    float3 res = 0;
+    for (int m = 1; m < 2; m++)
+    {
+        m_mul *= c_mul;
+        res += HGPhase(m_mul * cosTheta, g);
+    }
+
+    res *= (fog.m_ScatteringParams0.xyz + fog.m_ScatteringParams3.xyz) * fog.m_ScatteringParams2.z;
+
+    res += HGPhase(cosTheta, g)* fog.m_ScatteringParams2.y;
+    return res;
+}
+
+float3 FogScatteringPhase(RaymarchFogCB fog, float cosTheta)
 {
     [branch] switch (fog.m_Types.x)
     {
@@ -71,6 +109,10 @@ float FogScatteringPhase(RaymarchFogCB fog, float cosTheta)
         return RayleighScatteringPhase(cosTheta);
     case 1:
         return MieScatteringPhase(cosTheta, fog.m_ScatteringParams1.w);
+    case 2:
+        return HGPhase(cosTheta, fog.m_ScatteringParams1.w);
+    case 3:
+        return MultiHGPhase(cosTheta, fog);
     default:
         return 0;
     }
@@ -375,8 +417,8 @@ float3 OpticalDepth(in int numpoints, float3 position, float3 direction, float l
         //distribution_prev_m = distribution_now_m;
         for (int f = 0; f < FOGS; f++)
         {
-            float3 distribution = FogDistribution(fogs[f], sec_h) * fogs[f].m_ScatteringParams0.xyz;
-            transmittance_l += distribution * fogs[f].m_ScatteringParams0.w;
+            //float3 distribution = FogDistribution(fogs[f], sec_h) * (fogs[f].m_ScatteringParams0.xyz + fogs[f].m_ScatteringParams3.xyz);
+            transmittance_l += FogDistribution(fogs[f], sec_h) * (fogs[f].m_ScatteringParams0.xyz + fogs[f].m_ScatteringParams3.xyz);
         }
     }
     //return Transmittance(RayleighScatteringWavelength * distribution_r + MieScatteringWavelength * distribution_m * 1.11);

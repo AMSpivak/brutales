@@ -227,13 +227,13 @@ void main(ComputeShaderInput IN)
             float3 scattering_l_prev = 0; 
             float3 transmittance_l_prev = 0;
 
-            float fogsPhase[FOGS];
+            float3 fogsPhase[FOGS];
             for (int f = 0; f < FOGS; f++)
             {
                 fogsPhase[f] = FogScatteringPhase(fogs[f], sun_light_scatter);
-                float3 distribution = FogDistribution(fogs[f], h) * fogs[f].m_ScatteringParams0.xyz;
-                transmittance_l_prev += distribution * fogs[f].m_ScatteringParams0.w;
-                scattering_l_prev += distribution * fogsPhase[f];
+                float3 distribution = FogDistribution(fogs[f], h) ;
+                transmittance_l_prev += distribution * (fogs[f].m_ScatteringParams0.xyz + fogs[f].m_ScatteringParams3.xyz);
+                scattering_l_prev += distribution * fogsPhase[f] * fogs[f].m_ScatteringParams0.xyz;
             }
 
             float3 moon_light = sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
@@ -252,9 +252,9 @@ void main(ComputeShaderInput IN)
 
                 for (int f = 0; f < FOGS; f++)
                 {
-                    float3 distribution = FogDistribution(fogs[f], h) * fogs[f].m_ScatteringParams0.xyz;
-                    transmittance_l += distribution * fogs[f].m_ScatteringParams0.w;
-                    scattering_l += distribution * fogsPhase[f];
+                    float3 distribution = FogDistribution(fogs[f], h);
+                    transmittance_l += distribution * (fogs[f].m_ScatteringParams0.xyz + fogs[f].m_ScatteringParams3.xyz);
+                    scattering_l += distribution * fogsPhase[f] * fogs[f].m_ScatteringParams0.xyz;
                 }
 
                 float d_l = l_prev - curr_l;
