@@ -240,15 +240,21 @@ void main(ComputeShaderInput IN)
 
 
             float l_shadow =  SphereRay(to_sun, ray_end, EarthRadius, EarthCenter);// temp hack to check
+            //for (int i = numpoints - 1; i > 0; i--)
+            float l_near = l > 60 ? 30.0f : l / 2;
+            float l_far = l - l_near;
+
+            float3 scattering_l = 0;
+            float3 transmittance_l = 0;
+
             for (int i = numpoints  - 1; i > 0; i--)
             {
                 //float curr_l = l * FastInverse((float)i / numpoints);
-                float curr_l = l * ((float)i) / numpoints;
+                float curr_l = l_near + l_far * ((float)i) / numpoints;
                 float3 curr_pos = camera + direction * curr_l;
                 float h = EarthHeight(curr_pos);
 
-                float3 scattering_l = 0;
-                float3 transmittance_l = 0;
+                
 
                 for (int f = 0; f < FOGS; f++)
                 {
@@ -260,31 +266,54 @@ void main(ComputeShaderInput IN)
                 float d_l = l_prev - curr_l;
 
                 res *= Transmittance(d_l * (transmittance_l + transmittance_l_prev) * 0.5);
-                //float tst = EarthTest(to_sun, curr_pos);
 
                                
                 float sun_ray_l = AtmosphereLength(to_sun, curr_pos);
                 float moon_ray_l = AtmosphereLength(to_moon, curr_pos);
                 l_shadow = SphereRay(to_sun, curr_pos, EarthRadius, EarthCenter);
 
-                //if((l_shadow==0) )
                 {
-                    //l_shadow = SphereRay(to_sun, curr_pos, EarthRadius, EarthCenter);
-                    //float sun_ray_l = AtmosphereLength(to_sun, curr_pos);float vis = 1;
                     float2 shadow = EarthShadow(curr_pos);
                     float3 od = OpticalDepth(numsecondpoints, curr_pos, to_sun, sun_ray_l);
-                    //float vis = step(l_shadow, curr_l);// saturate((l_prev - l_shadow) / (l_prev - curr_l));
-                    // saturate((l_prev - l_shadow) / (l_prev - curr_l)); //step(l_shadow, 0);
                     float3 inlight = light * od * shadow.x;
                     od = OpticalDepth(numsecondpoints, curr_pos, to_moon, moon_ray_l);
                     inlight += od * moon_source_light *shadow.y;
-                    res += d_l * (scattering_l + scattering_l_prev) * 0.5 * /*vis * */inlight;
+                    res += d_l * (scattering_l + scattering_l_prev) * 0.5 * inlight;
                 }
-                //l_shadow = SphereRay(to_sun, curr_pos, EarthRadius, EarthCenter);
                 scattering_l_prev = scattering_l;
                 transmittance_l_prev = transmittance_l;
                 l_prev = curr_l;
             }
+
+            for (int i = numpoints - 1; i > 0; i--)
+            {
+                //float curr_l = l * FastInverse((float)i / numpoints);
+                float curr_l = l_near * ((float)i) / numpoints;
+                float3 curr_pos = camera + direction * curr_l;
+                float h = EarthHeight(curr_pos);
+
+                float d_l = l_prev - curr_l;
+
+                res *= Transmittance(d_l * (transmittance_l + transmittance_l_prev) * 0.5);
+
+
+                float sun_ray_l = AtmosphereLength(to_sun, curr_pos);
+                float moon_ray_l = AtmosphereLength(to_moon, curr_pos);
+                l_shadow = SphereRay(to_sun, curr_pos, EarthRadius, EarthCenter);
+
+                {
+                    float2 shadow = EarthShadow(curr_pos);
+                    float3 od = OpticalDepth(numsecondpoints, curr_pos, to_sun, sun_ray_l);
+                    float3 inlight = light * od * shadow.x;
+                    od = OpticalDepth(numsecondpoints, curr_pos, to_moon, moon_ray_l);
+                    inlight += od * moon_source_light * shadow.y;
+                    res += d_l * (scattering_l + scattering_l_prev) * 0.5 * inlight;
+                }
+                scattering_l_prev = scattering_l;
+                transmittance_l_prev = transmittance_l;
+                l_prev = curr_l;
+            }
+
             
             OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(res, 1.0);
             //Color *= 0.01;

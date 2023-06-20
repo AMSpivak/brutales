@@ -29,10 +29,10 @@ static const RaymarchFogCB fogs[FOGS] = {
     }
     ,
     {
-        float4(0.99 * 1e-2, 0.59 * 1e-2, 0.59 * 1e-2, 1.11),
-        float4(0.0, 20.0, 0.0, 0.2f),
+        float4(0.2 * 1e-2, 0.2 * 1e-2, 0.2 * 1e-2, 1.11),
+        float4(0.0, 60.0, 0.0, 0.2f),
         float4(0.7, 0.5, 0.5, 0.9f),
-        float4(0.0, 0.0, 0.0, 1.0f),
+        float4(0.0 * 1e-2, 0.2 * 1e-2, 0.9 * 1e-2, 1.0f),
         int4(2,0,0,0)
     }
 };
@@ -85,7 +85,7 @@ float3 MultiHGPhase(float cosTheta, RaymarchFogCB fog)
 {
 
     float g = clamp(fog.m_ScatteringParams2.w, -0.99, 0.99);
-    float g2 = (g * g);
+
     const float c_mul = 2.f / 3.f;
     float m_mul = 1;
     float3 res = 0;
