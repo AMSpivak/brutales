@@ -4,7 +4,7 @@
 
 using vec3f = BruteForce::Math::Vec3Float;
 using vec2f = BruteForce::Math::Vec2Float;
-static BruteForce::VertexPosUvNormBinorm cube_Vertices[8] = {
+static BruteForce::VertexPosUvNormTangent cube_Vertices[8] = {
     { vec3f(-1.0f, -1.0f, -1.0f), vec2f(0.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f)  }, // 0
     { vec3f(-1.0f,  1.0f, -1.0f), vec2f(0.0f, 1.0f), vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f)  }, // 1
     { vec3f(1.0f,  1.0f, -1.0f),  vec2f(1.0f, 1.0f), vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f)  }, // 2
@@ -31,18 +31,20 @@ namespace BruteForce
     {
         void CreateCube(Device& device, IndexedGeometry& geometry)
         {
-            BruteForce::CreateBufferResource(device, &geometry.m_VertexBuffer, _countof(cube_Vertices), sizeof(BruteForce::VertexPosUvNormBinorm));
+            CreateGeometry(device, geometry, reinterpret_cast<float*>(cube_Vertices), _countof(cube_Vertices), cube_Indicies, _countof(cube_Indicies));
+            return;
+            BruteForce::CreateBufferResource(device, &geometry.m_VertexBuffer, _countof(cube_Vertices), sizeof(BruteForce::VertexPosUvNormTangent));
 
             SmartCommandQueue smart_queue(device, BruteForce::CommandListTypeDirect);
             auto commandList = smart_queue.GetCommandList();
             BruteForce::pResource intermediateVertexBuffer;
             BruteForce::UpdateBufferResource(device, commandList,
                 &geometry.m_VertexBuffer, &intermediateVertexBuffer,
-                _countof(cube_Vertices), sizeof(BruteForce::VertexPosUvNormBinorm), cube_Vertices);
+                _countof(cube_Vertices), sizeof(BruteForce::VertexPosUvNormTangent), cube_Vertices);
 
             geometry.m_VertexBufferView.BufferLocation = geometry.m_VertexBuffer->GetGPUVirtualAddress();
             geometry.m_VertexBufferView.SizeInBytes = sizeof(cube_Vertices);
-            geometry.m_VertexBufferView.StrideInBytes = sizeof(VertexPosUvNormBinorm);
+            geometry.m_VertexBufferView.StrideInBytes = sizeof(VertexPosUvNormTangent);
 
             BruteForce::CreateBufferResource(device, &geometry.m_IndexBuffer, _countof(cube_Indicies), sizeof(WORD));
 
