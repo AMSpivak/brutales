@@ -182,10 +182,14 @@ namespace BruteForce
 
                     for (size_t i = 0; i < num_vert; i ++)
                     {
-                        geometry_data.emplace_back( vec3f( vPositions[i],vPositions[i+1],vPositions[i+2])
-                                                    ,vec2f(vUV[i],vUV[i + 1])
-                                                    ,vec3f(vNormals[i],vNormals[i + 1],vNormals[i + 2])
-                                                    ,vec3f(vTangent[i],vTangent[i + 1],vTangent[i + 2])
+                        size_t i3 = i * 3;
+						size_t i2 = i * 2;
+
+
+                        geometry_data.emplace_back( vec3f( vPositions[i3],vPositions[i3+1],vPositions[i3+2])
+                                                    ,vec2f(vUV[i2],vUV[i2 + 1])
+                                                    ,vec3f(vNormals[i3],vNormals[i3 + 1],vNormals[i3 + 2])
+                                                    ,vec3f(vTangent[i3],vTangent[i3 + 1],vTangent[i3 + 2])
                                                     );
                     }
 
