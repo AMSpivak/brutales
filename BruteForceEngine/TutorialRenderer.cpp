@@ -477,8 +477,9 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
     else
     {
         auto& list = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
-        for (auto& subsystem : m_RenderSystems)
+        //for (auto& subsystem : m_RenderSystems)
         {
+            auto& subsystem = m_RenderSystems[1];
             subsystem->PrepareRenderCommandList(list, render_dest);
         }
     

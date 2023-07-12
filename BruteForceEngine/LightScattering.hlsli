@@ -32,7 +32,7 @@ static const RaymarchFogCB fogs[FOGS] = {
         float4(0.2 * 1e-2, 0.2 * 1e-2, 0.2 * 1e-2, 1.11),
         float4(0.0, 60.0, 0.0, 0.2f),
         float4(0.7, 0.5, 0.5, 0.9f),
-        float4(0.0 * 1e-2, 0.2 * 1e-2, 0.9 * 1e-2, 1.0f),
+        float4(0.0 * 1e-2, 0.05 * 1e-2, 0.15 * 1e-2, 1.0f),
         int4(2,0,0,0)
     }
 };
