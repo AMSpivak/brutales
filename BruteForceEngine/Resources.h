@@ -44,6 +44,12 @@ namespace BruteForce
 			ClearValue* pClearValue,
 			GpuAllocator gpu_allocator
 		);
+		friend void CreateBufferResource(Device& device,
+			GpuResource& pResource,
+			size_t numElements, size_t elementSize,
+			GpuAllocator gpu_allocator,
+			ResourceFlags flags
+		);
 	};
 
 	void CreateBufferResource(Device& device,
@@ -58,6 +64,13 @@ namespace BruteForce
         pResource* pDestinationResource,
         size_t numElements, size_t elementSize,
         ResourceFlags flags = ResourceFlagsNone
+		);
+
+	void CreateBufferResource(Device& device,
+		GpuResource& pResource,
+		size_t numElements, size_t elementSize,
+		GpuAllocator gpu_allocator,
+		ResourceFlags flags = ResourceFlagsNone
 		);
 
     void UpdateBufferResource(

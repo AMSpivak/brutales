@@ -63,6 +63,22 @@ namespace BruteForce
     }
 
     void CreateBufferResource(Device& device,
+        GpuResource& pResource,
+        size_t numElements, size_t elementSize,
+        GpuAllocator gpu_allocator,
+        ResourceFlags flags
+        )
+    {
+        size_t bufferSize = numElements * elementSize;
+        CD3DX12_RESOURCE_DESC rd = CD3DX12_RESOURCE_DESC::Buffer(bufferSize, flags);
+        CreateBufferResource(device,
+            pResource,
+            &rd,
+            nullptr,
+            gpu_allocator);
+    }
+
+    void CreateBufferResource(Device& device,
         pResource* pDestinationResource,
         size_t numElements, size_t elementSize,
         ResourceFlags flags)

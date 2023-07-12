@@ -61,6 +61,12 @@ namespace BruteForce
                 BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_dir_path, m_textures, device, srv_handle);
             }
 
+            {
+                std::wstring content_dir_path{ settings.GetContentDirWchar() };
+                //Geometry::LoadGeometryGlb(device, m_cube, content_dir_path + L"barbarian_game.glb");
+                Geometry::CreateCube(device, m_cube);
+            }
+
             BruteForce::DataBlob vertexShaderBlob;
             ThrowIfFailed(D3DReadFileToBlob((content_path + L"BasicVertexShader.cso").c_str(), &vertexShaderBlob));
 
@@ -147,7 +153,7 @@ namespace BruteForce
             };
             ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
 
-            Geometry::CreateCube(device, m_cube);
+            //Geometry::CreateCube(device, m_cube);
         }
 
 
