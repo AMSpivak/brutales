@@ -119,7 +119,7 @@ void main(ComputeShaderInput IN)
             float4 sun_info = lighting_CB[FrameInfoCB.frame_index].m_SunInfo;
             float4 moon_info = lighting_CB[FrameInfoCB.frame_index].m_MoonInfo;
 
-            float4 quat = TBN_Quat_tex.Load(IN.DispatchThreadID.xyz);
+            
 
             float depth_val = depth.Load(IN.DispatchThreadID.xyz).r;// *2.0 - 1.0;
             float4 screen_pos = float4(IN.DispatchThreadID.xy, depth_val, 1);
@@ -140,7 +140,7 @@ void main(ComputeShaderInput IN)
             
             float sun = smoothstep(1.0 - sunscale, 1.0 - sunscale * 0.55, sun_light_scatter);
             sun_light_scatter = -lerp(sun_light_scatter, 1.0, sun);
-            uint4 materials = /*NonUniformResourceIndex */ (Material_tex.Load(IN.DispatchThreadID.xyz));
+            uint4 materials = NonUniformResourceIndex(Material_tex.Load(IN.DispatchThreadID.xyz));
             float3 camera = lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz;
             world_pos.xyz += camera;
 
@@ -170,8 +170,11 @@ void main(ComputeShaderInput IN)
                 //float shadow = EarthShadow(world_pos.xz);
                 float2 shadow = EarthShadow(world_pos.xyz);
                 
+                float4 quat = (TBN_Quat_tex.Load(IN.DispatchThreadID.xyz));
+
                 matrix TBN;
                 mat_cast_xm(quat, TBN);
+                //float3 Normal_smpl = normalize(float3(0.0, 0.3, 1.0));// textures[materials.r * material_offset + 1].SampleGrad(sampl, UV.xy, Ddx_Ddy.xy, Ddx_Ddy.zw).xyz * 2.0 - 1.0;
                 float3 Normal_smpl = textures[materials.r * material_offset + 1].SampleGrad(sampl, UV.xy, Ddx_Ddy.xy, Ddx_Ddy.zw).xyz * 2.0 - 1.0;
                 Normal_smpl.y = -Normal_smpl.y;
                 float3 Normal = mul(TBN, float4(Normal_smpl, 0.0f)).xyz;

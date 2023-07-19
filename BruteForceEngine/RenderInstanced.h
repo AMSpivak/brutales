@@ -16,6 +16,7 @@ namespace BruteForce
             DescriptorHeap m_SVRHeap;
             DescriptorHeap m_SamplerHeap;
             IndexedGeometry m_cube;
+            std::shared_ptr<DescriptorHeapRange> TexturesRange;
         public:
             RenderInstanced();
             virtual ~RenderInstanced();

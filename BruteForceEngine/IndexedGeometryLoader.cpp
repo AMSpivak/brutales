@@ -178,24 +178,34 @@ namespace BruteForce
                     geometry_data.reserve(num_vert);
 
                     using vec3f = BruteForce::Math::Vec3Float;
+                    using vec4f = BruteForce::Math::Vec4Float;
                     using vec2f = BruteForce::Math::Vec2Float;
 
                     for (size_t i = 0; i < num_vert; i ++)
                     {
                         size_t i3 = i * 3;
-						size_t i2 = i * 2;
-
-
-                        geometry_data.emplace_back( vec3f( vPositions[i3],vPositions[i3+1],vPositions[i3+2])
+                        size_t i4 = i * 4;
+                        size_t i2 = i * 2;
+                        geometry_data.emplace_back( vec3f( vPositions[i3],vPositions[i3+1],-vPositions[i3+2])
                                                     ,vec2f(vUV[i2],vUV[i2 + 1])
-                                                    ,vec3f(vNormals[i3],vNormals[i3 + 1],vNormals[i3 + 2])
-                                                    ,vec3f(vTangent[i3],vTangent[i3 + 1],vTangent[i3 + 2])
+                                                    ,vec3f(vNormals[i3],vNormals[i3 + 1],-vNormals[i3 + 2])
+                                                    ,vec4f(vTangent[i4],vTangent[i4 + 1],-vTangent[i4 + 2], vTangent[i4 + 3])
                                                     );
                     }
 
                     const Accessor& accessor = document.accessors.Get(meshPrimitive.indicesAccessorId);
                     const auto indexes = resourceReader.ReadBinaryData<WORD>(document, accessor);
-                    CreateGeometry(device, geometry, reinterpret_cast<float*>(geometry_data.data()), geometry_data.size(), indexes.data(), indexes.size());
+                    std::vector <WORD> indexes_data;
+                    indexes_data.reserve(indexes.size());
+                    for (size_t i = 0; i < indexes.size() / 3; i++)
+                    {
+                        size_t i3 = i * 3;
+                        indexes_data.emplace_back(indexes[i3]);
+                        indexes_data.emplace_back(indexes[i3+2]);
+                        indexes_data.emplace_back(indexes[i3+1]);
+                    }
+
+                    CreateGeometry(device, geometry, reinterpret_cast<float*>(geometry_data.data()), geometry_data.size(), indexes_data.data(), indexes.size());
                 }
 
                 return true;

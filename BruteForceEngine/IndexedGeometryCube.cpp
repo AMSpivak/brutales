@@ -4,15 +4,16 @@
 
 using vec3f = BruteForce::Math::Vec3Float;
 using vec2f = BruteForce::Math::Vec2Float;
+using vec4f = BruteForce::Math::Vec4Float;
 static BruteForce::VertexPosUvNormTangent cube_Vertices[8] = {
-    { vec3f(-1.0f, -1.0f, -1.0f), vec2f(0.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f)  }, // 0
-    { vec3f(-1.0f,  1.0f, -1.0f), vec2f(0.0f, 1.0f), vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f)  }, // 1
-    { vec3f(1.0f,  1.0f, -1.0f),  vec2f(1.0f, 1.0f), vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f)  }, // 2
-    { vec3f(1.0f, -1.0f, -1.0f),  vec2f(1.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f)   }, // 3
-    { vec3f(-1.0f, -1.0f,  1.0f), vec2f(0.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f)   }, // 4
-    { vec3f(-1.0f,  1.0f,  1.0f), vec2f(0.0f, 1.0f), vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f)   }, // 5
-    { vec3f(1.0f,  1.0f,  1.0f),  vec2f(1.0f, 1.0f), vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f)   }, // 6
-    { vec3f(1.0f, -1.0f,  1.0f),  vec2f(1.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f)   }  // 7
+    { vec3f(-1.0f, -1.0f, -1.0f), vec2f(0.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), vec4f(0.0f, 1.0f, 0.0f, 0.0f)  }, // 0
+    { vec3f(-1.0f,  1.0f, -1.0f), vec2f(0.0f, 1.0f), vec3f(1.0f, 0.0f, 0.0f), vec4f(0.0f, 1.0f, 0.0f, 0.0f)  }, // 1
+    { vec3f(1.0f,  1.0f, -1.0f),  vec2f(1.0f, 1.0f), vec3f(1.0f, 0.0f, 0.0f), vec4f(0.0f, 1.0f, 0.0f, 0.0f)  }, // 2
+    { vec3f(1.0f, -1.0f, -1.0f),  vec2f(1.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), vec4f(0.0f, 1.0f, 0.0f, 0.0f)   }, // 3
+    { vec3f(-1.0f, -1.0f,  1.0f), vec2f(0.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), vec4f(0.0f, 1.0f, 0.0f, 0.0f)   }, // 4
+    { vec3f(-1.0f,  1.0f,  1.0f), vec2f(0.0f, 1.0f), vec3f(1.0f, 0.0f, 0.0f), vec4f(0.0f, 1.0f, 0.0f, 0.0f)   }, // 5
+    { vec3f(1.0f,  1.0f,  1.0f),  vec2f(1.0f, 1.0f), vec3f(1.0f, 0.0f, 0.0f), vec4f(0.0f, 1.0f, 0.0f, 0.0f)   }, // 6
+    { vec3f(1.0f, -1.0f,  1.0f),  vec2f(1.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), vec4f(0.0f, 1.0f, 0.0f, 0.0f)   }  // 7
 };
 
 static WORD cube_Indicies[36] =

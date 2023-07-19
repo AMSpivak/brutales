@@ -23,13 +23,13 @@ namespace BruteForce
         BruteForce::Math::Vec3Float Position;
         BruteForce::Math::Vec2Float Uv;
         BruteForce::Math::Vec3Float Normal;
-        BruteForce::Math::Vec3Float Tangent;
+        BruteForce::Math::Vec4Float Tangent;
         VertexPosUvNormTangent() {};
         VertexPosUvNormTangent(
             BruteForce::Math::Vec3Float position,
             BruteForce::Math::Vec2Float uv,
             BruteForce::Math::Vec3Float normal,
-            BruteForce::Math::Vec3Float tangent
+            BruteForce::Math::Vec4Float tangent
         ):Position(position)
             , Uv(uv)
             , Normal(normal)

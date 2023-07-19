@@ -63,8 +63,25 @@ namespace BruteForce
 
             {
                 std::wstring content_dir_path{ settings.GetContentDirWchar() };
-                //Geometry::LoadGeometryGlb(device, m_cube, content_dir_path + L"barbarian_game.glb");
-                Geometry::CreateCube(device, m_cube);
+                Geometry::LoadGeometryGlb(device, m_cube, content_dir_path + L"barbarian2_game.glb");
+                //Geometry::CreateCube(device, m_cube);
+            }
+
+            {
+                std::wstring content_dir_path{ settings.GetContentDirWchar() };
+
+                BruteForce::Textures::TextureLoadHlpr helper{ device, copy_queue, desc.gpu_allocator_ptr };
+
+
+                std::vector<std::wstring> tex_names = {
+                                                        {L"diff_sand.dds"}, {L"barb_n.dds"}//{L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
+                                                        //,{L"diff_sand.dds"}, {L"norm_sand.dds"}//{L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
+                                                        //,{ L"Desert_Rock_albedo.dds"}, {L"norm_no.png"}//{ L"Desert_Rock_normal.dds"}
+                };
+                size_t textures_count = tex_names.size();
+                TexturesRange = descriptor_heap_manager.GetManagedRange("MaterialTextures");
+                auto& srv_handle = TexturesRange->m_CpuHandle;
+                BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_dir_path, m_textures, helper, srv_handle);
             }
 
             BruteForce::DataBlob vertexShaderBlob;
@@ -79,7 +96,7 @@ namespace BruteForce
                 { "POSITION", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
                 { "UV", 0, TargetFormat_R32G32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
                 { "NORMAL", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-                { "TANGENT", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                { "TANGENT", 0, TargetFormat_R32G32B32A32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
             };
 
 
@@ -90,8 +107,10 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;// |
                 //D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
-            CD3DX12_ROOT_PARAMETER1 rootParameters[1];
+            CD3DX12_ROOT_PARAMETER1 rootParameters[3];
             rootParameters[0].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+            rootParameters[1].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 5, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+            rootParameters[2].InitAsConstants(sizeof(uint32_t) / 4, 10, 0, D3D12_SHADER_VISIBILITY_VERTEX);
             //rootParameters[3].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
 
             //CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDescription;
@@ -181,6 +200,14 @@ namespace BruteForce
             auto const_size = sizeof(BruteForce::Math::Matrix) / 4;
             commandList->SetGraphicsRoot32BitConstants(0, static_cast<UINT>(const_size), render_dest.camera.GetCameraMatrixPointer(), 0);
 
+            BruteForce::Math::Matrix M( 1.f, 0.f, 0.f, 0.f,
+                                        0.f, 1.f, 0.f, 0.f,
+                                        0.f, 0.f, 1.f, 0.f,
+                                        0.f, 20.f, 30.f, 1.f);
+            commandList->SetGraphicsRoot32BitConstants(1, static_cast<UINT>(const_size), &M, 0);
+
+            uint32_t material_id = 2;
+            commandList->SetGraphicsRoot32BitConstants(2, static_cast<UINT>(sizeof(uint32_t) / 4), &material_id, 0);
 
             commandList->DrawIndexedInstanced(static_cast<UINT>(m_cube.m_IndexesCount), 1, 0, 0, 0);
             return smart_command_list;

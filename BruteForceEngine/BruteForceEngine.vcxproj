@@ -225,6 +225,8 @@
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="IndexedGeometry.h" />
     <ClInclude Include="IndexedGeometryGenerator.h" />
+    <ClInclude Include="MaterialAtlas.h" />
+    <ClInclude Include="MaterialCB.h" />
     <ClInclude Include="PipelineState.h" />
     <ClInclude Include="PlatformDefine.h" />
     <ClInclude Include="PlatformDX12.h" />

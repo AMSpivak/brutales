@@ -5,7 +5,7 @@ struct PixelShaderInput
     float4 Position : SV_Position;
     float2 Uv    : UV;
     float3 Normal    : NORMAL;
-    float3 Tangent    : TANGENT;
+    float4 Tangent    : TANGENT;
     nointerpolation uint id : InstanceID;
 };
 
@@ -24,10 +24,13 @@ PS_OUTPUT main(PixelShaderInput IN) : SV_Target
     //return tex1[material].Sample(sampl, IN.Color.xy);
     //return tex1[NonUniformResourceIndex(material)].Sample(sampl, IN.Color.xy);
     float3 face_Normal = normalize(IN.Normal);
-    float3 B_Normal = normalize(cross(IN.Tangent, IN.Normal));
-    float3 T_Normal = normalize(cross(B_Normal, IN.Normal));
+    //float3 B_Normal = normalize(cross(IN.Tangent, IN.Normal));
+    float3 T_Normal = normalize(IN.Tangent.xyz);
+    float3 B_Normal = normalize(cross(IN.Normal, IN.Tangent.xyz) *IN.Tangent.w);
+    //float3 T_Normal = normalize(cross(B_Normal, IN.Normal));
 
-    matrix TBN2 = transpose(matrix(float4(-B_Normal, 0), float4(T_Normal, 0), float4(face_Normal, 0), float4(0, 0, 0, 1)));
+    matrix TBN2 = transpose(matrix(float4(T_Normal, 0), float4(B_Normal, 0), float4(face_Normal, 0), float4(0, 0, 0, 1)));
+    //matrix TBN2 = (matrix(float4(B_Normal, 0), float4(T_Normal, 0), float4(face_Normal, 0), float4(0, 0, 0, 1)));
     float4 quat_xm;
     quat_cast_xm(TBN2, quat_xm);
     float2 derivX = ddx(IN.Uv.xy);
