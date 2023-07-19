@@ -147,6 +147,8 @@ namespace BruteForce
 		using Vec3Float = DirectX::XMFLOAT3;
 		using Vec2Float = DirectX::XMFLOAT2;
 		using Vec2Int = DirectX::XMINT2;
+		using Vec4Int = DirectX::XMINT4;
+		using Vec4UInt = DirectX::XMUINT4;
 		using Vector = DirectX::XMVECTOR;
 
 		inline void Store(Vec4Float* dst, const Vector& src )
