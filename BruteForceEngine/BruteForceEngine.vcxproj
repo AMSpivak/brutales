@@ -43,7 +43,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -83,7 +83,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(ProjectDir)\..\ThirdParty\GLTFSDK\Inc;$(ProjectDir)\..\ThirdParty\DirectXTex;C:\Program Files %28x86%29\Windows Kits\10\Include\10.0.19041.0\shared;C:\Program Files %28x86%29\Windows Kits\10\Include\10.0.19041.0\um;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\..\Built\Out\v143\x64\Debug\GLTFSDK;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(ProjectDir)\..\ThirdParty\DirectXTex\Bin\Desktop_2019_Win10\x64\Debug;C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.19041.0\um\x64</LibraryPath>
+    <LibraryPath>$(ProjectDir)\..\Built\Out\v142\x64\Debug\GLTFSDK;$(ProjectDir)\..\Built\Out\v143\x64\Debug\GLTFSDK;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(ProjectDir)\..\ThirdParty\DirectXTex\Bin\Desktop_2019_Win10\x64\Debug;C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.19041.0\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -386,8 +386,16 @@
     <None Include="color.hlsli" />
     <None Include="LightScattering.hlsli" />
     <None Include="math.hlsli" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\tencent.rapidjson.1.1.1\build\tencent.rapidjson.targets" Condition="Exists('..\packages\tencent.rapidjson.1.1.1\build\tencent.rapidjson.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\tencent.rapidjson.1.1.1\build\tencent.rapidjson.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\tencent.rapidjson.1.1.1\build\tencent.rapidjson.targets'))" />
+  </Target>
 </Project>
