@@ -1,17 +1,29 @@
 
-struct ModelViewProjection
+struct ViewProjection
 {
-    matrix MVP;
+    matrix VP;
 };
 
-ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b0);
+struct Model
+{
+    matrix M;
+};
+
+struct Material
+{
+    uint Id;
+};
+
+ConstantBuffer<ViewProjection> ViewProjectionCB : register(b0);
+ConstantBuffer<Model> ModelCB : register(b5);
+ConstantBuffer<Material> MaterialCB : register(b10);
 
 struct VertexPosColor
 {
     float3 Position : POSITION;
     float2 Uv    : UV;
     float3 Normal    : NORMAL;
-    float3 Tangent    : TANGENT;
+    float4 Tangent    : TANGENT;
 };
 
 struct VertexShaderOutput
@@ -19,19 +31,19 @@ struct VertexShaderOutput
     float4 Position : SV_Position;
     float2 Uv    : UV;
     float3 Normal    : NORMAL;
-    float3 Tangent    : TANGENT;
+    float4 Tangent    : TANGENT;
     nointerpolation uint id : InstanceID;
 };
 
 VertexShaderOutput main(VertexPosColor IN, uint id : SV_InstanceID)
 {
     VertexShaderOutput OUT;
-    IN.Position.x += 20.0f * id;
-    IN.Position.y += 120.0f;
-    OUT.Position = mul(ModelViewProjectionCB.MVP, float4(IN.Position, 1.0f));
+    //IN.Position.x += 2.0f * id;
+    float4 p = mul(ModelCB.M, float4(IN.Position, 1.0f));
+    OUT.Position = mul(ViewProjectionCB.VP, p);
     OUT.Uv = IN.Uv;
     OUT.Normal = IN.Normal;
     OUT.Tangent = IN.Tangent;
-    OUT.id = id;
+    OUT.id = MaterialCB.Id;
     return OUT;
 }

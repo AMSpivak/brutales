@@ -2,6 +2,7 @@
 #define COMPUTE_DEFFERED_H
 #include "ComputeSubsystem.h"
 #include "DefferedLightingCB.h"
+#include "MaterialCB.h"
 #include "ConstantBuffer.h"
 #include "Texture.h"
 #include <memory>

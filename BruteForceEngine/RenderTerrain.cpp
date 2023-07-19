@@ -144,7 +144,7 @@ namespace BruteForce
                                                         ,{L"diff_sand.dds"}, {L"norm_sand.dds"}//{L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
                                                         //,{ L"Desert_Rock_albedo.dds"}, {L"norm_no.png"}//{ L"Desert_Rock_normal.dds"}
                 };
-                size_t textures_count = tex_names.size();
+                size_t textures_count = tex_names.size() +2;
                 TexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(textures_count), BruteForce::DescriptorRangeTypeSrv, "MaterialTextures");
                 auto& srv_handle = TexturesRange->m_CpuHandle;
                 BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_dir_path, m_textures, helper, srv_handle);
