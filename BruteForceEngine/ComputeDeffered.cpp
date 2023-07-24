@@ -6,6 +6,7 @@ namespace BruteForce
 {
 	namespace Compute
 	{
+		
 		ComputeDeffered::ComputeDeffered() :m_DefferedBuffers(nullptr)
 		{
 		}
@@ -15,6 +16,11 @@ namespace BruteForce
 			if (m_DefferedBuffers)
 			{
 				delete[] m_DefferedBuffers;
+			}
+			//m_MaterialBuffers
+			if (m_MaterialBuffers)
+			{
+				delete[] m_MaterialBuffers;
 			}
 		}
 		void ComputeDeffered::Update(float delta_time, uint8_t frame_index)
@@ -43,6 +49,7 @@ namespace BruteForce
 			{
 				delete[] m_DefferedBuffers;
 			}
+
 			//static constexpr size_t cb_count = frames_count;
 			m_DefferedBuffers = new ConstantBuffer<DefferedLightingCB>[frames_count];
 
@@ -56,6 +63,28 @@ namespace BruteForce
 
 					m_DefferedBuffers[i].Map();
 					m_DefferedBuffers[i].Update();
+
+					cvb_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+				}
+			}
+
+			if (m_MaterialBuffers)
+			{
+				delete[] m_MaterialBuffers;
+			}
+
+			m_MaterialBuffers = new ConstantBuffer<MaterialCB>[frames_count];
+
+			{
+				MaterialsCbvRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(frames_count), BruteForce::DescriptorRangeTypeCvb, "MaterialCBVs");
+				auto& cvb_handle = MaterialsCbvRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(frames_count), CbvRange);
+
+				for (int i = 0; i < frames_count; i++)
+				{
+					CreateUploadGPUBuffer(device, m_MaterialBuffers[i], cvb_handle);
+
+					m_MaterialBuffers[i].Map();
+					m_MaterialBuffers[i].Update();
 
 					cvb_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
 				}
@@ -89,9 +118,7 @@ namespace BruteForce
 
 				ThrowIfFailed(D3DReadFileToBlob((content_path + L"ComputeDeffered.cso").c_str(), &ComputeShaderBlob));
 
-
-
-				DescriptorRange descRange[6];
+				DescriptorRange descRange[7];
 
 				//DescriptorRange srcMip;// (D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
 				//DescriptorRange outMip;// (D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
@@ -103,6 +130,7 @@ namespace BruteForce
 				SrvTexturesRange->Fill(descRange[1], 9);
 
 				CbvRange->Fill(descRange[2], 2);
+				MaterialsCbvRange->Fill(descRange[6], 5);
 
 				RTNoScreenSrvDescriptors->Fill(descRange[4], 3);
 				SunShadowSrvDescriptors->Fill(descRange[3], 0);
@@ -154,6 +182,11 @@ namespace BruteForce
 			}
 		}
 
+		void ComputeDeffered::UpdateMaterialBuffer(uint32_t buff_index)
+		{
+
+		}
+
 		SmartCommandList& ComputeDeffered::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareComputeHelper& compute_helper)
 		{
 			uint32_t buff_index = compute_helper.frame_index;
@@ -190,7 +223,9 @@ namespace BruteForce
 			command_list->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
 			command_list->SetComputeRootDescriptorTable(0, compute_helper.HeapManager.GetGpuDescriptorHandle());
-			command_list->SetComputeRoot32BitConstants(1, 1, &buff_index, 0);
+			uint32_t marerial_cb_index = 1;
+			uint32_t coded_buff_index = (buff_index & 0xffff) | ((marerial_cb_index & 0xffff) << 16);
+			command_list->SetComputeRoot32BitConstants(1, 1, &coded_buff_index, 0);
 
 			
 			int dispatch_size = DEFFERED_DISPATCH_SIZE;

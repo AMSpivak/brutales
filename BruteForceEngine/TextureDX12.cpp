@@ -9,6 +9,33 @@ namespace BruteForce
 {
     namespace Textures
     {
+        Texture::Texture(const std::wstring& filename, TextureLoadHlpr& helper, DescriptorHandle& p_srv_handle_start, TargetFormat format)
+        {
+            LoadTextureFromFile(*this, (filename), helper);
+            SetName((L"Texture: " + filename).c_str());
+
+            if (format != TargetFormat_Unknown)
+            {
+                m_format = format;
+            }
+
+            CreateSrv(helper.m_device, p_srv_handle_start);
+            p_srv_handle_start.ptr += helper.m_device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+        }
+
+        Texture::Texture(const std::wstring& filename, TextureLoadHlpr& helper, DescriptorHeapRange& descriptor_range, size_t index, TargetFormat format)
+        {
+            LoadTextureFromFile(*this, (filename), helper);
+            SetName((L"Texture: " + filename).c_str());
+
+            if (format != TargetFormat_Unknown)
+            {
+                m_format = format;
+            }
+
+            CreateSrv(helper.m_device, descriptor_range, index);
+        }
+
         void Texture::CreateSrv(Device& device, DescriptorHandle& descriptor_handle)
         {
             if (m_render_target)

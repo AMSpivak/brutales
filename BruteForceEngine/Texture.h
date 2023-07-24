@@ -33,6 +33,9 @@ namespace BruteForce
 			bool				m_render_target;
 		public:
 			Texture() : m_render_target(false) {};
+			Texture(const std::wstring& filename, TextureLoadHlpr& helper, DescriptorHandle& p_srv_handle_start, TargetFormat format = TargetFormat_Unknown);
+			Texture(const std::wstring& filename,  TextureLoadHlpr& helper, DescriptorHeapRange& descriptor_range, size_t index, TargetFormat format = TargetFormat_Unknown);
+
 			Texture(const Texture&) = default;
 			~Texture()
 			{};

@@ -1,4 +1,5 @@
 #include "DefferedLightingCB.h"
+#include "MaterialCB.h"
 #include "CommonComputeInput.h"
 #include "math.hlsli"
 #include "LightScattering.hlsli"
@@ -11,6 +12,7 @@ struct FrameInfo
 ConstantBuffer<FrameInfo> FrameInfoCB : register(b0);
 
 ConstantBuffer<DefferedLightingCB> lighting_CB[2] : register(b2);
+ConstantBuffer<MaterialCB> Material_CB[2] : register(b5);
 
 //Texture2D<uint4> tex_material_id : register(t1);
 Texture2D<float4> shadow_tex[3] : register(t0);
@@ -74,13 +76,15 @@ sampler sampl : register(s0);
 
 float2 EarthShadow(float3 position) 
 {
+
+    uint FrameIndex = FrameInfoCB.frame_index && (uint(0xffff));
     float4 shadows = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 
-    float2 pos = position.xz * lighting_CB[FrameInfoCB.frame_index].m_TerrainScaler.xz;
+    float2 pos = position.xz * lighting_CB[FrameIndex].m_TerrainScaler.xz;
     //if (pos.x > 0 && pos.x < 1 && pos.y > 0 && pos.y < 1)
     {
-        float3 l_dir = lighting_CB[FrameInfoCB.frame_index].m_SunShadow.xyz;
+        float3 l_dir = lighting_CB[FrameIndex].m_SunShadow.xyz;
         float2 shadowUV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
         shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
         shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * l_dir.z;
@@ -89,7 +93,7 @@ float2 EarthShadow(float3 position)
             shadows.xy = shadow_tex[0].SampleLevel(sampl, shadowUV, 0).xy;
         }
 
-        l_dir = lighting_CB[FrameInfoCB.frame_index].m_MoonShadow.xyz;
+        l_dir = lighting_CB[FrameIndex].m_MoonShadow.xyz;
         shadowUV = pos + float2(l_dir.x + l_dir.y, l_dir.x - l_dir.y) * 0.5;
         shadowUV = l_dir * shadowUV.x + float2(-l_dir.y, l_dir.x) * shadowUV.y;
         shadowUV = float2(0.5f, 0.5f) + (shadowUV - float2(0.5f, 0.5f)) * l_dir.z;
@@ -112,12 +116,13 @@ void main(ComputeShaderInput IN)
     uint w = 0;
     uint h = 0;
     TBN_Quat_tex.GetDimensions(w, h);
+    uint FrameIndex = FrameInfoCB.frame_index & (uint(0xffff));
     if(IN.DispatchThreadID.x < w && IN.DispatchThreadID.y < h)
     {
         //if (IN.DispatchThreadID.x & 1)
         {
-            float4 sun_info = lighting_CB[FrameInfoCB.frame_index].m_SunInfo;
-            float4 moon_info = lighting_CB[FrameInfoCB.frame_index].m_MoonInfo;
+            float4 sun_info = lighting_CB[FrameIndex].m_SunInfo;
+            float4 moon_info = lighting_CB[FrameIndex].m_MoonInfo;
 
             
 
@@ -126,14 +131,14 @@ void main(ComputeShaderInput IN)
             screen_pos.x = (screen_pos.x / w) * 2.0 - 1.0;
             screen_pos.y = (screen_pos.y / h) * 2.0 - 1.0;
             screen_pos.y *= -1.0;
-            float4 world_pos = mul(lighting_CB[FrameInfoCB.frame_index].m_CameraInverse, screen_pos);
+            float4 world_pos = mul(lighting_CB[FrameIndex].m_CameraInverse, screen_pos);
             world_pos /= world_pos.w;
 
             float3 direction = normalize(world_pos.xyz);
             float3 to_sun = normalize(sun_info.xyz);
             float3 to_moon = normalize(moon_info.xyz);
             float sun_light_scatter = dot(direction, to_sun);
-            float3 res = OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy].xyz;
+            float3 res = OutImage[FrameIndex][IN.DispatchThreadID.xy].xyz;
             //float3 res = float3(0, 0, 0);
             float l = length(world_pos.xyz);
             float sunscale = (smoothstep(0,abs(to_sun).y,0.1)*3 + 1.0) *0.00004;
@@ -141,7 +146,7 @@ void main(ComputeShaderInput IN)
             float sun = smoothstep(1.0 - sunscale, 1.0 - sunscale * 0.55, sun_light_scatter);
             sun_light_scatter = -lerp(sun_light_scatter, 1.0, sun);
             uint4 materials = NonUniformResourceIndex(Material_tex.Load(IN.DispatchThreadID.xyz));
-            float3 camera = lighting_CB[FrameInfoCB.frame_index].m_CameraPosition.xyz;
+            float3 camera = lighting_CB[FrameIndex].m_CameraPosition.xyz;
             world_pos.xyz += camera;
 
             float3 od_prev = float3(1, 1, 1);
@@ -154,7 +159,7 @@ void main(ComputeShaderInput IN)
                 float sun_ray_l = SphereRay(to_sun, ray_end, AtmosphereRadius, EarthCenter); //AtmosphereLength(to_sun, ray_end + to_sun * 100);
                 float3 od = OpticalDepth(5, ray_end, to_sun, sun_ray_l - 10);
                 od_prev = od;
-                float3 sun_color = lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz * sun_info.w * od;
+                float3 sun_color = lighting_CB[FrameIndex].m_SunColor.xyz * sun_info.w * od;
                 float vis = 1;
                 res += max(ZeroEdge, sun * sun_color * vis);
                 //res += sun;
@@ -195,7 +200,7 @@ void main(ComputeShaderInput IN)
                 float sun_ray_l = AtmosphereLength(to_sun, world_pos.xyz);
                 float3 od = OpticalDepth(5, world_pos.xyz, to_sun, sun_ray_l);
 
-                float3 sun_color = lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz * sun_info.w * od;
+                float3 sun_color = lighting_CB[FrameIndex].m_SunColor.xyz * sun_info.w * od;
 
                 float3 sun_light_color_direct = clamp(sun_light_diffuse, 0.0, 1.0) * shadow.x * sun_color;// smoothstep(-0.001, -0.0, sun_info.y);
                 float3 sun_light_color_ambient = sun_color * (0.05f + 0.15 *clamp(to_sun.y+0.1, 0.0, 1.0));
@@ -204,7 +209,7 @@ void main(ComputeShaderInput IN)
 
                 sun_ray_l = AtmosphereLength(to_moon, world_pos.xyz);
                 od = OpticalDepth(5, world_pos.xyz, to_moon, sun_ray_l);
-                float3 moon_color = lighting_CB[FrameInfoCB.frame_index].m_MoonColor.xyz * moon_info.w * od;
+                float3 moon_color = lighting_CB[FrameIndex].m_MoonColor.xyz * moon_info.w * od;
 
                 float3 moon_light_color_direct = clamp(moon_light_diffuse, 0.0, 1.0) * shadow.y * moon_color;// smoothstep(-0.001, -0.0, sun_info.y);
                 float3 moon_light_color_ambient = moon_color * (0.05f + 0.15 * clamp(to_moon.y + 0.1, 0.0, 1.0));
@@ -218,8 +223,8 @@ void main(ComputeShaderInput IN)
             static const int numpoints = 10;
             static const int numsecondpoints = 10;
 
-            float3 light = sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
-            float3 moon_source_light = moon_info.w * lighting_CB[FrameInfoCB.frame_index].m_MoonColor.xyz;
+            float3 light = sun_info.w * lighting_CB[FrameIndex].m_SunColor.xyz;
+            float3 moon_source_light = moon_info.w * lighting_CB[FrameIndex].m_MoonColor.xyz;
             //float3 ray_end = camera + direction * l;
             float h_l = EarthHeight(ray_end);
             float l_prev = l;
@@ -239,7 +244,7 @@ void main(ComputeShaderInput IN)
                 scattering_l_prev += distribution * fogsPhase[f] * fogs[f].m_ScatteringParams0.xyz;
             }
 
-            float3 moon_light = sun_info.w * lighting_CB[FrameInfoCB.frame_index].m_SunColor.xyz;
+            float3 moon_light = sun_info.w * lighting_CB[FrameIndex].m_SunColor.xyz;
 
 
             float l_shadow =  SphereRay(to_sun, ray_end, EarthRadius, EarthCenter);// temp hack to check
@@ -318,7 +323,7 @@ void main(ComputeShaderInput IN)
             }
 
             
-            OutImage[FrameInfoCB.frame_index][IN.DispatchThreadID.xy] = float4(res, 1.0);
+            OutImage[FrameIndex][IN.DispatchThreadID.xy] = float4(res, 1.0);
             //Color *= 0.01;
             //Color = pow(Color, 2.2);
             

@@ -8,6 +8,7 @@
 #define float4 BruteForce::Math::Vec4Float
 #define int2 BruteForce::Math::Vec2Int
 #define int4 BruteForce::Math::Vec4Int
+#define uint4 BruteForce::Math::Vec4UInt
 #define matrix BruteForce::Math::Matrix
 #endif
 
