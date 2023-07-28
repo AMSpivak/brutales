@@ -10,7 +10,7 @@
 #include <DirectXMath.h>
 
 
-void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
+void TutorialRenderer::CreateCommonResources(BruteForce::Device& device, BruteForce::GpuAllocator gpu_allocator)
 {
     RTSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsSrvs");
     RTUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeUav, "RenderTargetsUavs");
@@ -25,6 +25,14 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device)
     LuminanceSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames * 2), BruteForce::DescriptorRangeTypeSrv, "LuminanceSrvs");
 
     DepthSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(1), BruteForce::DescriptorRangeTypeSrv, "DepthSrvs");
+
+    m_MaterialManager = std::make_shared<BruteForce::MaterialManager>(device, m_CopyCommandQueue, gpu_allocator, m_SRV_Heap,L"", 1024);
+
+    {
+        auto descRange = m_MaterialManager->GetDescriptorRange();
+        auto material = m_MaterialManager->AddMaterial();
+    }
+
 
     BruteForce::Textures::TexMetadata metadata;
     const int shadowsize = BruteForce::Compute::ComputeTerrainShadow::GetTerrainShadowSize();
@@ -103,7 +111,7 @@ TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Adapt
         ThrowIfFailed(device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&m_RTHeap)));
     }
 
-    m_SRV_Heap.Create(device, 1000, BruteForce::DescriptorHeapCvbSrvUav);
+    m_SRV_Heap.Create(device, 8192, BruteForce::DescriptorHeapCvbSrvUav);
     constexpr UINT sun_shadows = 1;
     //SunShadowSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, sun_shadows, BruteForce::DescriptorRangeTypeSrv, "SunShadowsSrvs");
     //SunShadowUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, sun_shadows, BruteForce::DescriptorRangeTypeUav, "SunShadowsUavs");
@@ -121,7 +129,7 @@ TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Adapt
 
 bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 {
-    CreateCommonResources(device);
+    CreateCommonResources(device, m_GpuAllocator);
 
     BruteForce::Render::RenderSubsystemInitDesc desc = {
                                                             render_format,
@@ -357,7 +365,8 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
             &m_ScissorRect,
             m_Camera,
             static_cast<uint8_t>(m_CurrentBackBufferIndex),
-            m_SRV_Heap };
+            m_SRV_Heap,
+            m_MaterialManager};
 
         for (auto& subsystem : m_CalcSystems)
         {
@@ -390,7 +399,8 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
             &m_ScissorRect,
             m_Camera,
             static_cast<uint8_t>(m_rt_index),
-            m_SRV_Heap };
+            m_SRV_Heap,
+            m_MaterialManager };
 
         m_ComputeDeffered.PrepareRenderCommandList(compute_deffered_command_list, deffered_helper);
 
@@ -437,7 +447,8 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         static_cast<uint8_t>(m_CurrentBackBufferIndex),
         m_rt_index,
         m_Window->GetMaxNits(),
-        m_SRV_Heap
+        m_SRV_Heap,
+        m_MaterialManager
     };
     m_SkyRender.PrepareRenderCommandList(SetRT_cl, sky_dest);
     SetRT_cl.BeginEvent(0, "Render to GBUFFER");
@@ -459,7 +470,8 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         static_cast<uint8_t>(m_CurrentBackBufferIndex),
         m_rt_index,
         m_Window->GetMaxNits(),
-        m_SRV_Heap
+        m_SRV_Heap,
+        m_MaterialManager
     };
 
     
@@ -525,7 +537,8 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
             static_cast<uint8_t>(m_CurrentBackBufferIndex),
             m_rt_index,
             m_Window->GetMaxNits(),
-            m_SRV_Heap
+            m_SRV_Heap,
+            m_MaterialManager
         };
 
         //auto& ToneMap_cl = command_lists.emplace_back(in_SmartCommandQueue.GetCommandList());
@@ -553,7 +566,8 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         static_cast<uint8_t>(m_CurrentBackBufferIndex),
         m_rt_index,
         m_Window->GetMaxNits(),
-        m_SRV_Heap
+        m_SRV_Heap,
+        m_MaterialManager
     };
 
     

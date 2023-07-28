@@ -11,12 +11,12 @@
 namespace BruteForce
 {
 
-    template <typename T>
+    template <typename T, typename T_STR = std::string>
     class StringAtlas
     {
 
     public:
-        StringAtlas(const std::string& ResourseFolder)
+        StringAtlas(const T_STR& ResourseFolder)
         {
             m_resourse_folder = ResourseFolder;
         }
@@ -27,7 +27,7 @@ namespace BruteForce
             assert(m_map.empty());
         }
         template <typename... Params>
-        std::shared_ptr<T> Assign(const std::string& filename, Params... params)
+        std::shared_ptr<T> Assign(const T_STR& filename, Params... params)
         {
             auto it = m_map.find(filename);
             if (it != m_map.end())
@@ -36,13 +36,13 @@ namespace BruteForce
                 return it->second.lock();
             }
             auto resource = std::shared_ptr<T>(new T(m_resourse_folder + filename, params...), Deleter(this, filename));
-            m_map.insert(std::pair<const std::string, std::weak_ptr<T>>(filename, resource));
+            m_map.insert(std::pair<const T_STR, std::weak_ptr<T>>(filename, resource));
             std::cout << "New element: " << filename << "\n";
             return resource;
 
         }
 
-        std::shared_ptr<T> Find(const std::string& filename)
+        std::shared_ptr<T> Find(const T_STR& filename)
         {
             auto it = m_map.find(filename);
             if (it != m_map.end())
@@ -57,18 +57,18 @@ namespace BruteForce
         {
         }
 
-        const std::string& GetResourceFolder() const
+        const T_STR& GetResourceFolder() const
         {
             return m_resourse_folder;
         }
     private:
 
-        std::string m_resourse_folder;
-        std::map<const std::string, std::weak_ptr<T>> m_map;
+        T_STR m_resourse_folder;
+        std::map<const T_STR, std::weak_ptr<T>> m_map;
 
         struct Deleter
         {
-            Deleter(StringAtlas* atlas, const std::string& filename)
+            Deleter(StringAtlas* atlas, const T_STR& filename)
                 : m_atlas(atlas)
                 , m_filename(filename)
             {}
@@ -81,16 +81,16 @@ namespace BruteForce
             }
 
             StringAtlas* m_atlas;
-            std::string m_filename;
+            T_STR m_filename;
         };
     };
 
-    template <typename T>
+    template <typename T, typename T_STR = std::string>
     class HashAtlas
     {
 
     public:
-        HashAtlas(const std::string& ResourseFolder)
+        HashAtlas(const T_STR& ResourseFolder)
         {
             m_resourse_folder = ResourseFolder;
         }
@@ -101,7 +101,7 @@ namespace BruteForce
             assert (m_map.empty());
         }
         template <typename... Params>
-        std::shared_ptr<T> Assign(const std::string& filename, Params... params)
+        std::shared_ptr<T> Assign(const T_STR& filename, Params... params)
         {
             size_t hash = m_hasher(filename);
             auto it = m_map.find(hash);
@@ -135,8 +135,8 @@ namespace BruteForce
             return m_resourse_folder;
         }
     private:
-        std::hash<std::string> m_hasher;
-        std::string m_resourse_folder;
+        std::hash<T_STR> m_hasher;
+        T_STR m_resourse_folder;
         std::map<const size_t, std::weak_ptr<T>> m_map;
 
         struct Deleter

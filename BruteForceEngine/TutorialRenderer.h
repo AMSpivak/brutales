@@ -15,6 +15,7 @@
 #include "ComputeDeffered.h"
 #include "DepthBuffer.h"
 #include "DescriptorHeapManager.h"
+#include "MaterialManager.h"
 #include <vector>
 #include <memory>
 
@@ -57,8 +58,9 @@ private:
     std::shared_ptr<BruteForce::DescriptorHeapRange> LuminanceSrvDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> DepthSrvDescriptors;
 
+    std::shared_ptr <BruteForce::MaterialManager> m_MaterialManager;
     BruteForce::Textures::Texture m_ShadowTextures[SwapchainNumFrames];
-    void CreateCommonResources(BruteForce::Device& device);
+    void CreateCommonResources(BruteForce::Device& device, BruteForce::GpuAllocator gpu_allocator);
 
     BruteForce::Sync::SmartFence m_fence_sky_shadow;
     BruteForce::Sync::SmartFence m_fence_avg_luminance;

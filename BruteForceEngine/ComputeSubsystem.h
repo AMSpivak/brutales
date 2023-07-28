@@ -4,6 +4,8 @@
 #include "EngineGpuCommands.h"
 #include "Camera.h"
 #include "DescriptorHeapManager.h"
+#include "MaterialManager.h"
+#include <memory>
 
 
 namespace BruteForce
@@ -19,6 +21,7 @@ namespace BruteForce
             const Camera& camera;
             const uint8_t frame_index;
             DescriptorHeapManager& HeapManager;
+            std::shared_ptr<MaterialManager> mMaterialManager;
         };
 
         class ComputeSubsystem

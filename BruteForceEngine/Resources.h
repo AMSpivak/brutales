@@ -9,8 +9,8 @@ namespace BruteForce
 	class GpuResource
 	{
 	protected:
-		size_t m_heap_range_srv_index;
-		size_t m_heap_range_uav_index;
+		int32_t m_heap_range_srv_index;
+		int32_t m_heap_range_uav_index;
 
 		GpuAllocation* m_p_allocation;
 		int32_t m_descriptor_index;
@@ -19,7 +19,7 @@ namespace BruteForce
 	public:
 		Resource            m_GpuBuffer;
 
-		GpuResource() : m_p_allocation(nullptr), m_descriptor_index(-1) {};
+		GpuResource() : m_p_allocation(nullptr), m_heap_range_srv_index(-1), m_heap_range_uav_index(-1), m_descriptor_index(-1) {};
 		GpuResource(const GpuResource&) = default;
 		~GpuResource()
 		{
@@ -29,6 +29,7 @@ namespace BruteForce
 				m_p_allocation = nullptr;
 			}
 		};
+		int GetSrvRangeIndex() { return m_heap_range_srv_index; }
 
 		virtual void CreateSrv(Device& device, DescriptorHandle& descriptor_handle) {};
 		virtual void CreateSrv(Device& device, DescriptorHeapRange& descriptor_range, size_t index) {};
