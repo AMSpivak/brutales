@@ -218,6 +218,8 @@ void main(ComputeShaderInput IN)
                 float3 Color = textures[materials.r * material_offset].SampleGrad(sampl, UV.xy, Ddx_Ddy.xy, Ddx_Ddy.zw).xyz;
                 Color = pow(Color, 2.2);
                 res = max(ZeroEdge, sun_light_color * Color + moon_light_color * Color);
+                OutImage[FrameIndex][IN.DispatchThreadID.xy] = float4(res, 1.0);
+                return;
             }
 
             static const int numpoints = 10;

@@ -33,7 +33,7 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device, BruteFo
     {
 
         //auto descRange = m_MaterialManager->GetDescriptorRange();
-        const std::wstring textures[] = { {L"diff_sand.dds"}, {L"barb_n.dds"}, {L""} };
+        const std::wstring textures[] = { {L"diff_sand.dds"}, {L"barb_n.png"}, {L""} };
 
         int i = 0;
         auto material = m_MaterialManager->AddMaterial(textures[i],textures[i+1],textures[i+2]);

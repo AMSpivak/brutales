@@ -72,5 +72,20 @@ namespace BruteForce
     }
     void MaterialManager::UpdateBuffer(int index)
     {
+        for (int i = 0; i < MaterialCB_SIZE; i++)
+        {
+            if (i < m_Materials.size())
+            {
+                auto& mat = m_Materials[i];
+                m_MaterialBuffers[index].Materials[i] = int4{ mat->m_Albedo->GetSrvRangeIndex(),mat->m_Normals->GetSrvRangeIndex(),0,0 };
+            }
+            else
+            {
+                m_MaterialBuffers[index].Materials[i] = int4{0,0,0,0};
+            }
+            
+        }
+
+        m_MaterialBuffers[index].Update();
     }
 }

@@ -74,7 +74,7 @@ namespace BruteForce
 
 
                 std::vector<std::wstring> tex_names = {
-                                                        {L"diff_sand.dds"}, {L"barb_n.dds"}//{L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
+                                                        {L"diff_sand.dds"}, {L"barb_n.png"}//{L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
                                                         //,{L"diff_sand.dds"}, {L"norm_sand.dds"}//{L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
                                                         //,{ L"Desert_Rock_albedo.dds"}, {L"norm_no.png"}//{ L"Desert_Rock_normal.dds"}
                 };
