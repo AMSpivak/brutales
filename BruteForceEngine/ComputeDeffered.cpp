@@ -191,7 +191,6 @@ namespace BruteForce
 			m_DefferedBuffers[buff_index].m_CpuBuffer->m_TerrainScaler = terrain_scaler;
 
 			m_DefferedBuffers[buff_index].Update();
-			
 			smart_command_list.BeginEvent(0, "ComputeDeffered");
 
 			auto& command_list = smart_command_list.command_list;

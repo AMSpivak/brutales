@@ -366,6 +366,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         m_Camera.RecalculateMatrixes();
     }
 
+    m_MaterialManager->UpdateBuffer(m_CurrentBackBufferIndex);
     
     {
         auto smart_compute_command_list = m_ComputeSmartCommandQueue.GetCommandList();

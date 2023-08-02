@@ -68,20 +68,21 @@ namespace BruteForce
         {
             ++m_size;
         }
+        
         return material;
     }
     void MaterialManager::UpdateBuffer(int index)
     {
         for (int i = 0; i < MaterialCB_SIZE; i++)
         {
-            if (i < m_Materials.size())
+            if (i < 12/*m_Materials.size()*/)
             {
-                auto& mat = m_Materials[i];
-                m_MaterialBuffers[index].Materials[i] = int4{ mat->m_Albedo->GetSrvRangeIndex(),mat->m_Normals->GetSrvRangeIndex(),0,0 };
+                //auto& mat = m_Materials[i];
+                m_MaterialBuffers[index].m_CpuBuffer->Materials[i] = int4{ i * 2/*mat->m_Albedo->GetSrvRangeIndex()*/, i * 2 + 1/*mat->m_Normals->GetSrvRangeIndex()*/,0,0};
             }
             else
             {
-                m_MaterialBuffers[index].Materials[i] = int4{0,0,0,0};
+                m_MaterialBuffers[index].m_CpuBuffer->Materials[i] = int4{0,0,0,0};
             }
             
         }
