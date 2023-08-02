@@ -45,10 +45,10 @@ namespace BruteForce
         }
     }
 
-    const std::shared_ptr<DescriptorHeapRange> MaterialManager::GetDescriptorRange()
-    {
-        return m_TexturesSrvs;
-    }
+    //const std::shared_ptr<DescriptorHeapRange> MaterialManager::GetDescriptorRange()
+    //{
+    //    return m_TexturesSrvs;
+    //}
     std::shared_ptr<RenderMaterial> MaterialManager::AddMaterial()
     {
         return m_Materials.emplace_back(std::make_shared<RenderMaterial>(m_Materials.size()));
@@ -75,10 +75,10 @@ namespace BruteForce
     {
         for (int i = 0; i < MaterialCB_SIZE; i++)
         {
-            if (i < 12/*m_Materials.size()*/)
+            if (i < m_Materials.size())
             {
-                //auto& mat = m_Materials[i];
-                m_MaterialBuffers[index].m_CpuBuffer->Materials[i] = int4{ i * 2/*mat->m_Albedo->GetSrvRangeIndex()*/, i * 2 + 1/*mat->m_Normals->GetSrvRangeIndex()*/,0,0};
+                auto& mat = m_Materials[i];
+                m_MaterialBuffers[index].m_CpuBuffer->Materials[i] = int4{ mat->m_Albedo->GetSrvRangeIndex(), mat->m_Normals->GetSrvRangeIndex(),0,0};
             }
             else
             {

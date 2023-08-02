@@ -52,10 +52,11 @@ namespace BruteForce
 						GpuAllocator gpu_allocator, DescriptorHeapManager& descriptor_heap_manager,
 						const std::wstring& ResourseFolder, size_t texture_capacity);
 		~MaterialManager();
-		const std::shared_ptr<DescriptorHeapRange> GetDescriptorRange();
+		//const std::shared_ptr<DescriptorHeapRange> GetDescriptorRange();
 		std::shared_ptr<RenderMaterial> AddMaterial();
 		std::shared_ptr<RenderMaterial> AddMaterial(const std::wstring& albedo, const  std::wstring& normal_height, const  std::wstring& roughness_metalness);
 		std::shared_ptr<DescriptorHeapRange> GetMaterialsCbvRange() { return m_MaterialsCbvRange; };
+		std::shared_ptr<DescriptorHeapRange> GetMaterialsTexturesRange() { return m_TexturesSrvs; };
 		void UpdateBuffer(int index);
 		//DescriptorHeapManager() :m_HeapType(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV), m_size(0), m_index(0), m_TextureAtlas("") {}
 		//void Create(Device& device, size_t size, DescriptorHeapType HeapType);

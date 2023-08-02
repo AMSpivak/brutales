@@ -181,7 +181,6 @@ void main(ComputeShaderInput IN)
                 mat_cast_xm(quat, TBN);
 
                 int4 material_indexes = NonUniformResourceIndex(Material_CB[FrameIndex].Materials[materials.r]);
-                //float3 Normal_smpl = normalize(float3(0.0, 0.3, 1.0));// textures[materials.r * material_offset + 1].SampleGrad(sampl, UV.xy, Ddx_Ddy.xy, Ddx_Ddy.zw).xyz * 2.0 - 1.0;
                 float3 Normal_smpl = textures[material_indexes.g].SampleGrad(sampl, UV.xy, Ddx_Ddy.xy, Ddx_Ddy.zw).xyz * 2.0 - 1.0;
                 Normal_smpl.y = -Normal_smpl.y;
                 float3 Normal = mul(TBN, float4(Normal_smpl, 0.0f)).xyz;

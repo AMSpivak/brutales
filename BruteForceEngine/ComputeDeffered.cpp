@@ -103,7 +103,7 @@ namespace BruteForce
 				RTUavDescriptors->Fill(descRange[0], 0);
 				//descRange[1].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 				DepthSrvDescriptors->Fill(descRange[5], 8);
-				SrvTexturesRange->Fill(descRange[1], 9);
+				helper.mMaterialManager->GetMaterialsTexturesRange()->Fill(descRange[1], 9);
 
 				CbvRange->Fill(descRange[2], 2);
 

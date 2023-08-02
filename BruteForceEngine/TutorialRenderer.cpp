@@ -28,15 +28,21 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device, BruteFo
     DepthSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(1), BruteForce::DescriptorRangeTypeSrv, "DepthSrvs");
 
     auto& settings = BruteForce::GetSettings();
-    m_MaterialManager = std::make_shared<BruteForce::MaterialManager>(device, m_CopyCommandQueue, gpu_allocator, m_SRV_Heap, settings.GetContentDirWchar(), 1024);
+    m_MaterialManager = std::make_shared<BruteForce::MaterialManager>(device, m_CopyCommandQueue, gpu_allocator, m_SRV_Heap, settings.GetContentDirWchar(), 6/*1024*/);
 
     {
 
         //auto descRange = m_MaterialManager->GetDescriptorRange();
-        const std::wstring textures[] = { {L"diff_sand.dds"}, {L"barb_n.png"}, {L""} };
+        const std::wstring textures[] = {
+            {L"diff_sand.dds"}, {L"norm_sand.dds"}, {L""},
+            {L"diff_sand.dds"}, {L"norm_sand.dds"}, {L""},
+            {L"diff_sand.dds"}, {L"barb_n.png"}, {L""},
+        };
 
-        int i = 0;
-        auto material = m_MaterialManager->AddMaterial(textures[i],textures[i+1],textures[i+2]);
+        for (int i = 0; i < 3; i++)
+        {
+            auto material = m_MaterialManager->AddMaterial(textures[i*3], textures[i * 3 + 1], textures[i * 3 + 2]);
+        }
     }
 
 
