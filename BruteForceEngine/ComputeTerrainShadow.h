@@ -29,7 +29,7 @@ namespace BruteForce
             ComputeTerrainShadow();
             virtual ~ComputeTerrainShadow();
             virtual void Update(float delta_time, uint8_t frame_index);
-            virtual void LoadContent(Device& device, uint8_t frames_count, DescriptorHeapManager& descriptor_heap_manager);
+            virtual void LoadContent(LoadComputeHelper helper);
             virtual SmartCommandList& PrepareRenderCommandList(SmartCommandList&, const PrepareComputeHelper&);
         };
     }

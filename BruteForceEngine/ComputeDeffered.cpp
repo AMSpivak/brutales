@@ -17,32 +17,28 @@ namespace BruteForce
 			{
 				delete[] m_DefferedBuffers;
 			}
-			//m_MaterialBuffers
-			if (m_MaterialBuffers)
-			{
-				delete[] m_MaterialBuffers;
-			}
+
 		}
 		void ComputeDeffered::Update(float delta_time, uint8_t frame_index)
 		{
 		}
-		void ComputeDeffered::LoadContent(Device& device, uint8_t frames_count, DescriptorHeapManager& descriptor_heap_manager)
+		void ComputeDeffered::LoadContent(LoadComputeHelper helper)
 		{
 			//LuminanceUavDescriptors = descriptor_heap_manager.GetManagedRange("LuminanceUavs");
 			//assert(LuminanceUavDescriptors);
-			SrvTexturesRange = descriptor_heap_manager.GetManagedRange("MaterialTextures");
+			SrvTexturesRange = helper.descriptor_heap_manager.GetManagedRange("MaterialTextures");
 			assert(SrvTexturesRange);
 
-			RTUavDescriptors = descriptor_heap_manager.GetManagedRange("RenderTargetsUavs");
+			RTUavDescriptors = helper.descriptor_heap_manager.GetManagedRange("RenderTargetsUavs");
 			assert(RTUavDescriptors);
 
-			RTNoScreenSrvDescriptors = descriptor_heap_manager.GetManagedRange("NoScreenRenderTargetsSrvs");
+			RTNoScreenSrvDescriptors = helper.descriptor_heap_manager.GetManagedRange("NoScreenRenderTargetsSrvs");
 			assert(RTNoScreenSrvDescriptors);
 
-			SunShadowSrvDescriptors = descriptor_heap_manager.GetManagedRange("TerrainShadowSrvs");
+			SunShadowSrvDescriptors = helper.descriptor_heap_manager.GetManagedRange("TerrainShadowSrvs");
 			assert(SunShadowSrvDescriptors);
 
-			DepthSrvDescriptors = descriptor_heap_manager.GetManagedRange("DepthSrvs");
+			DepthSrvDescriptors = helper.descriptor_heap_manager.GetManagedRange("DepthSrvs");
 			assert(DepthSrvDescriptors);
 
 			if (m_DefferedBuffers)
@@ -51,44 +47,24 @@ namespace BruteForce
 			}
 
 			//static constexpr size_t cb_count = frames_count;
-			m_DefferedBuffers = new ConstantBuffer<DefferedLightingCB>[frames_count];
+			m_DefferedBuffers = new ConstantBuffer<DefferedLightingCB>[helper.frames_count];
 
 			{
-				CbvRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(frames_count), BruteForce::DescriptorRangeTypeCvb, "LuminanceCBVs");
+				CbvRange = helper.descriptor_heap_manager.AllocateManagedRange(helper.device, static_cast<UINT>(helper.frames_count), BruteForce::DescriptorRangeTypeCvb, "LuminanceCBVs");
 				auto& cvb_handle = CbvRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(frames_count), CbvRange);
 
-				for (int i = 0; i < frames_count; i++)
+				for (int i = 0; i < helper.frames_count; i++)
 				{
-					CreateUploadGPUBuffer(device, m_DefferedBuffers[i], cvb_handle);
+					CreateUploadGPUBuffer(helper.device, m_DefferedBuffers[i], cvb_handle);
 
 					m_DefferedBuffers[i].Map();
 					m_DefferedBuffers[i].Update();
 
-					cvb_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+					cvb_handle.ptr += helper.device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
 				}
 			}
 
-			if (m_MaterialBuffers)
-			{
-				delete[] m_MaterialBuffers;
-			}
-
-			m_MaterialBuffers = new ConstantBuffer<MaterialCB>[frames_count];
-
-			{
-				MaterialsCbvRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(frames_count), BruteForce::DescriptorRangeTypeCvb, "MaterialCBVs");
-				auto& cvb_handle = MaterialsCbvRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(frames_count), CbvRange);
-
-				for (int i = 0; i < frames_count; i++)
-				{
-					CreateUploadGPUBuffer(device, m_MaterialBuffers[i], cvb_handle);
-
-					m_MaterialBuffers[i].Map();
-					m_MaterialBuffers[i].Update();
-
-					cvb_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
-				}
-			}
+			
 
 			auto& settings = BruteForce::GetSettings();
 			std::wstring content_path{ settings.GetExecuteDirWchar() };
@@ -109,7 +85,7 @@ namespace BruteForce
 
 			D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
 			featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
-			if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
+			if (FAILED(helper.device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
 			{
 				featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
 			}
@@ -130,7 +106,9 @@ namespace BruteForce
 				SrvTexturesRange->Fill(descRange[1], 9);
 
 				CbvRange->Fill(descRange[2], 2);
-				MaterialsCbvRange->Fill(descRange[6], 5);
+
+				
+				helper.mMaterialManager->GetMaterialsCbvRange()->Fill(descRange[6], 5);
 
 				RTNoScreenSrvDescriptors->Fill(descRange[4], 3);
 				SunShadowSrvDescriptors->Fill(descRange[3], 0);
@@ -166,7 +144,7 @@ namespace BruteForce
 					featureData.HighestVersion, &rootSignatureBlob, &errorBlob));
 
 				// Create the root signature.
-				ThrowIfFailed(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
+				ThrowIfFailed(helper.device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
 					rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)));
 				m_RootSignature->SetName(L"Compute Deffered RS");
 
@@ -177,7 +155,7 @@ namespace BruteForce
 				sizeof(PipelineStateStream), &pipelineStateStream
 				};
 
-				ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
+				ThrowIfFailed(helper.device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
 				m_PipelineState->SetName(L"Compute Deffered PSO");
 			}
 		}

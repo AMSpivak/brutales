@@ -23,12 +23,11 @@ namespace BruteForce
 			std::shared_ptr<BruteForce::DescriptorHeapRange> SunShadowSrvDescriptors;
 
 			std::shared_ptr<DescriptorHeapRange> CbvRange;
-			std::shared_ptr<DescriptorHeapRange> MaterialsCbvRange;
 			std::shared_ptr<DescriptorHeapRange> RTLuminanceSrvDescriptors;
 			std::shared_ptr<DescriptorHeapRange> DepthSrvDescriptors;
 
 			ConstantBuffer<DefferedLightingCB>* m_DefferedBuffers;
-			ConstantBuffer<MaterialCB>* m_MaterialBuffers;
+
 			void UpdateMaterialBuffer(uint32_t buff_index);
 
 		public:
@@ -36,7 +35,7 @@ namespace BruteForce
 			ComputeDeffered();
 			virtual ~ComputeDeffered();
 			virtual void Update(float delta_time, uint8_t frame_index);
-			virtual void LoadContent(Device& device, uint8_t frames_count, DescriptorHeapManager& descriptor_heap_manager);
+			virtual void LoadContent(LoadComputeHelper helper);
 			virtual SmartCommandList& PrepareRenderCommandList(SmartCommandList&, const PrepareComputeHelper&);
 			
 		};

@@ -6,6 +6,8 @@
 #include "Texture.h"
 #include <string>
 #include <vector>
+#include "MaterialCB.h"
+#include "ConstantBuffer.h"
 
 namespace BruteForce
 {
@@ -35,22 +37,26 @@ namespace BruteForce
 	class MaterialManager
 	{
 	private:
-		Atlas<Textures::Texture, std::wstring> m_TextureAtlas;
-		std::shared_ptr<DescriptorHeapRange> m_TexturesSrvs;
-		std::vector<std::shared_ptr<RenderMaterial>> m_Materials;
-		BruteForce::Textures::TextureLoadHlpr m_TextureHelper;
 		size_t m_texture_capacity;
 		size_t m_size;
+		Atlas<Textures::Texture, std::wstring> m_TextureAtlas;
+		std::shared_ptr<DescriptorHeapRange> m_TexturesSrvs;
+		std::shared_ptr<DescriptorHeapRange> m_MaterialsCbvRange;
+		ConstantBuffer<MaterialCB>* m_MaterialBuffers;
+		std::vector<std::shared_ptr<RenderMaterial>> m_Materials;
+		BruteForce::Textures::TextureLoadHlpr m_TextureHelper;
+		
 		bool m_need_update_cbv;
 	public:
-		MaterialManager(Device& device, SmartCommandQueue& m_copy_queue,
-						GpuAllocator m_gpu_allocator, DescriptorHeapManager& descriptor_heap_manager,
+		MaterialManager(Device& device, SmartCommandQueue& copy_queue,
+						GpuAllocator gpu_allocator, DescriptorHeapManager& descriptor_heap_manager,
 						const std::wstring& ResourseFolder, size_t texture_capacity);
 		~MaterialManager();
 		const std::shared_ptr<DescriptorHeapRange> GetDescriptorRange();
 		std::shared_ptr<RenderMaterial> AddMaterial();
-		std::shared_ptr<RenderMaterial> AddMaterial(std::wstring& albedo, std::wstring& normal_height, std::wstring& roughness_metalness);
-
+		std::shared_ptr<RenderMaterial> AddMaterial(const std::wstring& albedo, const  std::wstring& normal_height, const  std::wstring& roughness_metalness);
+		std::shared_ptr<DescriptorHeapRange> GetMaterialsCbvRange() { return m_MaterialsCbvRange; };
+		void UpdateBuffer(int index);
 		//DescriptorHeapManager() :m_HeapType(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV), m_size(0), m_index(0), m_TextureAtlas("") {}
 		//void Create(Device& device, size_t size, DescriptorHeapType HeapType);
 		//DescriptorHandle AllocateRange(Device& device, size_t size, DescriptorHeapRange& range);

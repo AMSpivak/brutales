@@ -7,6 +7,7 @@
 #include "ComputeTerrainShadow.h"
 #include "BruteForceMath.h"
 #include "GameEnvironment.h"
+#include "Settings.h"
 #include <DirectXMath.h>
 
 
@@ -26,11 +27,16 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device, BruteFo
 
     DepthSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(1), BruteForce::DescriptorRangeTypeSrv, "DepthSrvs");
 
-    m_MaterialManager = std::make_shared<BruteForce::MaterialManager>(device, m_CopyCommandQueue, gpu_allocator, m_SRV_Heap,L"", 1024);
+    auto& settings = BruteForce::GetSettings();
+    m_MaterialManager = std::make_shared<BruteForce::MaterialManager>(device, m_CopyCommandQueue, gpu_allocator, m_SRV_Heap, settings.GetContentDirWchar(), 1024);
 
     {
-        auto descRange = m_MaterialManager->GetDescriptorRange();
-        auto material = m_MaterialManager->AddMaterial();
+
+        //auto descRange = m_MaterialManager->GetDescriptorRange();
+        const std::wstring textures[] = { {L"diff_sand.dds"}, {L"barb_n.dds"}, {L""} };
+
+        int i = 0;
+        auto material = m_MaterialManager->AddMaterial(textures[i],textures[i+1],textures[i+2]);
     }
 
 
@@ -135,6 +141,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
                                                             render_format,
                                                             BruteForce::TargetFormat_D32_Float,
                                                             nullptr
+                                                            , m_MaterialManager
                                                         };
     desc.gpu_allocator_ptr = m_GpuAllocator;
 
@@ -145,15 +152,17 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 
     m_SkyRender.LoadContent(device, m_NumFrames, desc, m_CopyCommandQueue, m_SRV_Heap);
 
+    BruteForce::Compute::LoadComputeHelper helper { device, m_NumFrames, m_SRV_Heap,  m_MaterialManager};
     for (auto& subsystem : m_CalcSystems)
     {
-        subsystem->LoadContent(device, m_NumFrames, m_SRV_Heap);
+        subsystem->LoadContent(helper);
     }
 
     BruteForce::Render::RenderSubsystemInitDesc desc_rt = {
                                                             m_TargetFormat,
                                                             BruteForce::TargetFormat_D32_Float,
                                                             nullptr
+                                                            , m_MaterialManager
     };
 
     m_ToneMapper.LoadContent(device, m_NumFrames, desc_rt, m_CopyCommandQueue, m_SRV_Heap);
@@ -162,6 +171,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
                                                         render_luminance_format,
                                                         BruteForce::TargetFormat_D32_Float,
                                                         nullptr
+                                                        , m_MaterialManager
     };
 
     desc_lum.gpu_allocator_ptr = m_GpuAllocator;
@@ -169,8 +179,8 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 
 
 
-    m_CalculateLuminance.LoadContent(device, m_NumFrames, m_SRV_Heap);
-    m_ComputeDeffered.LoadContent(device, m_NumFrames, m_SRV_Heap);
+    m_CalculateLuminance.LoadContent(helper);
+    m_ComputeDeffered.LoadContent(helper);
 
     m_ContentLoaded = true;
 

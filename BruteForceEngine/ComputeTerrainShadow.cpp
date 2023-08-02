@@ -59,12 +59,12 @@ namespace BruteForce
         {
         }
 
-        void ComputeTerrainShadow::LoadContent(Device& device, uint8_t frames_count, DescriptorHeapManager& descriptor_heap_manager)
+        void ComputeTerrainShadow::LoadContent(LoadComputeHelper helper)
         {
-            SunShadowUavDescriptors = descriptor_heap_manager.GetManagedRange("TerrainShadowUavs");
+            SunShadowUavDescriptors = helper.descriptor_heap_manager.GetManagedRange("TerrainShadowUavs");
             assert(SunShadowUavDescriptors);
 
-            HeightmapTexturesRange = descriptor_heap_manager.GetManagedRange("TerrainHeightmapTextures");
+            HeightmapTexturesRange = helper.descriptor_heap_manager.GetManagedRange("TerrainHeightmapTextures");
             assert(HeightmapTexturesRange);
             
             if (m_TerrainShadowBuffers)
@@ -72,20 +72,20 @@ namespace BruteForce
                 delete[] m_TerrainShadowBuffers;
             }
 
-            m_TerrainShadowBuffers = new ConstantBuffer<TerrainShadowCB>[frames_count];
+            m_TerrainShadowBuffers = new ConstantBuffer<TerrainShadowCB>[helper.frames_count];
 
             {
-                CbvRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(frames_count), BruteForce::DescriptorRangeTypeCvb, "TerrainCBVs");
+                CbvRange = helper.descriptor_heap_manager.AllocateManagedRange(helper.device, static_cast<UINT>(helper.frames_count), BruteForce::DescriptorRangeTypeCvb, "TerrainCBVs");
                 auto& cvb_handle = CbvRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(frames_count), CbvRange);
 
-                for (int i = 0; i < frames_count; i++)
+                for (int i = 0; i < helper.frames_count; i++)
                 {
-                    CreateUploadGPUBuffer(device, m_TerrainShadowBuffers[i], cvb_handle);
+                    CreateUploadGPUBuffer(helper.device, m_TerrainShadowBuffers[i], cvb_handle);
 
                     m_TerrainShadowBuffers[i].Map();
                     m_TerrainShadowBuffers[i].Update();
 
-                    cvb_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+                    cvb_handle.ptr += helper.device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
                 }
             }
 
@@ -97,7 +97,7 @@ namespace BruteForce
 
             D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
             featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
-            if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
+            if (FAILED(helper.device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
             {
                 featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
             }
@@ -144,7 +144,7 @@ namespace BruteForce
                 featureData.HighestVersion, &rootSignatureBlob, &errorBlob));
 
             // Create the root signature.
-            ThrowIfFailed(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
+            ThrowIfFailed(helper.device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
                 rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)));
             m_RootSignature->SetName(L"Compute shadow RS");
 
@@ -161,7 +161,7 @@ namespace BruteForce
             sizeof(PipelineStateStream), &pipelineStateStream
             };
 
-            ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
+            ThrowIfFailed(helper.device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
             m_PipelineState->SetName(L"Compute shadow PSO");
         }
         SmartCommandList& ComputeTerrainShadow::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareComputeHelper& compute_helper)

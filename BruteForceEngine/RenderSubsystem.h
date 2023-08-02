@@ -32,6 +32,7 @@ namespace BruteForce
             const TargetFormat RTFormat;
             const TargetFormat DepthFormat;
             GpuAllocator gpu_allocator_ptr;
+            std::shared_ptr <BruteForce::MaterialManager> m_MaterialManager;
         };
 
         class RenderSubsystem

@@ -20,12 +20,12 @@ namespace BruteForce
 		void ComputeLuminance::Update(float delta_time, uint8_t frame_index)
 		{
 		}
-		void ComputeLuminance::LoadContent(Device& device, uint8_t frames_count, DescriptorHeapManager& descriptor_heap_manager)
+		void ComputeLuminance::LoadContent(LoadComputeHelper helper)
 		{
-			LuminanceUavDescriptors = descriptor_heap_manager.GetManagedRange("LuminanceUavs");
+			LuminanceUavDescriptors = helper.descriptor_heap_manager.GetManagedRange("LuminanceUavs");
 			assert(LuminanceUavDescriptors);
 
-			RTLuminanceSrvDescriptors = descriptor_heap_manager.GetManagedRange("RTLuminanceSrvs");
+			RTLuminanceSrvDescriptors = helper.descriptor_heap_manager.GetManagedRange("RTLuminanceSrvs");
 			assert(RTLuminanceSrvDescriptors);
 
 			if (m_LuminanceBuffers)
@@ -36,17 +36,17 @@ namespace BruteForce
 			m_LuminanceBuffers = new ConstantBuffer<ComputeLuminanceCB>[cb_count];
 
 			{
-				CbvRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(cb_count), BruteForce::DescriptorRangeTypeCvb, "LuminanceCBVs");
+				CbvRange = helper.descriptor_heap_manager.AllocateManagedRange(helper.device, static_cast<UINT>(cb_count), BruteForce::DescriptorRangeTypeCvb, "LuminanceCBVs");
 				auto& cvb_handle = CbvRange->m_CpuHandle;//descriptor_heap_manager.AllocateRange(device, static_cast<UINT>(frames_count), CbvRange);
 
 				for (int i = 0; i < cb_count; i++)
 				{
-					CreateUploadGPUBuffer(device, m_LuminanceBuffers[i], cvb_handle);
+					CreateUploadGPUBuffer(helper.device, m_LuminanceBuffers[i], cvb_handle);
 
 					m_LuminanceBuffers[i].Map();
 					m_LuminanceBuffers[i].Update();
 
-					cvb_handle.ptr += device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
+					cvb_handle.ptr += helper.device->GetDescriptorHandleIncrementSize(BruteForce::DescriptorHeapCvbSrvUav);
 				}
 			}
 
@@ -69,7 +69,7 @@ namespace BruteForce
 
 			D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
 			featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
-			if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
+			if (FAILED(helper.device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
 			{
 				featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
 			}
@@ -118,7 +118,7 @@ namespace BruteForce
 					featureData.HighestVersion, &rootSignatureBlob, &errorBlob));
 
 				// Create the root signature.
-				ThrowIfFailed(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
+				ThrowIfFailed(helper.device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
 					rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)));
 				m_RootSignature->SetName(L"Compute luminance RS");
 
@@ -129,7 +129,7 @@ namespace BruteForce
 				sizeof(PipelineStateStream), &pipelineStateStream
 				};
 
-				ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
+				ThrowIfFailed(helper.device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
 				m_PipelineState->SetName(L"Compute luminance PSO");
 			}
 
@@ -168,7 +168,7 @@ namespace BruteForce
 					featureData.HighestVersion, &rootSignatureBlob, &errorBlob));
 
 				// Create the root signature.
-				ThrowIfFailed(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
+				ThrowIfFailed(helper.device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
 					rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature2Pass)));
 				m_RootSignature2Pass->SetName(L"Compute luminance 2 pass RS");
 
@@ -181,7 +181,7 @@ namespace BruteForce
 				sizeof(PipelineStateStream), &pipelineStateStream
 				};
 
-				ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState2Pass)));
+				ThrowIfFailed(helper.device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState2Pass)));
 				m_PipelineState2Pass->SetName(L"Compute luminance 2 pass PSO");
 			}
 
