@@ -26,8 +26,6 @@ namespace BruteForce
 		{
 			//LuminanceUavDescriptors = descriptor_heap_manager.GetManagedRange("LuminanceUavs");
 			//assert(LuminanceUavDescriptors);
-			SrvTexturesRange = helper.descriptor_heap_manager.GetManagedRange("MaterialTextures");
-			assert(SrvTexturesRange);
 
 			RTUavDescriptors = helper.descriptor_heap_manager.GetManagedRange("RenderTargetsUavs");
 			assert(RTUavDescriptors);

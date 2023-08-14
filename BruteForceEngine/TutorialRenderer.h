@@ -37,6 +37,7 @@ class TutorialRenderer :
 private:
     uint8_t m_rt_index;
     BruteForce::SmartCommandQueue m_CopyCommandQueue;
+    std::shared_ptr <BruteForce::MaterialManager> m_MaterialManager;
     std::vector<std::shared_ptr<BruteForce::Render::RenderSubsystem>> m_RenderSystems;
     std::vector<std::shared_ptr<BruteForce::Compute::ComputeSubsystem>> m_CalcSystems;
     BruteForce::Render::ScreenSpaceToRt m_ToneMapper;
@@ -58,7 +59,7 @@ private:
     std::shared_ptr<BruteForce::DescriptorHeapRange> LuminanceSrvDescriptors;
     std::shared_ptr<BruteForce::DescriptorHeapRange> DepthSrvDescriptors;
 
-    std::shared_ptr <BruteForce::MaterialManager> m_MaterialManager;
+    
     BruteForce::Textures::Texture m_ShadowTextures[SwapchainNumFrames];
     void CreateCommonResources(BruteForce::Device& device, BruteForce::GpuAllocator gpu_allocator);
 

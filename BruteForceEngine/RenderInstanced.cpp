@@ -45,7 +45,7 @@ namespace BruteForce
 
 
             }
-            {
+            /*{
                 std::wstring content_dir_path{ settings.GetContentDirWchar() };
                 std::vector<std::wstring> tex_names = { { L"test1.png"} ,{L"test2.png"} };
                 size_t textures_count = tex_names.size();
@@ -59,31 +59,50 @@ namespace BruteForce
 
                 auto srv_handle = m_SVRHeap->GetCPUDescriptorHandleForHeapStart();
                 BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_dir_path, m_textures, device, srv_handle);
-            }
+            }*/
 
-            {
-                std::wstring content_dir_path{ settings.GetContentDirWchar() };
-                Geometry::LoadGeometryGlb(device, m_cube, content_dir_path + L"barbarian2_game.glb");
+            
+
                 //Geometry::CreateCube(device, m_cube);
-            }
+            
 
             {
                 std::wstring content_dir_path{ settings.GetContentDirWchar() };
+                auto& object = m_objects.emplace_back();
+                object.m_geometry = std::make_shared<IndexedGeometry>();
+                Geometry::LoadGeometryGlb(device, *object.m_geometry, content_dir_path + L"barbarian2_game.glb");
 
                 BruteForce::Textures::TextureLoadHlpr helper{ device, copy_queue, desc.gpu_allocator_ptr };
 
 
-                std::vector<std::wstring> tex_names = {
-                                                        {L"diff_sand.dds"}, {L"barb_n.png"}//{L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
-                                                        //,{L"diff_sand.dds"}, {L"norm_sand.dds"}//{L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
-                                                        //,{ L"Desert_Rock_albedo.dds"}, {L"norm_no.png"}//{ L"Desert_Rock_normal.dds"}
-                };
-                size_t textures_count = tex_names.size();
-                TexturesRange = descriptor_heap_manager.GetManagedRange("MaterialTextures");
-                auto& srv_handle = TexturesRange->m_CpuHandle;
-                BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_dir_path, m_textures, helper, srv_handle);
+                const std::wstring textures[] = { {L"barbarian_diffuse.dds"}, {L"barb2_n.dds"}, {L""} };
+
+
+                for (int i = 0; i < 1; i++)
+                {
+                    object.m_material = desc.m_MaterialManager->AddMaterial(textures[i * 3], textures[i * 3 + 1], textures[i * 3 + 2]);
+                }
             }
 
+
+            {
+                std::wstring content_dir_path{ settings.GetContentDirWchar() };
+                auto& object = m_objects.emplace_back();
+                object.m_geometry = std::make_shared<IndexedGeometry>();
+
+                Geometry::LoadGeometryGlb(device, *object.m_geometry, content_dir_path + L"wall.glb");
+
+                BruteForce::Textures::TextureLoadHlpr helper{ device, copy_queue, desc.gpu_allocator_ptr };
+
+
+                const std::wstring textures[] = { {L"wall.dds"}, {L"wall_n.dds"}, {L""} };
+
+
+                for (int i = 0; i < 1; i++)
+                {
+                    object.m_material = desc.m_MaterialManager->AddMaterial(textures[i * 3], textures[i * 3 + 1], textures[i * 3 + 2]);
+                }
+            }
             BruteForce::DataBlob vertexShaderBlob;
             ThrowIfFailed(D3DReadFileToBlob((content_path + L"BasicVertexShader.cso").c_str(), &vertexShaderBlob));
 
@@ -191,25 +210,34 @@ namespace BruteForce
                 m_SamplerHeap->GetGPUDescriptorHandleForHeapStart());*/
 
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            commandList->IASetVertexBuffers(0, 1, &m_cube.m_VertexBufferView);
-            commandList->IASetIndexBuffer(&m_cube.m_IndexBufferView);
+            //commandList->IASetVertexBuffers(0, 1, &m_objects[0].m_geometry.m_VertexBufferView);
+            //commandList->IASetIndexBuffer(&m_objects[0].m_geometry.m_IndexBufferView);
             commandList->RSSetViewports(1, render_dest.m_Viewport);
             commandList->RSSetScissorRects(1, render_dest.m_ScissorRect);
             //commandList->OMSetRenderTargets(1, render_dest.rtv, FALSE, render_dest.dsv);
             commandList->OMSetRenderTargets(render_dest.m_rt_count, render_dest.rtv, FALSE, render_dest.dsv);
+
             auto const_size = sizeof(BruteForce::Math::Matrix) / 4;
-            commandList->SetGraphicsRoot32BitConstants(0, static_cast<UINT>(const_size), render_dest.camera.GetCameraMatrixPointer(), 0);
 
-            BruteForce::Math::Matrix M( 1.f, 0.f, 0.f, 0.f,
-                                        0.f, 1.f, 0.f, 0.f,
-                                        0.f, 0.f, 1.f, 0.f,
-                                        0.f, 20.f, 30.f, 1.f);
-            commandList->SetGraphicsRoot32BitConstants(1, static_cast<UINT>(const_size), &M, 0);
+            for(int obj_i = 0; obj_i < m_objects.size(); obj_i++)
+            {
+                
+                auto& obj = m_objects[obj_i];
+                commandList->IASetVertexBuffers(0, 1, &obj.m_geometry->m_VertexBufferView);
+                commandList->IASetIndexBuffer(&obj.m_geometry->m_IndexBufferView);
+                commandList->SetGraphicsRoot32BitConstants(0, static_cast<UINT>(const_size), render_dest.camera.GetCameraMatrixPointer(), 0);
 
-            uint32_t material_id = 2;
-            commandList->SetGraphicsRoot32BitConstants(2, static_cast<UINT>(sizeof(uint32_t) / 4), &material_id, 0);
+                BruteForce::Math::Matrix M(1.f, 0.f, 0.f, 0.f,
+                    0.f, 1.f, 0.f, 0.f,
+                    0.f, 0.f, 1.f, 0.f,
+                    0.f, 20.f, 30.f + 5.0f* obj_i, 1.f);
+                commandList->SetGraphicsRoot32BitConstants(1, static_cast<UINT>(const_size), &M, 0);
 
-            commandList->DrawIndexedInstanced(static_cast<UINT>(m_cube.m_IndexesCount), 1, 0, 0, 0);
+                uint32_t material_id = obj.m_material->m_index;
+                commandList->SetGraphicsRoot32BitConstants(2, static_cast<UINT>(sizeof(uint32_t) / 4), &material_id, 0);
+
+                commandList->DrawIndexedInstanced(static_cast<UINT>(obj.m_geometry->m_IndexesCount), 1, 0, 0, 0);
+            }
             return smart_command_list;
         }
     }

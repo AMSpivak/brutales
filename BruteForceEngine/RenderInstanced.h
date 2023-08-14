@@ -2,7 +2,7 @@
 #define RENDER_INSTANCED_H
 #include "RenderSubsystem.h"
 #include "Texture.h"
-#include "IndexedGeometry.h"
+#include "RenderObject.h"
 #include <memory>
 #include <vector>
 namespace BruteForce
@@ -15,7 +15,8 @@ namespace BruteForce
             std::vector<std::shared_ptr<Textures::Texture>> m_textures;
             DescriptorHeap m_SVRHeap;
             DescriptorHeap m_SamplerHeap;
-            IndexedGeometry m_cube;
+            //IndexedGeometry m_cube;
+            std::vector <RenderObject> m_objects;
             std::shared_ptr<DescriptorHeapRange> TexturesRange;
         public:
             RenderInstanced();

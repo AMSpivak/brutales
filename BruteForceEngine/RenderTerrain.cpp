@@ -139,15 +139,6 @@ namespace BruteForce
                     BruteForce::Textures::AddTexture(content_dir_path, { L"map_materials.png" }, m_textures, helper, srv_handle, TargetFormat_R8G8B8A8_UInt);
                 }
 
-                std::vector<std::wstring> tex_names = { 
-                                                        {L"diff_sand.dds"}, {L"norm_sand.dds"}//{L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
-                                                        ,{L"diff_sand.dds"}, {L"norm_sand.dds"}//{L"Desert_Sand_normal.dds"}//{L"norm_tst.png"}//
-                                                        //,{ L"Desert_Rock_albedo.dds"}, {L"norm_no.png"}//{ L"Desert_Rock_normal.dds"}
-                };
-                size_t textures_count = tex_names.size() +2;
-                TexturesRange = descriptor_heap_manager.AllocateManagedRange(device, static_cast<UINT>(textures_count), BruteForce::DescriptorRangeTypeSrv, "MaterialTextures");
-                auto& srv_handle = TexturesRange->m_CpuHandle;
-                BruteForce::Textures::AddTextures(tex_names.begin(), tex_names.end(), content_dir_path, m_textures, helper, srv_handle);
             }
 
             SunShadowSrvDescriptors = descriptor_heap_manager.GetManagedRange("TerrainShadowSrvs");
@@ -177,7 +168,9 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
             DescriptorRange descRange[4];
-            TexturesRange->Fill(descRange[0], 5);
+            desc.m_MaterialManager->GetMaterialsTexturesRange()->Fill(descRange[0], 5);
+            descRange[0].NumDescriptors = -1;
+            descRange[0].Flags |= D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
             HeightmapTexturesRange->Fill(descRange[1], 0);
             CbvRange->Fill(descRange[2], 17);
             SunShadowSrvDescriptors->Fill(descRange[3], 2);
