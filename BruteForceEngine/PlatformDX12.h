@@ -118,6 +118,7 @@ namespace BruteForce
 	constexpr TargetFormat TargetFormat_R16G16B16A16_UInt = DXGI_FORMAT_R16G16B16A16_UINT;
 	constexpr TargetFormat TargetFormat_R16G16B16A16_Float = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	constexpr TargetFormat TargetFormat_R32G32B32A32_Float = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	constexpr TargetFormat TargetFormat_R32G32B32A32_Int = DXGI_FORMAT_R32G32B32A32_SINT;
 	constexpr TargetFormat TargetFormat_R32G32B32_Float = DXGI_FORMAT_R32G32B32_FLOAT;
 	constexpr TargetFormat TargetFormat_R32G32_Float = DXGI_FORMAT_R32G32_FLOAT;
 
@@ -150,6 +151,26 @@ namespace BruteForce
 		using Vec4Int = DirectX::XMINT4;
 		using Vec4UInt = DirectX::XMUINT4;
 		using Vector = DirectX::XMVECTOR;
+
+		struct Vec4UByte
+		{
+			uint8_t x;
+			uint8_t y;
+			uint8_t z;
+			uint8_t w;
+
+			Vec4UByte() = default;
+
+			Vec4UByte(const Vec4UByte&) = default;
+			Vec4UByte& operator=(const Vec4UByte&) = default;
+
+			Vec4UByte(Vec4UByte&&) = default;
+			Vec4UByte& operator=(Vec4UByte&&) = default;
+
+			constexpr Vec4UByte(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w) : x(_x), y(_y), z(_z), w(_w) {}
+		};
+
+
 
 		inline void Store(Vec4Float* dst, const Vector& src )
 		{

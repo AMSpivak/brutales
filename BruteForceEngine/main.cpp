@@ -49,7 +49,7 @@ using namespace Microsoft::WRL;
 #include "GameEnvironment.h"
 #include "BruteForceMath.h"
 #include "SkyAstronomy.h"
-#include "GameEnvironment.h"
+#include "Scene.h"
 //threads
 #include <thread>
 #include <mutex>
@@ -76,6 +76,7 @@ BruteForce::Controller::Controller* test_controller;
 BruteForce::DescriptorHeapManager* p_HeapManager = nullptr;
 TutorialRenderer* p_Renderer = nullptr;
 BruteForce::Camera* test_camera = nullptr;
+
 // By default, use windowed mode.
 // Can be toggled with the Alt+Enter or F11
 
