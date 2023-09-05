@@ -137,30 +137,33 @@ void Update()
             0.0f
         );
 
+		//const float move_speed = 0.02f;
+		const float move_speed = 0.004f;
+
         if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::MoveRight))
         {
-            test_camera->MoveView(0.02f * msecs, 0.f, 0.f);
+            test_camera->MoveView(move_speed * msecs, 0.f, 0.f);
         }
         if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::MoveLeft))
         {
-            test_camera->MoveView(-0.02f * msecs, 0.f, 0.f);
+            test_camera->MoveView(-move_speed * msecs, 0.f, 0.f);
         }
 
         if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::MoveForward))
         {
-            test_camera->MoveView( 0.f, 0.f, 0.02f * msecs);
+            test_camera->MoveView( 0.f, 0.f, move_speed * msecs);
         }
         if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::MoveBack))
         {
-            test_camera->MoveView( 0.f, 0.f, -0.02f * msecs);
+            test_camera->MoveView( 0.f, 0.f, -move_speed * msecs);
         }
         if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::MoveUp))
         {
-            test_camera->MoveView(0.f,  0.02f * msecs, 0.f);
+            test_camera->MoveView(0.f, move_speed * msecs, 0.f);
         }
         if (test_controller->GetKeyPressed(BruteForce::Controller::Keys::MoveDown))
         {
-            test_camera->MoveView(0.f, -0.02f * msecs, 0.f);
+            test_camera->MoveView(0.f, -move_speed * msecs, 0.f);
         }
 
 
