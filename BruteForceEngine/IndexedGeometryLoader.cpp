@@ -12,16 +12,20 @@
 #include <GLTFSDK/GLBResourceReader.h>
 #include <GLTFSDK/Deserialize.h>
 
+#include "Skinning.h"
+
 namespace BruteForce
 {
     namespace Geometry
     {
-
+        template <typename V>
         void CreateGeometry(Device& device, IndexedGeometry& geometry, const float * vert_data, size_t vert_count, const WORD * ind_data, size_t ind_count)
         {
 
-            BruteForce::CreateBufferResource(device, &geometry.m_VertexBuffer, vert_count, sizeof(BruteForce::VertexPosUvNormTangent));
-            size_t vertex_size = sizeof(VertexPosUvNormTangent);
+            //size_t vertex_size = V.VertexSize();// sizeof(VertexPosUvNormTangent);
+            size_t vertex_size = sizeof(V);
+            BruteForce::CreateBufferResource(device, &geometry.m_VertexBuffer, vert_count, /*sizeof(BruteForce::VertexPosUvNormTangent)*/vertex_size);
+
             SmartCommandQueue smart_queue(device, BruteForce::CommandListTypeDirect);
             auto commandList = smart_queue.GetCommandList();
             BruteForce::pResource intermediateVertexBuffer;
@@ -120,6 +124,13 @@ namespace BruteForce
                 }
             }
 
+            void FillArmatureFromSkin(Skinning::Armature& armature,const Microsoft::glTF::Document& document, const Microsoft::glTF::GLTFResourceReader& resourceReader)
+            {
+                using namespace Microsoft::glTF;
+                const auto& skin = document.skins.Elements()[0];
+                //skin.jointIds
+            }
+
             bool FillGeometryFromMesh(Device& device, IndexedGeometry& geometry, const Microsoft::glTF::Document& document, const Microsoft::glTF::GLTFResourceReader& resourceReader)
             {
                 using namespace Microsoft::glTF;
@@ -174,45 +185,105 @@ namespace BruteForce
                         vTangent = std::move(data);
                     }
 
-                    std::vector <VertexPosUvNormTangent> geometry_data;
-                    geometry_data.reserve(num_vert);
-
-                    using vec3f = BruteForce::Math::Vec3Float;
-                    using vec4f = BruteForce::Math::Vec4Float;
-                    using vec2f = BruteForce::Math::Vec2Float;
-
-                    for (size_t i = 0; i < num_vert; i ++)
-                    {
-                        size_t i3 = i * 3;
-                        size_t i4 = i * 4;
-                        size_t i2 = i * 2;
-                        geometry_data.emplace_back( vec3f( vPositions[i3],vPositions[i3+1],-vPositions[i3+2])
-                                                    ,vec2f(vUV[i2],vUV[i2 + 1])
-                                                    ,vec3f(vNormals[i3],vNormals[i3 + 1],-vNormals[i3 + 2])
-                                                    ,vec4f(vTangent[i4],vTangent[i4 + 1],-vTangent[i4 + 2], vTangent[i4 + 3])
-                                                    );
-                    }
-
-                    const Accessor& accessor = document.accessors.Get(meshPrimitive.indicesAccessorId);
-                    const auto indexes = resourceReader.ReadBinaryData<WORD>(document, accessor);
                     std::vector <WORD> indexes_data;
-                    indexes_data.reserve(indexes.size());
-                    for (size_t i = 0; i < indexes.size() / 3; i++)
+
                     {
-                        size_t i3 = i * 3;
-                        indexes_data.emplace_back(indexes[i3]);
-                        indexes_data.emplace_back(indexes[i3+2]);
-                        indexes_data.emplace_back(indexes[i3+1]);
+                        const Accessor& accessor = document.accessors.Get(meshPrimitive.indicesAccessorId);
+                        const auto indexes = resourceReader.ReadBinaryData<WORD>(document, accessor);
+                        indexes_data.reserve(indexes.size());
+                        for (size_t i = 0; i < indexes.size() / 3; i++)
+                        {
+                            size_t i3 = i * 3;
+                            indexes_data.emplace_back(indexes[i3]);
+                            indexes_data.emplace_back(indexes[i3 + 2]);
+                            indexes_data.emplace_back(indexes[i3 + 1]);
+                        }
                     }
 
-                    CreateGeometry(device, geometry, reinterpret_cast<float*>(geometry_data.data()), geometry_data.size(), indexes_data.data(), indexes.size());
+                    
+                    {
+                        using vec3f = BruteForce::Math::Vec3Float;
+                        using vec4f = BruteForce::Math::Vec4Float;
+                        using vec2f = BruteForce::Math::Vec2Float;
+                        using vec4ub = BruteForce::Math::Vec4UByte;
+
+                        if (meshPrimitive.TryGetAttributeAccessorId(ACCESSOR_JOINTS_0, accessorId))
+                        {
+                            std::vector<uint8_t> vBoneIndexes;
+                            std::vector<float> vBoneWeights;
+
+
+                            {
+                                const Accessor& accessor = document.accessors.Get(accessorId);
+
+                                const auto data = resourceReader.ReadBinaryData<uint8_t>(document, accessor);
+                                vBoneIndexes = std::move(data);
+                            }
+
+                            if (meshPrimitive.TryGetAttributeAccessorId(ACCESSOR_WEIGHTS_0, accessorId))
+                            {
+                                const Accessor& accessor = document.accessors.Get(accessorId);
+
+                                const auto data = resourceReader.ReadBinaryData<float>(document, accessor);
+                                vBoneWeights = std::move(data);
+                            }
+
+                            std::vector <VertexPosUvNormTangentBoneWeight> geometry_data;
+                            geometry_data.reserve(num_vert);
+
+
+
+                            for (size_t i = 0; i < num_vert; i++)
+                            {
+                                size_t i3 = i * 3;
+                                size_t i4 = i * 4;
+                                size_t i2 = i * 2;
+                                geometry_data.emplace_back(vec3f(vPositions[i3], vPositions[i3 + 1], -vPositions[i3 + 2])
+                                    , vec2f(vUV[i2], vUV[i2 + 1])
+                                    , vec3f(vNormals[i3], vNormals[i3 + 1], -vNormals[i3 + 2])
+                                    , vec4f(vTangent[i4], vTangent[i4 + 1], -vTangent[i4 + 2], vTangent[i4 + 3])
+                                    , vec4ub(vBoneIndexes[i4], vBoneIndexes[i4 + 1], vBoneIndexes[i4 + 2], vBoneIndexes[i4 + 3])
+                                    , vec4f(vBoneWeights[i4], vBoneWeights[i4 + 1], vBoneWeights[i4 + 2], vBoneWeights[i4 + 3])
+                                );
+                            }
+
+                            CreateGeometry<BruteForce::VertexPosUvNormTangentBoneWeight>(device, geometry, reinterpret_cast<float*>(geometry_data.data()), geometry_data.size(), indexes_data.data(), indexes_data.size());
+                        }
+                        else
+                        {
+                            std::vector <VertexPosUvNormTangent> geometry_data;
+                            geometry_data.reserve(num_vert);
+
+                            
+
+                            for (size_t i = 0; i < num_vert; i++)
+                            {
+                                size_t i3 = i * 3;
+                                size_t i4 = i * 4;
+                                size_t i2 = i * 2;
+                                geometry_data.emplace_back(vec3f(vPositions[i3], vPositions[i3 + 1], -vPositions[i3 + 2])
+                                    , vec2f(vUV[i2], vUV[i2 + 1])
+                                    , vec3f(vNormals[i3], vNormals[i3 + 1], -vNormals[i3 + 2])
+                                    , vec4f(vTangent[i4], vTangent[i4 + 1], -vTangent[i4 + 2], vTangent[i4 + 3])
+                                );
+                            }
+
+                            CreateGeometry<BruteForce::VertexPosUvNormTangent>(device, geometry, reinterpret_cast<float*>(geometry_data.data()), geometry_data.size(), indexes_data.data(), indexes_data.size());
+
+                        }
+                    }
+
+
                 }
 
                 return true;
             }
         }
-        void LoadGeometryGlb(Device& device, IndexedGeometry& geometry, std::filesystem::path path)
+
+        void ParseGlbToDocAndReader(const std::filesystem::path &path, Microsoft::glTF::Document& document, std::unique_ptr<Microsoft::glTF::GLTFResourceReader>& resourceReader)
         {
+            
+
             using namespace Microsoft::glTF;
 
             // Pass the absolute path, without the filename, to the stream reader
@@ -223,32 +294,6 @@ namespace BruteForce
 
             std::string manifest;
 
-            /*auto MakePathExt = [](const std::string& ext)
-            {
-                return "." + ext;
-            };*/
-
-            std::unique_ptr<GLTFResourceReader> resourceReader;
-
-            //// If the file has a '.gltf' extension then create a GLTFResourceReader
-            //if (pathFileExt == MakePathExt(GLTF_EXTENSION))
-            //{
-            //    auto gltfStream = streamReader->GetInputStream(pathFile.u8string()); // Pass a UTF-8 encoded filename to GetInputString
-            //    auto gltfResourceReader = std::make_unique<GLTFResourceReader>(std::move(streamReader));
-
-            //    std::stringstream manifestStream;
-
-            //    // Read the contents of the glTF file into a string using a std::stringstream
-            //    manifestStream << gltfStream->rdbuf();
-            //    manifest = manifestStream.str();
-
-            //    resourceReader = std::move(gltfResourceReader);
-            //}
-
-            // If the file has a '.glb' extension then create a GLBResourceReader. This class derives
-            // from GLTFResourceReader and adds support for reading manifests from a GLB container's
-            // JSON chunk and resource data from the binary chunk.
-            //if (pathFileExt == MakePathExt(GLB_EXTENSION))
             {
                 auto glbStream = streamReader->GetInputStream(pathFile.u8string()); // Pass a UTF-8 encoded filename to GetInputString
                 auto glbResourceReader = std::make_unique<GLBResourceReader>(std::move(streamReader), std::move(glbStream));
@@ -263,8 +308,6 @@ namespace BruteForce
                 throw std::runtime_error("Command line argument path filename extension must be .gltf or .glb");
             }
 
-            Document document;
-
             try
             {
                 document = Deserialize(manifest);
@@ -278,9 +321,30 @@ namespace BruteForce
 
                 throw std::runtime_error(ss.str());
             }
+        }
 
+        /*void LoadArmatureGlb(Microsoft::glTF::Document& document, std::unique_ptr<Microsoft::glTF::GLTFResourceReader>& resourceReader)
+        {
+
+
+        }*/
+
+         
+        void LoadGeometryGlb(Device& device, IndexedGeometry& geometry, const std::filesystem::path& path)
+        {
+            using namespace Microsoft::glTF;
+            Document document;
+            std::unique_ptr<GLTFResourceReader> resourceReader;
+
+            ParseGlbToDocAndReader(path, document, resourceReader);
+            
             GLTF::FillGeometryFromMesh(device, geometry, document, *resourceReader);
+            Skinning::Armature armature;
+
+            GLTF::FillArmatureFromSkin(armature, document, *resourceReader);
 
         }
+
+
     }
 }

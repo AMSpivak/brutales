@@ -9,13 +9,15 @@ namespace BruteForce
         Undefined,
         PosColor,
         PosNormTex,
-        PosUvNormTangent
+        PosUvNormTangent,
+        PosUvNormTangentBoneWeight
     };
 
     struct VertexPosColor
     {
         BruteForce::Math::Vec3Float Position;
         BruteForce::Math::Vec3Float Color;
+        size_t VertexSize() { return sizeof(*this); }
     };
 
     struct VertexPosUvNormTangent
@@ -35,18 +37,51 @@ namespace BruteForce
             , Normal(normal)
             , Tangent(tangent)
         {};
+        size_t VertexSize() { return sizeof(*this); }
+
     };
+
+    struct VertexPosUvNormTangentBoneWeight
+    {
+        BruteForce::Math::Vec3Float Position;
+        BruteForce::Math::Vec2Float Uv;
+        BruteForce::Math::Vec3Float Normal;
+        BruteForce::Math::Vec4Float Tangent;
+        BruteForce::Math::Vec4UByte BoneIndex;
+        BruteForce::Math::Vec4Float BoneWeight;
+        VertexPosUvNormTangentBoneWeight() {};
+        VertexPosUvNormTangentBoneWeight(
+            BruteForce::Math::Vec3Float position,
+            BruteForce::Math::Vec2Float uv,
+            BruteForce::Math::Vec3Float normal,
+            BruteForce::Math::Vec4Float tangent,
+            BruteForce::Math::Vec4UByte bone_index,
+            BruteForce::Math::Vec4Float bone_weight
+
+        ) :Position(position)
+            , Uv(uv)
+            , Normal(normal)
+            , Tangent(tangent)
+            , BoneIndex(bone_index)
+            , BoneWeight(bone_weight)
+        {};
+        size_t VertexSize() { return sizeof(*this); }
+    };
+
 
     struct VertexPosNormTex
     {
         BruteForce::Math::Vec3Float Position;
         BruteForce::Math::Vec3Float Normal;
         //BruteForce::Math::Vec2Float Texture;
+        size_t VertexSize() { return sizeof(*this); }
+
     };
 
     struct VertexPos
     {
         BruteForce::Math::Vec3Float Position;
+        size_t VertexSize() { return sizeof(*this); }
     };
 
     class IndexedGeometry

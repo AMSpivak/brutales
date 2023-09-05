@@ -184,14 +184,17 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MaterialManager.cpp" />
     <ClCompile Include="RenderInstanced.cpp" />
+    <ClCompile Include="RenderSkinned.cpp" />
     <ClCompile Include="RenderTerrain.cpp" />
     <ClCompile Include="ResourcesDX12.cpp" />
     <ClCompile Include="RWRawBufferDX12.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ScreenSpaceLuminance.cpp" />
     <ClCompile Include="ScreenSpaceSky.cpp" />
     <ClCompile Include="ScreenSpaceToRt.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="BruteForceMath.cpp" />
+    <ClCompile Include="Skinning.cpp" />
     <ClCompile Include="SkyAstronomy.cpp" />
     <ClCompile Include="TextureDX12.cpp" />
     <ClCompile Include="TutorialRenderer.cpp" />
@@ -234,10 +237,13 @@
     <ClInclude Include="PlatformDX12.h" />
     <ClInclude Include="RaymarchFogCB.h" />
     <ClInclude Include="RenderObject.h" />
+    <ClInclude Include="RenderSkinned.h" />
     <ClInclude Include="RWRawBuffer.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="ScreenSpaceLuminance.h" />
     <ClInclude Include="ScreenSpaceSky.h" />
     <ClInclude Include="ShaderCppTypesRedefine.h" />
+    <ClInclude Include="Skinning.h" />
     <ClInclude Include="SkyAstronomy.h" />
     <ClInclude Include="SkyPixelCB.h" />
     <ClInclude Include="TerrainVertexCB.h" />
@@ -338,6 +344,12 @@
       <EnableUnboundedDescriptorTables Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</EnableUnboundedDescriptorTables>
     </FxCompile>
     <FxCompile Include="ScreenSpaceVertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="SkinnedVertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

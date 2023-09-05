@@ -8,6 +8,7 @@ namespace BruteForce
 {
     namespace Geometry
     {
+        template <typename V>
         void CreateGeometry(Device& device, IndexedGeometry& geometry, const float* vert_data, size_t vert_count, const WORD* ind_data, size_t ind_count);
 
 
@@ -225,7 +226,7 @@ namespace BruteForce
         }
         //void CreatePlane(Device& device, IndexedGeometry& geometry, size_t cells_x, size_t cells_y, float scale_x, float scale_y);
     
-        void LoadGeometryGlb(Device& device, IndexedGeometry& geometry, std::filesystem::path path);
+        void LoadGeometryGlb(Device& device, IndexedGeometry& geometry, const std::filesystem::path &path);
     }
 }
 #endif

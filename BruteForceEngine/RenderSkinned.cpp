@@ -1,4 +1,4 @@
-#include "RenderInstanced.h"
+#include "RenderSkinned.h"
 #include "Helpers.h"
 #include "IndexedGeometryGenerator.h"
 #include "Settings.h"
@@ -8,17 +8,17 @@ namespace BruteForce
 {
     namespace Render
     {
-        RenderInstanced::RenderInstanced()
+        RenderSkinned::RenderSkinned()
         {
         }
-        RenderInstanced::~RenderInstanced()
+        RenderSkinned::~RenderSkinned()
         {
-            
+
         }
-        void RenderInstanced::Update(float delta_time, uint8_t frame_index)
+        void RenderSkinned::Update(float delta_time, uint8_t frame_index)
         {
         }
-        void RenderInstanced::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue, DescriptorHeapManager& descriptor_heap_manager)
+        void RenderSkinned::LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc& desc, SmartCommandQueue& copy_queue, DescriptorHeapManager& descriptor_heap_manager)
         {
             auto& settings = BruteForce::GetSettings();
             std::wstring content_path{ settings.GetExecuteDirWchar() };
@@ -42,21 +42,21 @@ namespace BruteForce
                 samplerDesc.MaxAnisotropy = 1;
                 samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
                 device->CreateSampler(&samplerDesc, m_SamplerHeap->GetCPUDescriptorHandleForHeapStart());
-
-
             }
-            
+
+
             {
                 std::wstring content_dir_path{ settings.GetContentDirWchar() };
                 auto& object = m_objects.emplace_back();
                 object.m_geometry = std::make_shared<IndexedGeometry>();
+                //Geometry::LoadGeometryGlb(device, *object.m_geometry, content_dir_path + L"barbarian2_game.glb");
+                Geometry::LoadGeometryGlb(device, *object.m_geometry, content_dir_path + L"barbarian_rig.glb");
 
-                Geometry::LoadGeometryGlb(device, *object.m_geometry, content_dir_path + L"wall.glb");
 
                 BruteForce::Textures::TextureLoadHlpr helper{ device, copy_queue, desc.gpu_allocator_ptr };
 
 
-                const std::wstring textures[] = { {L"wall.dds"}, {L"wall_n.dds"}, {L""} };
+                const std::wstring textures[] = { {L"barbarian_diffuse.dds"}, {L"barb2_n.dds"}, {L""} };
 
 
                 for (int i = 0; i < 1; i++)
@@ -64,19 +64,23 @@ namespace BruteForce
                     object.m_material = desc.m_MaterialManager->AddMaterial(textures[i * 3], textures[i * 3 + 1], textures[i * 3 + 2]);
                 }
             }
-            BruteForce::DataBlob StaticVertexShaderBlob;
-            ThrowIfFailed(D3DReadFileToBlob((content_path + L"BasicVertexShader.cso").c_str(), &StaticVertexShaderBlob));
+
+
+            BruteForce::DataBlob SkinnedVertexShaderBlob;
+            ThrowIfFailed(D3DReadFileToBlob((content_path + L"SkinnedVertexShader.cso").c_str(), &SkinnedVertexShaderBlob));
+
 
             BruteForce::DataBlob pixelShaderBlob;
             ThrowIfFailed(D3DReadFileToBlob((content_path + L"BasicPixelShader.cso").c_str(), &pixelShaderBlob));
 
 
-
-            D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
+            D3D12_INPUT_ELEMENT_DESC SkinnedInputLayout[] = {
                 { "POSITION", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
                 { "UV", 0, TargetFormat_R32G32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
                 { "NORMAL", 0, TargetFormat_R32G32B32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-                { "TANGENT", 0, TargetFormat_R32G32B32A32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+                { "TANGENT", 0, TargetFormat_R32G32B32A32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                { "B_INDEX", 0, TargetFormat_R8G8B8A8_UInt, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                { "B_WEIGHT", 0, TargetFormat_R32G32B32A32_Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
             };
 
 
@@ -90,11 +94,11 @@ namespace BruteForce
             rootParameters[0].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
             rootParameters[1].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 5, 0, D3D12_SHADER_VISIBILITY_VERTEX);
             rootParameters[2].InitAsConstants(sizeof(uint32_t) / 4, 10, 0, D3D12_SHADER_VISIBILITY_VERTEX);
-            
+
             CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
 
             rootSignatureDescription.Init_1_1(_countof(rootParameters), rootParameters, 0, nullptr, rootSignatureFlags);
-            
+
             {
                 D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
                 featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
@@ -136,9 +140,9 @@ namespace BruteForce
             pipelineStateStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);;
 
             pipelineStateStream.pRootSignature = m_RootSignature.Get();
-            pipelineStateStream.InputLayout = { inputLayout, _countof(inputLayout) };
+            pipelineStateStream.InputLayout = { SkinnedInputLayout, _countof(SkinnedInputLayout) };
             pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-            pipelineStateStream.VS = CD3DX12_SHADER_BYTECODE(StaticVertexShaderBlob.Get());
+            pipelineStateStream.VS = CD3DX12_SHADER_BYTECODE(SkinnedVertexShaderBlob.Get());
             pipelineStateStream.PS = CD3DX12_SHADER_BYTECODE(pixelShaderBlob.Get());
             pipelineStateStream.DSVFormat = TargetFormat_D32_Float;
             pipelineStateStream.RTVFormats = rtvFormats;
@@ -151,7 +155,7 @@ namespace BruteForce
         }
 
 
-        SmartCommandList& RenderInstanced::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)
+        SmartCommandList& RenderSkinned::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)
         {
             auto& commandList = smart_command_list.command_list;
             smart_command_list.SetPipelineState(m_PipelineState);
@@ -165,9 +169,9 @@ namespace BruteForce
 
             auto const_size = sizeof(BruteForce::Math::Matrix) / 4;
 
-            for(int obj_i = 0; obj_i < m_objects.size(); obj_i++)
+            for (int obj_i = 0; obj_i < m_objects.size(); obj_i++)
             {
-                
+
                 auto& obj = m_objects[obj_i];
                 commandList->IASetVertexBuffers(0, 1, &obj.m_geometry->m_VertexBufferView);
                 commandList->IASetIndexBuffer(&obj.m_geometry->m_IndexBufferView);
@@ -176,7 +180,7 @@ namespace BruteForce
                 BruteForce::Math::Matrix M(1.f, 0.f, 0.f, 0.f,
                     0.f, 1.f, 0.f, 0.f,
                     0.f, 0.f, 1.f, 0.f,
-                    0.f, 20.f, 30.f + 5.0f* obj_i, 1.f);
+                    0.f, 20.f, 10.f + 5.0f * obj_i, 1.f);
                 commandList->SetGraphicsRoot32BitConstants(1, static_cast<UINT>(const_size), &M, 0);
 
                 uint32_t material_id = obj.m_material->m_index;
