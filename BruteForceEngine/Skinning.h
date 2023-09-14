@@ -17,9 +17,16 @@ namespace BruteForce
 
         class Armature
         {
-            std::vector<Bone> Bones;
+            std::vector<Math::Matrix> m_InverseBoneMatrixes;
+            std::vector<Bone> m_Bones;
+            size_t m_BonesCount;
         public:
             void GenerateSkinningMatrixes(size_t frame1, size_t frame2, float lerp_factor);
+            void ReserveBones(size_t count);
+            bool PushBone(const Bone& bone, const Math::Matrix& matrix);
+            bool PushBone(const Bone& bone, const float * matrix);
+            void ClearBones(bool shrink);
+
 
         };
     }

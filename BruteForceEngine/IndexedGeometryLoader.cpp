@@ -124,17 +124,33 @@ namespace BruteForce
                 }
             }
 
-            void FillArmatureFromSkin(Skinning::Armature& armature,const Microsoft::glTF::Document& document, const Microsoft::glTF::GLTFResourceReader& resourceReader)
+            void FillArmatureFromSkin(Skinning::Armature& armature,const Microsoft::glTF::Document& document, const Microsoft::glTF::GLTFResourceReader& resourceReader, const std::string* skin_id = nullptr)
             {
                 using namespace Microsoft::glTF;
-                const auto& skin = document.skins.Elements()[0];
+                const auto& skin = skin_id ? document.skins.Get(*skin_id) : document.skins.Elements()[0];
+                armature.ClearBones(true);
+                armature.ReserveBones(skin.jointIds.size());
+                const Accessor& inv_mat_accessor = document.accessors.Get(skin.inverseBindMatricesAccessorId);
+                const auto data = resourceReader.ReadBinaryData<float>(document, inv_mat_accessor);
+                std::vector<float> vMatrixes = std::move(data);
+
+                int matrix_index = 0;
+                for (auto joint_id:skin.jointIds) // making temporal code: bad complixity!
+                {
+                    auto node = document.nodes.Get(joint_id);
+
+                    Skinning::Bone b = { std::move(Math::Vec4Float(&node.rotation.x)), std::move(Math::Vec3Float(&node.scale.x)), std::move(Math::Vec3Float(&node.translation.x)), 0};
+                                   
+                    armature.PushBone(b, Math::Matrix(&vMatrixes[matrix_index]));
+                    matrix_index += 16;
+                }
                 //skin.jointIds
             }
 
-            bool FillGeometryFromMesh(Device& device, IndexedGeometry& geometry, const Microsoft::glTF::Document& document, const Microsoft::glTF::GLTFResourceReader& resourceReader)
+            bool FillGeometryFromMesh(Device& device, IndexedGeometry& geometry, const Microsoft::glTF::Document& document, const Microsoft::glTF::GLTFResourceReader& resourceReader, const std::string * mesh_id = nullptr)
             {
                 using namespace Microsoft::glTF;
-                const auto& mesh = document.meshes.Elements()[0];
+                const auto& mesh = mesh_id ? document.meshes.Get(*mesh_id) : document.meshes.Elements()[0];
 
                 for (const auto& meshPrimitive : mesh.primitives)
                 {
@@ -341,10 +357,38 @@ namespace BruteForce
             GLTF::FillGeometryFromMesh(device, geometry, document, *resourceReader);
             Skinning::Armature armature;
 
-            GLTF::FillArmatureFromSkin(armature, document, *resourceReader);
+            //GLTF::FillArmatureFromSkin(armature, document, *resourceReader);
 
         }
 
+        void LoadSkinnedGeometryGlb(Device& device, IndexedGeometry& geometry, const std::filesystem::path& path)
+        {
+            using namespace Microsoft::glTF;
+            Document document;
+            std::unique_ptr<GLTFResourceReader> resourceReader;
+
+            ParseGlbToDocAndReader(path, document, resourceReader);
+
+            
+            const std::string* mesh_id = nullptr;
+            const std::string* skin_id = nullptr;
+
+            for (auto& node : document.nodes.Elements())
+            {
+                if (node.meshId.size() && node.skinId.size())
+                {
+                    mesh_id = &(node.meshId);
+                    skin_id = &(node.skinId);
+                }
+
+            }
+
+            GLTF::FillGeometryFromMesh(device, geometry, document, *resourceReader, mesh_id);
+            Skinning::Armature armature;
+
+            GLTF::FillArmatureFromSkin(armature, document, *resourceReader);
+
+        }
 
     }
 }

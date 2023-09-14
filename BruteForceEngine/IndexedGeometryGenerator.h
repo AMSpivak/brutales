@@ -226,7 +226,8 @@ namespace BruteForce
         }
         //void CreatePlane(Device& device, IndexedGeometry& geometry, size_t cells_x, size_t cells_y, float scale_x, float scale_y);
     
-        void LoadGeometryGlb(Device& device, IndexedGeometry& geometry, const std::filesystem::path &path);
+        void LoadGeometryGlb(Device& device, IndexedGeometry& geometry, const std::filesystem::path& path);
+        void LoadSkinnedGeometryGlb(Device& device, IndexedGeometry& geometry, const std::filesystem::path &path);
     }
 }
 #endif
