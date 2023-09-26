@@ -135,7 +135,7 @@ namespace BruteForce
                 std::vector<float> vMatrixes = std::move(data);
 
                 int matrix_index = 0;
-                for (auto joint_id:skin.jointIds) // making temporal code: bad complixity!
+                for (auto joint_id:skin.jointIds) // making temporal code: bad complexity
                 {
                     auto node = document.nodes.Get(joint_id);
 
@@ -386,7 +386,7 @@ namespace BruteForce
             GLTF::FillGeometryFromMesh(device, geometry, document, *resourceReader, mesh_id);
             Skinning::Armature armature;
 
-            GLTF::FillArmatureFromSkin(armature, document, *resourceReader);
+            GLTF::FillArmatureFromSkin(armature, document, *resourceReader, skin_id);
 
         }
 

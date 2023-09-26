@@ -49,7 +49,8 @@ namespace BruteForce
                 std::wstring content_dir_path{ settings.GetContentDirWchar() };
                 auto& object = m_objects.emplace_back();
                 object.m_geometry = std::make_shared<IndexedGeometry>();
-                Geometry::LoadSkinnedGeometryGlb(device, *object.m_geometry, content_dir_path + L"barbarian_rig.glb");
+                //Geometry::LoadSkinnedGeometryGlb(device, *object.m_geometry, content_dir_path + L"barbarian_rig.glb");
+                    Geometry::LoadSkinnedGeometryGlb(device, *object.m_geometry, content_dir_path + L"barbarian_rig_axe_2_a.glb");
 
 
                 BruteForce::Textures::TextureLoadHlpr helper{ device, copy_queue, desc.gpu_allocator_ptr };
