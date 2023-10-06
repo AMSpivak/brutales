@@ -26,6 +26,7 @@ namespace BruteForce
             bool PushBone(const Bone& bone, const Math::Matrix& matrix);
             bool PushBone(const Bone& bone, const float * matrix);
             void ClearBones(bool shrink);
+            Bone* GetBonePtr(int i) { return i < m_Bones.size() ? &m_Bones[i] : nullptr; };
 
 
         };

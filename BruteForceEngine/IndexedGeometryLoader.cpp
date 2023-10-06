@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <map>
 
 #include <GLTFSDK/GLTF.h>
 #include <GLTFSDK/GLTFResourceReader.h>
@@ -134,15 +135,32 @@ namespace BruteForce
                 const auto data = resourceReader.ReadBinaryData<float>(document, inv_mat_accessor);
                 std::vector<float> vMatrixes = std::move(data);
 
-                int matrix_index = 0;
-                for (auto joint_id:skin.jointIds) // making temporal code: bad complexity
-                {
-                    auto node = document.nodes.Get(joint_id);
+                std::map<std::string, int> nodeIds;
 
+                int matrix_index = 0;
+                for (int i = 0; i < skin.jointIds.size(); i++) // making temporal code: bad complexity
+				{
+                    const auto & joint_id = skin.jointIds[i];
+                    auto node = document.nodes.Get(joint_id);
+                    nodeIds[joint_id] = i;
                     Skinning::Bone b = { std::move(Math::Vec4Float(&node.rotation.x)), std::move(Math::Vec3Float(&node.scale.x)), std::move(Math::Vec3Float(&node.translation.x)), 0};
                                    
                     armature.PushBone(b, Math::Matrix(&vMatrixes[matrix_index]));
                     matrix_index += 16;
+                }
+
+                for (const auto& joint_id : skin.jointIds) // making temporal code: bad complexity
+                {
+                    auto node = document.nodes.Get(joint_id);
+                    int i_joint_id = nodeIds[joint_id];
+                    for (const auto& child_id : node.children) // making temporal code: bad complexity
+                    {
+                        auto pBone = armature.GetBonePtr(nodeIds[child_id]);
+                        if (pBone)
+                        {
+                            pBone->ParentIndex = i_joint_id;
+                        }
+                    }
                 }
                 //skin.jointIds
             }
