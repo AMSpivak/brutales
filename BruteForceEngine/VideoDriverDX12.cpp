@@ -414,7 +414,7 @@ namespace BruteForce
 
     Adapter GetAdapter(bool useWarp)
     {
-        ComPtr<IDXGIFactory4> dxgiFactory;
+        ComPtr<IDXGIFactory6> dxgiFactory;
         UINT createFactoryFlags = 0;
 #if defined(_DEBUG)
         createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
@@ -432,24 +432,19 @@ namespace BruteForce
         }
         else
         {
-            SIZE_T maxDedicatedVideoMemory = 0;
-            for (UINT i = 0; dxgiFactory->EnumAdapters1(i, &dxgiAdapter1) != DXGI_ERROR_NOT_FOUND; ++i)
-            {
-                DXGI_ADAPTER_DESC1 dxgiAdapterDesc1;
-                dxgiAdapter1->GetDesc1(&dxgiAdapterDesc1);
+            constexpr auto kGpuPreference = DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE;
+			for (UINT adapterIndex = 0; dxgiFactory->EnumAdapterByGpuPreference(adapterIndex, kGpuPreference, IID_PPV_ARGS(&dxgiAdapter1)) != DXGI_ERROR_NOT_FOUND; ++adapterIndex)
+			{
+				DXGI_ADAPTER_DESC1 dxgiAdapterDesc1;
+				ThrowIfFailed(dxgiAdapter1->GetDesc1(&dxgiAdapterDesc1));
 
-                // Check to see if the adapter can create a D3D12 device without actually 
-                // creating it. The adapter with the largest dedicated video memory
-                // is favored.
-                if ((dxgiAdapterDesc1.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) == 0 &&
-                    SUCCEEDED(D3D12CreateDevice(dxgiAdapter1.Get(),
-                        D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr)) &&
-                    dxgiAdapterDesc1.DedicatedVideoMemory > maxDedicatedVideoMemory)
-                {
-                    maxDedicatedVideoMemory = dxgiAdapterDesc1.DedicatedVideoMemory;
-                    ThrowIfFailed(dxgiAdapter1.As(&dxgiAdapter4));
-                }
-            }
+				if ((dxgiAdapterDesc1.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) == 0 &&
+					SUCCEEDED(D3D12CreateDevice(dxgiAdapter1.Get(),
+						D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr)))
+				{
+					ThrowIfFailed(dxgiAdapter1.As(&dxgiAdapter4));
+				}
+			}
         }
 
         return dxgiAdapter4;
