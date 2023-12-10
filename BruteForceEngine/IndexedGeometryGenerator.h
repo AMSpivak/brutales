@@ -9,7 +9,7 @@ namespace BruteForce
     namespace Geometry
     {
         template <typename V>
-        void CreateGeometry(Device& device, IndexedGeometry& geometry, const float* vert_data, size_t vert_count, const WORD* ind_data, size_t ind_count);
+        void CreateGeometry(Device& device, IndexedGeometry& geometry, const float* vert_data, size_t vert_count, const WORD* ind_data, size_t ind_count, GpuAllocator* gpu_allocator);
 
 
         void CreateCube(Device& device, IndexedGeometry& geometry);

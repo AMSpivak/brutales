@@ -82,8 +82,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)\..\ThirdParty\GLTFSDK\Inc;$(ProjectDir)\..\ThirdParty\DirectXTex;C:\Program Files %28x86%29\Windows Kits\10\Include\10.0.19041.0\shared;C:\Program Files %28x86%29\Windows Kits\10\Include\10.0.19041.0\um;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\..\Built\Out\v142\x64\Debug\GLTFSDK;$(ProjectDir)\..\Built\Out\v143\x64\Debug\GLTFSDK;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(ProjectDir)\..\ThirdParty\DirectXTex\Bin\Desktop_2019_Win10\x64\Debug;C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.19041.0\um\x64</LibraryPath>
+    <IncludePath>$(ProjectDir)\..\ThirdParty\GLTFSDK\Inc;$(ProjectDir)\..\ThirdParty\DirectXTex;%WindowsSdkDir\Lib%WindowsSDKVersion%\\um\shared;%WindowsSdkDir\Lib%WindowsSDKVersion%\\um\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\..\Built\Out\v142\x64\Debug\GLTFSDK;$(ProjectDir)\..\Built\Out\v143\x64\Debug\GLTFSDK;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(ProjectDir)\..\ThirdParty\DirectXTex\Bin\Desktop_2019_Win10\x64\Debug;%WindowsSdkDir\Lib%WindowsSDKVersion%\\um\arch</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>

@@ -20,12 +20,17 @@ namespace BruteForce
     namespace Geometry
     {
         template <typename V>
-        void CreateGeometry(Device& device, IndexedGeometry& geometry, const float * vert_data, size_t vert_count, const WORD * ind_data, size_t ind_count)
+        void CreateGeometry(Device& device, IndexedGeometry& geometry, const float * vert_data, size_t vert_count, const WORD * ind_data, size_t ind_count, GpuAllocator * gpu_allocator)
         {
-
-            //size_t vertex_size = V.VertexSize();// sizeof(VertexPosUvNormTangent);
             size_t vertex_size = sizeof(V);
-            BruteForce::CreateBufferResource(device, &geometry.m_VertexBuffer, vert_count, /*sizeof(BruteForce::VertexPosUvNormTangent)*/vertex_size);
+            /*if (gpu_allocator)
+            {
+                BruteForce::CreateBufferResource(device, &geometry.m_VertexBuffer, vert_count, vertex_size, *gpu_allocator);
+            }
+            else*/
+            {
+                BruteForce::CreateBufferResource(device, &geometry.m_VertexBuffer, vert_count, vertex_size);
+            }
 
             SmartCommandQueue smart_queue(device, BruteForce::CommandListTypeDirect);
             auto commandList = smart_queue.GetCommandList();
@@ -38,7 +43,14 @@ namespace BruteForce
             geometry.m_VertexBufferView.SizeInBytes = vert_count * vertex_size;
             geometry.m_VertexBufferView.StrideInBytes = vertex_size;
 
-            BruteForce::CreateBufferResource(device, &geometry.m_IndexBuffer, ind_count, sizeof(WORD));
+			/*if (gpu_allocator)
+			{
+                BruteForce::CreateBufferResource(device, &geometry.m_IndexBuffer, ind_count, sizeof(WORD), *gpu_allocator);
+			}
+            else*/
+            {
+                BruteForce::CreateBufferResource(device, &geometry.m_IndexBuffer, ind_count, sizeof(WORD));
+            }
 
             BruteForce::pResource intermediateIndexBuffer;
             BruteForce::UpdateBufferResource(device, commandList,
@@ -163,9 +175,10 @@ namespace BruteForce
                     }
                 }
                 //skin.jointIds
+
             }
 
-            bool FillGeometryFromMesh(Device& device, IndexedGeometry& geometry, const Microsoft::glTF::Document& document, const Microsoft::glTF::GLTFResourceReader& resourceReader, const std::string * mesh_id = nullptr)
+            bool FillGeometryFromMesh(Device& device, IndexedGeometry& geometry, const Microsoft::glTF::Document& document, const Microsoft::glTF::GLTFResourceReader& resourceReader, GpuAllocator * allocator, const std::string * mesh_id = nullptr)
             {
                 using namespace Microsoft::glTF;
                 const auto& mesh = mesh_id ? document.meshes.Get(*mesh_id) : document.meshes.Elements()[0];
@@ -281,7 +294,7 @@ namespace BruteForce
                                 );
                             }
 
-                            CreateGeometry<BruteForce::VertexPosUvNormTangentBoneWeight>(device, geometry, reinterpret_cast<float*>(geometry_data.data()), geometry_data.size(), indexes_data.data(), indexes_data.size());
+                            CreateGeometry<BruteForce::VertexPosUvNormTangentBoneWeight>(device, geometry, reinterpret_cast<float*>(geometry_data.data()), geometry_data.size(), indexes_data.data(), indexes_data.size(), allocator);
                         }
                         else
                         {
@@ -302,7 +315,7 @@ namespace BruteForce
                                 );
                             }
 
-                            CreateGeometry<BruteForce::VertexPosUvNormTangent>(device, geometry, reinterpret_cast<float*>(geometry_data.data()), geometry_data.size(), indexes_data.data(), indexes_data.size());
+                            CreateGeometry<BruteForce::VertexPosUvNormTangent>(device, geometry, reinterpret_cast<float*>(geometry_data.data()), geometry_data.size(), indexes_data.data(), indexes_data.size(), allocator);
 
                         }
                     }
@@ -372,7 +385,7 @@ namespace BruteForce
 
             ParseGlbToDocAndReader(path, document, resourceReader);
             
-            GLTF::FillGeometryFromMesh(device, geometry, document, *resourceReader);
+            GLTF::FillGeometryFromMesh(device, geometry, document, *resourceReader, nullptr);
             Skinning::Armature armature;
 
             //GLTF::FillArmatureFromSkin(armature, document, *resourceReader);
@@ -401,7 +414,7 @@ namespace BruteForce
 
             }
 
-            GLTF::FillGeometryFromMesh(device, geometry, document, *resourceReader, mesh_id);
+            GLTF::FillGeometryFromMesh(device, geometry, document, *resourceReader, nullptr, mesh_id);
             Skinning::Armature armature;
 
             GLTF::FillArmatureFromSkin(armature, document, *resourceReader, skin_id);

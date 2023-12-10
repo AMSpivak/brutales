@@ -32,7 +32,7 @@ namespace BruteForce
     {
         void CreateCube(Device& device, IndexedGeometry& geometry)
         {
-            CreateGeometry<BruteForce::VertexPosUvNormTangent>(device, geometry, reinterpret_cast<float*>(cube_Vertices), _countof(cube_Vertices), cube_Indicies, _countof(cube_Indicies));
+            CreateGeometry<BruteForce::VertexPosUvNormTangent>(device, geometry, reinterpret_cast<float*>(cube_Vertices), _countof(cube_Vertices), cube_Indicies, _countof(cube_Indicies), nullptr);
             return;
             BruteForce::CreateBufferResource(device, &geometry.m_VertexBuffer, _countof(cube_Vertices), sizeof(BruteForce::VertexPosUvNormTangent));
 

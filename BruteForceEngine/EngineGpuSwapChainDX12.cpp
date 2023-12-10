@@ -17,7 +17,7 @@ namespace BruteForce
     SwapChain CreateSwapChain(CommandQueue& commandQueue, uint32_t bufferCount, int Width, int Height, bool tearing, TargetFormat format, WindowHandle mhWnd)
     {
         ComPtr<IDXGISwapChain4> dxgiSwapChain4;
-        ComPtr<IDXGIFactory4> dxgiFactory4;
+        ComPtr<IDXGIFactory6> dxgiFactory4;
         UINT createFactoryFlags = 0;
 #if defined(_DEBUG)
         createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;

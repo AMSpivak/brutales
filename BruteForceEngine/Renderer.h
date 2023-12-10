@@ -133,7 +133,7 @@ namespace BruteForce
             }
 
             m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
-            BruteForce::UpdateRenderTargetViews(m_Device, refSwapChain,m_BackBuffersDHeap, m_BackBuffers, GetBuffersCount());
+            BruteForce::UpdateRenderTargetViews(m_Device, refSwapChain, m_BackBuffersDHeap, m_BackBuffers, GetBuffersCount());
             
         }
 
@@ -161,12 +161,6 @@ namespace BruteForce
                 BruteForce::ResourceStatesRenderTarget,
                 BruteForce::ResourceStatesPresent);
             smart_command_list.command_list->ResourceBarrier(1, &barrier);
-
-            /*UINT syncInterval = m_Window->GetVSync() ? 1 : 0;
-            UINT presentFlags = m_Window->GetTearing() && !m_Window->GetVSync() ? AllowTearing : 0;
-            auto& refSwapChain = m_Window->GetSwapChainReference();
-            ThrowIfFailed(refSwapChain->Present(syncInterval, presentFlags));
-            m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();*/
         }
 
         void SwapFrame()

@@ -345,10 +345,10 @@ void Update()
 void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Window* pWindow)
 {
 
-	//p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
-	p_Renderer->WaitForSwapReadyFence(in_SmartCommandQueue);
+	p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
     
     p_Renderer->SwapFrame();
+	//p_Renderer->WaitForSwapReadyFence(in_SmartCommandQueue);
 
     //auto smart_command_list = in_SmartCommandQueue.GetCommandList();
     //auto& backBuffer = p_Renderer->GetCurrentBackBufferRef();
@@ -420,7 +420,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     };
 
     std::thread render_thread(render_func);
-    render_thread.detach();
+    //render_thread.detach();
     //pWindow->SetFullscreen(true);
     MSG msg = {};
   //  while (msg.message != WM_QUIT)
@@ -457,11 +457,8 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     }
 
     g_DoRender = false;
-
-    while (!g_Destroy)
-    {
-        Sleep(100);
-    }
+    render_thread.join();
+    
 
     delete(test_controller);
     delete(p_Renderer);
