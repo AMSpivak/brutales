@@ -65,6 +65,7 @@ namespace BruteForce
         m_device(device),
         m_list_type(type)
     {
+        //m_command_queue->SetName(LPCWSTR)
         //BruteForce::ReportLiveObjects();
     }
 
@@ -72,6 +73,11 @@ namespace BruteForce
     {
         //m_device->Release();
     }
+
+	void SmartCommandQueue::SetName(LPCWSTR name)
+	{
+        ThrowIfFailed(m_command_queue->SetName(name));
+	}
 
     SmartCommandList SmartCommandQueue::GetCommandList()
     {

@@ -41,6 +41,8 @@ namespace BruteForce
                 , m_Device(device), m_Adapter(adapter),  m_TargetFormat(t_format), m_HDRmode(HDRMode::OFF)
                 , m_SmartCommandQueue(m_Device, BruteForce::CommandListTypeDirect), m_ComputeSmartCommandQueue(m_Device, BruteForce::CommandListTypeCompute)
         {
+            m_SmartCommandQueue.SetName(L"GeneralQueue");
+			m_ComputeSmartCommandQueue.SetName(L"ComputeQueue");
             m_GpuAllocator = BruteForce::CreateGpuAllocator(m_Adapter, m_Device);
 
             m_Window->CreateSwapChain(m_SmartCommandQueue, m_NumFrames, m_TargetFormat);

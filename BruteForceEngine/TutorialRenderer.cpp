@@ -539,7 +539,7 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
 
     
     {
-        //in_SmartCommandQueue.GpuWait(m_fence_avg_luminance);
+        in_SmartCommandQueue.GpuWait(m_fence_avg_luminance);
         int lum_index = 0;
         m_RTLuminanceTextures[lum_index].TransitionTo(ResetRT_cl, BruteForce::ResourceStatesRenderTarget);
         const BruteForce::DescriptorHandle LuminanceRts[1] = { m_RTLuminanceTextures[lum_index].GetRT() };

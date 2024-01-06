@@ -45,7 +45,7 @@ namespace BruteForce
                 rd,
                 pResource.m_state,
                 pClearValue,
-                &pResource.m_p_allocation,
+                pResource.m_p_allocation.ReleaseAndGetAddressOf(),
                 IID_PPV_ARGS(&pResource.m_GpuBuffer)));
         }
         else

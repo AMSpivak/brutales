@@ -20,7 +20,7 @@ namespace BruteForce
 	using Adapter = Microsoft::WRL::ComPtr<IDXGIAdapter4>;
 	using Device = Microsoft::WRL::ComPtr<ID3D12Device2>;
 	using GpuAllocator = Microsoft::WRL::ComPtr < D3D12MA::Allocator>;
-	using GpuAllocation = D3D12MA::Allocation;
+	using GpuAllocation = Microsoft::WRL::ComPtr < D3D12MA::Allocation>;
 
 
 	using CommandQueue = Microsoft::WRL::ComPtr<ID3D12CommandQueue>;

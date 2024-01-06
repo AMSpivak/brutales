@@ -346,7 +346,8 @@ void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue, BruteForce::Win
 {
 
 	p_Renderer->WaitForCurrentFence(in_SmartCommandQueue);
-    
+	
+
     p_Renderer->SwapFrame();
 	//p_Renderer->WaitForSwapReadyFence(in_SmartCommandQueue);
 

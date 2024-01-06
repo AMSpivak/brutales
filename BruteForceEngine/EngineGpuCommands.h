@@ -52,6 +52,7 @@ namespace BruteForce
         bool IsFenceCompleted(uint64_t fenceValue);
         void WaitForFenceValue(uint64_t fenceValue, std::chrono::milliseconds duration = std::chrono::milliseconds::max());
         void CopyTextureSubresource(Resource& desttexture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData, ResourceStates finalResourceState);
+        void SetName(LPCWSTR name);
     private:
         struct CommandAllocatorEntry
         {
