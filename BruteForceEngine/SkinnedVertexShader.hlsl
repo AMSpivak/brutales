@@ -46,6 +46,9 @@ VertexShaderOutput main(VertexPosColor IN, uint id : SV_InstanceID)
     OUT.Uv = IN.Uv;
     OUT.Normal = IN.Normal;
     OUT.Tangent = IN.Tangent;
+    OUT.Normal = mul(ModelCB.M,float4(IN.Normal, 0.0f)).xyz;
+    OUT.Tangent.w = IN.Tangent.w;
+    OUT.Tangent.xyz = mul(ModelCB.M,float4(IN.Tangent.xyz, 0.0f)).xyz;
     OUT.id = MaterialCB.Id;
     return OUT;
 }
