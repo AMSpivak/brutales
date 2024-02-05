@@ -61,7 +61,9 @@ namespace BruteForce
             case WM_SIZE:
             {
                 if (pWindow) {
-                    pWindow->Resize();
+					UINT width = LOWORD(lParam);
+					UINT height = HIWORD(lParam);
+                    pWindow->OnResize(width, height);
                 }
             }
             break;
@@ -155,14 +157,14 @@ namespace BruteForce
         ::ShowWindow(mhWnd, SW_SHOW);
     }
 
-    void WindowDX12::Resize()
-    {
+    void WindowDX12::OnResize(UINT width, UINT height)
+{
         if (funcOnResize) {
-            RECT clientRect = {};
-            ::GetClientRect(mhWnd, &clientRect);
+            //RECT clientRect = {};
+            //::GetClientRect(mhWnd, &clientRect);
 
-            int width = clientRect.right - clientRect.left;
-            int height = clientRect.bottom - clientRect.top;
+            //int width = clientRect.right - clientRect.left;
+            //int height = clientRect.bottom - clientRect.top;
             SetSize(width, height);
             funcOnResize(width, height, this);
         }

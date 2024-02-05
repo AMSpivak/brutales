@@ -11,7 +11,7 @@ namespace BruteForce
 		bool m_IsFullscreen;
 		RECT m_WinRect;
 		bool CheckTearingSupport();
-		void Resize();
+		void OnResize(UINT width, UINT height);
 	public:
 		WindowDX12(HWND hWnd) : mhWnd(hWnd), m_IsFullscreen(false) {};
 		virtual void Show();
