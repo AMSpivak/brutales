@@ -86,10 +86,11 @@ namespace BruteForce
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
                 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;// |
                 //D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
-            CD3DX12_ROOT_PARAMETER1 rootParameters[3];
+            CD3DX12_ROOT_PARAMETER1 rootParameters[4];
             rootParameters[0].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
             rootParameters[1].InitAsConstants(sizeof(BruteForce::Math::Matrix) / 4, 5, 0, D3D12_SHADER_VISIBILITY_VERTEX);
-            rootParameters[2].InitAsConstants(sizeof(uint32_t) / 4, 10, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+			rootParameters[2].InitAsConstants(sizeof(uint32_t) / 4, 10, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+			rootParameters[3].InitAsConstants(sizeof(BruteForce::Math::Vec4Float) / 4, 11, 0, D3D12_SHADER_VISIBILITY_VERTEX);
             
             CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
 
@@ -181,6 +182,9 @@ namespace BruteForce
 
                 uint32_t material_id = obj.m_material->m_index;
                 commandList->SetGraphicsRoot32BitConstants(2, static_cast<UINT>(sizeof(uint32_t) / 4), &material_id, 0);
+				BruteForce::Math::Vec4Float clipplane{ -1.0f, 0.0f, 0.0f, 0.0f };
+				//BruteForce::Math::Vec4Float clipplane{ 0.0f, 0.0f, 0.0f, 0.0f };
+				commandList->SetGraphicsRoot32BitConstants(3, static_cast<UINT>(sizeof(BruteForce::Math::Vec4Float) / 4), &clipplane, 0);
 
                 commandList->DrawIndexedInstanced(static_cast<UINT>(obj.m_geometry->m_IndexesCount), 1, 0, 0, 0);
             }

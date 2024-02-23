@@ -16,6 +16,12 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{e22901fc-1d22-4eeb-b7fb-150742283440}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы заголовков\ConstantBuffers">
+      <UniqueIdentifier>{74eea5cb-ef7c-4031-8f1a-6718028e3a1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\ShaderIncludes">
+      <UniqueIdentifier>{7045b771-5d49-4219-8915-5860c0049572}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -206,9 +212,6 @@
     <ClInclude Include="ShaderCommon.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="TerrainShadowCB.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="Atlas.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
@@ -224,19 +227,10 @@
     <ClInclude Include="TexturePlat.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="TonemapCB.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="ConstantBufferPlat.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="ShaderCppTypesRedefine.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="TerrainVertexCB.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="HdrHistogramCB.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="BruteForceMath.h">
@@ -260,28 +254,13 @@
     <ClInclude Include="CommonRenderParams.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="DefferedLightingCB.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="ScreenSpaceLuminance.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="ComputeLuminance.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="ComputeLuminanceCB.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="ComputeDeffered.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="CommonComputeInput.h">
-      <Filter>Shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="RaymarchFogCB.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="MaterialCB.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="MaterialAtlas.h">
@@ -301,6 +280,33 @@
     </ClInclude>
     <ClInclude Include="Skinning.h">
       <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="ComputeLuminanceCB.h">
+      <Filter>Файлы заголовков\ConstantBuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="DefferedLightingCB.h">
+      <Filter>Файлы заголовков\ConstantBuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="HdrHistogramCB.h">
+      <Filter>Файлы заголовков\ConstantBuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialCB.h">
+      <Filter>Файлы заголовков\ConstantBuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="RaymarchFogCB.h">
+      <Filter>Файлы заголовков\ConstantBuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainShadowCB.h">
+      <Filter>Файлы заголовков\ConstantBuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainVertexCB.h">
+      <Filter>Файлы заголовков\ConstantBuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="TonemapCB.h">
+      <Filter>Файлы заголовков\ConstantBuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="CommonComputeInput.h">
+      <Filter>Shaders\ShaderIncludes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -349,18 +355,21 @@
     <FxCompile Include="SkinnedVertexShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="TestVertexShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
-    <None Include="math.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="color.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="LightScattering.hlsli">
       <Filter>Shaders</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="color.hlsli">
+      <Filter>Shaders\ShaderIncludes</Filter>
+    </None>
+    <None Include="math.hlsli">
+      <Filter>Shaders\ShaderIncludes</Filter>
+    </None>
   </ItemGroup>
 </Project>

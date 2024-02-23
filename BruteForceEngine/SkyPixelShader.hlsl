@@ -37,7 +37,7 @@ struct PixelShaderInput
 Texture2D SkyTextures[2] : register(t0);
 SamplerState LinearClampSampler : register(s0);
 
-float4 main(PixelShaderInput IN) : SV_TARGET
+float4 main(PixelShaderInput IN) : SV_Target
 {
 	float4 normal = float4(IN.Tex * 2 - 1.0 , 1.0f, 1.0f);
 	normal.y = -normal.y;

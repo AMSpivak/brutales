@@ -35,6 +35,15 @@ struct VertexShaderOutput
     nointerpolation uint id : InstanceID;
 };
 
+struct ClipPlanes
+{
+	float4 clipPlane0;
+};
+
+
+ConstantBuffer<ClipPlanes> ClipPlaneCB : register(b11);
+
+[clipplanes(ClipPlaneCB.clipPlane0)]
 VertexShaderOutput main(VertexPosColor IN, uint id : SV_InstanceID)
 {
     VertexShaderOutput OUT;

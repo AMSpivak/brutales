@@ -18,7 +18,6 @@ void TutorialRenderer::CreateCommonResources(BruteForce::Device& device, BruteFo
     RTUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeUav, "RenderTargetsUavs");
     RTNoScreenSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(NoScreenTextures), BruteForce::DescriptorRangeTypeSrv, "NoScreenRenderTargetsSrvs");
     RTLuminanceSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "RTLuminanceSrvs");
-    //RTSrvUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(RenderNumFrames), BruteForce::DescriptorRangeTypeSrv, "RenderTargetsUavs");
 
     SunShadowSrvDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeSrv, "TerrainShadowSrvs");
     SunShadowUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, static_cast<UINT>(SwapchainNumFrames), BruteForce::DescriptorRangeTypeUav, "TerrainShadowUavs");
@@ -130,10 +129,10 @@ TutorialRenderer::TutorialRenderer(BruteForce::Device& device, BruteForce::Adapt
     //SunShadowUavDescriptors = m_SRV_Heap.AllocateManagedRange(device, sun_shadows, BruteForce::DescriptorRangeTypeUav, "SunShadowsUavs");
     //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::ScreenSpaceSky>());
 
-    m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderTerrain>());
+    //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderTerrain>());
     m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderInstanced>());
-    m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderSkinned>());
-    m_CalcSystems.push_back(std::make_shared<BruteForce::Compute::ComputeTerrainShadow>());
+    //m_RenderSystems.push_back(std::make_shared<BruteForce::Render::RenderSkinned>());
+    //m_CalcSystems.push_back(std::make_shared<BruteForce::Compute::ComputeTerrainShadow>());
 
     m_Camera.SetPosition({0.0f, 3.0f, -10.0f}, false);
     m_Camera.RecalculateView({ 0.0f, 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f, 0.0f });
