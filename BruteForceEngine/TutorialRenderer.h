@@ -62,7 +62,7 @@ private:
     
     BruteForce::Textures::Texture m_ShadowTextures[SwapchainNumFrames];
     void CreateCommonResources(BruteForce::Device& device, BruteForce::GpuAllocator gpu_allocator);
-
+    bool ResizeInternal();
     BruteForce::Sync::SmartFence m_fence_sky_shadow;
     BruteForce::Sync::SmartFence m_fence_avg_luminance;
     BruteForce::Sync::SmartFence m_fence_frame_luminance;
@@ -94,7 +94,7 @@ public:
     ~TutorialRenderer();
 
     bool LoadContent(BruteForce::Device& device);
-    void Resize();
+    //void Resize();
     void Update(float delta_time_ms, BruteForce::SmartCommandQueue& compute_SmartCommandQueue);
     void Render(BruteForce::SmartCommandQueue& in_SmartCommandQueue);
     BruteForce::Camera* GetCameraPtr();

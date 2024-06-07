@@ -192,7 +192,7 @@ bool TutorialRenderer::LoadContent(BruteForce::Device& device)
 
     m_ContentLoaded = true;
 
-    Resize();
+    Resize(true);
 
     return true;
 }
@@ -203,13 +203,13 @@ void TutorialRenderer::Update(float delta_time, BruteForce::SmartCommandQueue& c
 }
 
 
-void TutorialRenderer::Resize()
+bool TutorialRenderer::ResizeInternal()
 {
 
     //auto signal = m_SmartCommandQueue.Signal(m_fence_sky_shadow);
     //m_SmartCommandQueue.WaitForFenceValue(signal);
-    MyRenderer::Resize();
-
+    if (!MyRenderer::ResizeInternal())
+        return false;
     //bool can_hdr = m_Window->IsOnHDRDisplay(m_Adapter);
     //{
     //    char buffer[500];
@@ -360,6 +360,7 @@ void TutorialRenderer::Resize()
 
         //m_rt_index = 0;
     }
+    return true;
 }
 
 
@@ -543,8 +544,8 @@ void TutorialRenderer::Render(BruteForce::SmartCommandQueue& in_SmartCommandQueu
         int lum_index = 0;
         m_RTLuminanceTextures[lum_index].TransitionTo(ResetRT_cl, BruteForce::ResourceStatesRenderTarget);
         const BruteForce::DescriptorHandle LuminanceRts[1] = { m_RTLuminanceTextures[lum_index].GetRT() };
-        BruteForce::Viewport vp{ 0,0, m_RTLuminanceTextures[lum_index].GetWidth(), m_RTLuminanceTextures[lum_index].GetHeight() };
-        BruteForce::ScissorRect sr{ 0,0, m_RTLuminanceTextures[lum_index].GetWidth(), m_RTLuminanceTextures[lum_index].GetHeight() };
+        BruteForce::Viewport vp{ 0,0, static_cast<FLOAT>(m_RTLuminanceTextures[lum_index].GetWidth()), static_cast<FLOAT>(m_RTLuminanceTextures[lum_index].GetHeight()) };
+        BruteForce::ScissorRect sr{ 0,0, static_cast<LONG>(m_RTLuminanceTextures[lum_index].GetWidth()), static_cast<LONG>(m_RTLuminanceTextures[lum_index].GetHeight()) };
 
         BruteForce::Render::PrepareRenderHelper render_dest_lum{
             &vp,

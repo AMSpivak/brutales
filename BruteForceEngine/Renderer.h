@@ -23,6 +23,49 @@ namespace BruteForce
         const uint8_t m_NumFrames;
         const  BruteForce::TargetFormat m_TargetFormat;
         HDRMode::HDRMode m_HDRmode;
+        bool m_DoResize;
+
+        virtual bool ResizeInternal()
+        {
+            if (!m_DoResize)
+                return false;
+            m_DoResize = false;
+            uint32_t width = m_Window->GetWidth();
+            uint32_t height = m_Window->GetHeight();
+            // Flush the GPU queue to make sure the swap chain's back buffers
+            // are not being referenced by an in-flight command list.
+            Flush();
+            //m_SmartCommandQueue.Flush();
+
+            for (int i = 0; i < GetBuffersCount(); ++i)
+            {
+                // Any references to the back buffers must be released
+                // before the swap chain can be resized.
+                m_BackBuffers[i].Reset();
+                m_FrameFenceValues[i] = m_FrameFenceValues[m_CurrentBackBufferIndex];
+            }
+
+            auto& refSwapChain = m_Window->GetSwapChainReference();
+
+            BruteForce::SwapChainDesc swapChainDesc = {};
+            ThrowIfFailed(refSwapChain->GetDesc(&swapChainDesc));
+
+
+
+            ThrowIfFailed(refSwapChain->ResizeBuffers(GetBuffersCount(), width, height,
+                swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
+
+            bool can_hdr = m_Window->IsOnHDRDisplay(m_Adapter);
+
+            if (can_hdr)
+            {
+                SetHDR(HDRMode::RGB_FULL_G22_NONE_P709);
+            }
+
+            m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
+            BruteForce::UpdateRenderTargetViews(m_Device, refSwapChain, m_BackBuffersDHeap, m_BackBuffers, GetBuffersCount());
+            return true;
+        }
     public:
         // Use WARP adapter
         Device& m_Device;
@@ -38,7 +81,7 @@ namespace BruteForce
         Viewport m_Viewport;
         ScissorRect m_ScissorRect;
         Renderer(BruteForce::Device& device, BruteForce::Adapter& adapter, BruteForce::Window* pWindow, bool UseWarp, BruteForce::TargetFormat t_format) : m_Window(pWindow), m_NumFrames(t_NumFrames)
-                , m_Device(device), m_Adapter(adapter),  m_TargetFormat(t_format), m_HDRmode(HDRMode::OFF)
+                , m_Device(device), m_Adapter(adapter),  m_TargetFormat(t_format), m_HDRmode(HDRMode::OFF), m_DoResize(false)
                 , m_SmartCommandQueue(m_Device, BruteForce::CommandListTypeDirect), m_ComputeSmartCommandQueue(m_Device, BruteForce::CommandListTypeCompute)
         {
             m_GpuAllocator = BruteForce::CreateGpuAllocator(m_Adapter, m_Device);
@@ -98,42 +141,13 @@ namespace BruteForce
             return m_Window->SetHDRMode(mode);
         }
 
-        void Resize()
+        void Resize(bool immidiate = false)
         {
-            uint32_t width = m_Window->GetWidth();
-            uint32_t height = m_Window->GetHeight();
-            // Flush the GPU queue to make sure the swap chain's back buffers
-            // are not being referenced by an in-flight command list.
-            Flush();
-            //m_SmartCommandQueue.Flush();
-
-            for (int i = 0; i < GetBuffersCount(); ++i)
+            m_DoResize = true;
+            if (immidiate)
             {
-                // Any references to the back buffers must be released
-                // before the swap chain can be resized.
-                m_BackBuffers[i].Reset();
-                m_FrameFenceValues[i] = m_FrameFenceValues[m_CurrentBackBufferIndex];
+                ResizeInternal();
             }
-
-            auto& refSwapChain = m_Window->GetSwapChainReference();
-
-            BruteForce::SwapChainDesc swapChainDesc = {};
-            ThrowIfFailed(refSwapChain->GetDesc(&swapChainDesc));
-
-            
-
-            ThrowIfFailed(refSwapChain->ResizeBuffers(GetBuffersCount(), width, height,
-                swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
-
-            bool can_hdr = m_Window->IsOnHDRDisplay(m_Adapter);
-
-            if (can_hdr)
-            {
-                SetHDR(HDRMode::RGB_FULL_G22_NONE_P709);
-            }
-
-            m_CurrentBackBufferIndex = refSwapChain->GetCurrentBackBufferIndex();
-            BruteForce::UpdateRenderTargetViews(m_Device, refSwapChain, m_BackBuffersDHeap, m_BackBuffers, GetBuffersCount());
             
         }
 
@@ -165,6 +179,7 @@ namespace BruteForce
 
         void SwapFrame()
         {
+            ResizeInternal();
             UINT syncInterval = m_Window->GetVSync() ? 1 : 0;
             UINT presentFlags = m_Window->GetTearing() && !m_Window->GetVSync() ? AllowTearing : 0;
             auto& refSwapChain = m_Window->GetSwapChainReference();
