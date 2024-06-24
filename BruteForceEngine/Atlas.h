@@ -29,17 +29,29 @@ namespace BruteForce
         template <typename... Params>
         std::shared_ptr<T> Assign(const T_STR& filename, Params... params)
         {
-            auto it = m_map.find(filename);
-            if (it != m_map.end())
+            auto resource = Find(filename);
+            if (resource)
             {
-                //std::cout << "Reuse element: " << filename << "\n";
-                return it->second.lock();
+                return resource;
             }
-            auto resource = std::shared_ptr<T>(new T(m_resourse_folder + filename, params...), Deleter(this, filename));
+
+            resource = std::shared_ptr<T>(new T(m_resourse_folder + filename, params...), Deleter(this, filename));
             m_map.insert(std::pair<const T_STR, std::weak_ptr<T>>(filename, resource));
             //std::cout << "New element: " << filename << "\n";
             return resource;
 
+        }
+
+        bool Add(const T_STR& filename, std::shared_ptr<T> val)
+        {
+            auto resource = Find(filename);
+            if (resource)
+            {
+                return false;
+            }
+            
+            m_map.insert(std::pair<const T_STR, std::weak_ptr<T>>(filename, val));
+            return true;
         }
 
         std::shared_ptr<T> Find(const T_STR& filename)
@@ -104,12 +116,12 @@ namespace BruteForce
         std::shared_ptr<T> Assign(const T_STR& filename, Params... params)
         {
             size_t hash = m_hasher(filename);
-            auto it = m_map.find(hash);
-            if (it != m_map.end())
+            auto resource = Find(hash);
+            if (resource)
             {
-                return it->second.lock();
+                return resource;
             }
-            auto resource = std::shared_ptr<T>(new T(m_resourse_folder + filename, params...), Deleter(this, hash));
+            resource = std::shared_ptr<T>(new T(m_resourse_folder + filename, params...), Deleter(this, hash));
             m_map.insert(std::pair<const size_t, std::weak_ptr<T>>(hash, resource));
             return resource;
 
@@ -118,12 +130,20 @@ namespace BruteForce
         std::shared_ptr<T> Find(const std::string& filename)
         {
             size_t hash = m_hasher(filename);
-            auto it = m_map.find(hash);
-            if (it != m_map.end())
+            return Find(hash);
+        }
+
+        bool Add(const T_STR& filename, std::shared_ptr<T> val)
+        {
+            size_t hash = m_hasher(filename);
+            auto resource = Find(hash);
+            if (resource)
             {
-                return it->second.lock();
+                return false;
             }
-            return std::shared_ptr<T>(nullptr);
+
+            m_map.insert(std::pair<const size_t, std::weak_ptr<T>>(hash, val));
+            return true;
         }
 
         void Clean()
@@ -156,6 +176,16 @@ namespace BruteForce
             HashAtlas* m_atlas;
             size_t m_filename_hash;
         };
+
+        std::shared_ptr<T> Find(size_t hash)
+        {
+            auto it = m_map.find(hash);
+            if (it != m_map.end())
+            {
+                return it->second.lock();
+            }
+            return std::shared_ptr<T>(nullptr);
+        }
     };
 
 #ifdef _DEBUG
