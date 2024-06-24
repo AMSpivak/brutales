@@ -130,6 +130,12 @@ namespace BruteForce
 	using RootSignature = Microsoft::WRL::ComPtr<ID3D12RootSignature>;
 	using PipelineState = Microsoft::WRL::ComPtr<ID3D12PipelineState>;
 
+	struct PSO_RS
+	{
+		RootSignature m_RS;
+		PipelineState m_PSO;
+	};
+
 	using Viewport = D3D12_VIEWPORT;
 	using CreateViewport = CD3DX12_VIEWPORT;
 	using ScissorRect = D3D12_RECT;

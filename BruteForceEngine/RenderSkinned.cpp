@@ -114,7 +114,7 @@ namespace BruteForce
 
                 // Create the root signature.
                 ThrowIfFailed(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
-                    rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)));
+                    rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_PsoRs->m_RS)));
             }
 
 
@@ -139,7 +139,7 @@ namespace BruteForce
 
             pipelineStateStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);;
 
-            pipelineStateStream.pRootSignature = m_RootSignature.Get();
+            pipelineStateStream.pRootSignature = m_PsoRs->m_RS.Get();
             pipelineStateStream.InputLayout = { SkinnedInputLayout, _countof(SkinnedInputLayout) };
             pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
             pipelineStateStream.VS = CD3DX12_SHADER_BYTECODE(SkinnedVertexShaderBlob.Get());
@@ -150,7 +150,7 @@ namespace BruteForce
             D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
                 sizeof(PipelineStateStream), &pipelineStateStream
             };
-            ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PipelineState)));
+            ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_PsoRs->m_PSO)));
 
         }
 
@@ -158,8 +158,8 @@ namespace BruteForce
         SmartCommandList& RenderSkinned::PrepareRenderCommandList(SmartCommandList& smart_command_list, const PrepareRenderHelper& render_dest)
         {
             auto& commandList = smart_command_list.command_list;
-            smart_command_list.SetPipelineState(m_PipelineState);
-            smart_command_list.SetGraphicsRootSignature(m_RootSignature);
+            smart_command_list.SetPipelineState(m_PsoRs->m_PSO);
+            smart_command_list.SetGraphicsRootSignature(m_PsoRs->m_RS);
 
 
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

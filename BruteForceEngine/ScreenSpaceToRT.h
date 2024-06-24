@@ -17,6 +17,7 @@ namespace BruteForce
 #include "TonemapCB.h"
             ConstantBuffer<TonemapCB>* m_TonemapBuffers;
             PipelineState m_PipelineStates[NumPSO];
+            //std::shared_ptr <PSO_RS> m_PsoRs[NumPSO];
             HDRMode::HDRMode m_HDRMode;
 
             void PrepareCB(uint32_t index);

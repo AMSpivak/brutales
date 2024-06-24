@@ -41,10 +41,11 @@ namespace BruteForce
 
             bool m_loaded;
             uint8_t m_FramesCount;
+            std::shared_ptr <BruteForce::PSO_RS> m_PsoRs;
             RootSignature m_RootSignature;
             PipelineState m_PipelineState;
         public:
-            RenderSubsystem() :m_loaded{ false }, m_FramesCount{0} {};
+            RenderSubsystem() :m_loaded{ false }, m_FramesCount{0} { m_PsoRs = std::make_shared<BruteForce::PSO_RS>(); };
             virtual ~RenderSubsystem()
             {
                 //if (m_RootSignature) m_RootSignature->Release();
