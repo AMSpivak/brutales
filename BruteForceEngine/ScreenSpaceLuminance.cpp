@@ -65,7 +65,7 @@ namespace BruteForce
 
             // Create the root signature.
             ThrowIfFailed(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
-                rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)));
+                rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_PsoRs->m_RS)));
 
 
             struct PipelineStateStream
@@ -85,7 +85,7 @@ namespace BruteForce
             depthStencilDesc.DepthEnable = false;
             depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
             pipelineStateStream.DepthStencilState = depthStencilDesc;
-            pipelineStateStream.pRootSignature = m_RootSignature.Get();
+            pipelineStateStream.pRootSignature = m_PsoRs->m_RS.Get();
             pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
             pipelineStateStream.VS = CD3DX12_SHADER_BYTECODE(vertexShaderBlob.Get());
             pipelineStateStream.PS = CD3DX12_SHADER_BYTECODE(pixelShaderBlob.Get());
@@ -105,7 +105,7 @@ namespace BruteForce
 
             auto& commandList = smart_command_list.command_list;
             smart_command_list.SetPipelineState(m_PipelineState);
-            smart_command_list.SetGraphicsRootSignature(m_RootSignature);
+            smart_command_list.SetGraphicsRootSignature(m_PsoRs->m_RS);
 
             ID3D12DescriptorHeap* ppHeaps[] = { render_dest.HeapManager.GetDescriptorHeapPointer() };
             commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);

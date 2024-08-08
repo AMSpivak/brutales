@@ -42,14 +42,12 @@ namespace BruteForce
             bool m_loaded;
             uint8_t m_FramesCount;
             std::shared_ptr <BruteForce::PSO_RS> m_PsoRs;
-            RootSignature m_RootSignature;
+            //RootSignature m_RootSignature;
             PipelineState m_PipelineState;
         public:
             RenderSubsystem() :m_loaded{ false }, m_FramesCount{0} { m_PsoRs = std::make_shared<BruteForce::PSO_RS>(); };
             virtual ~RenderSubsystem()
             {
-                //if (m_RootSignature) m_RootSignature->Release();
-                //if (m_PipelineState) m_PipelineState->Release();
             };
             virtual void Update(float delta_time, uint8_t frame_index) = 0;
             virtual void LoadContent(Device& device, uint8_t frames_count, const RenderSubsystemInitDesc&, SmartCommandQueue& copy_queue, DescriptorHeapManager &descriptor_heap_manager) = 0;
